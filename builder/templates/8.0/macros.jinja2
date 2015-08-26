@@ -274,6 +274,11 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
         {%- if field.allow_inverse -%} inverse='{{ field.inverse_method_name }}',{%- endif -%}
         {%- if field.allow_search -%} search='{{ field.search_method_name }}',{%- endif -%}
         {%- if field.allow_default -%} default='{{ field.default_method_name }}',{%- endif -%})
+    {%  if field.is_nested and field.name == 'parent_id' %}
+    _parent_store = True
+    parent_left = fields.Integer ('Parent Left',index=True)
+    parent_right = fields.Integer ('Parent right',index=True)
+    {% endif %}
     {% endif -%}
 {%- endmacro %}
 
