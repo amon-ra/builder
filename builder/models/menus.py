@@ -20,6 +20,7 @@
 #
 ##############################################################################
 
+from openerp.tools.translate import _
 from openerp import models, fields, api, tools, _
 from openerp.osv import osv
 MENU_ITEM_SEPARATOR = "/"
@@ -88,7 +89,7 @@ class IrUiMenu(models.Model):
 
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
     name = fields.Char('Menu', required=True, translate=True)
-    xml_id = fields.Char('XML ID', required=True)
+    xml_id = fields.Char('XML ID', required=True ,help=_("For example view_model_tree"))
     complete_name = fields.Char('Complete Name', compute='_compute_complete_name')
     morder = fields.Integer('Order')
     sequence = fields.Integer('Sequence')
@@ -117,7 +118,7 @@ class IrUiMenu(models.Model):
                                     # ('builder.ir.actions.act_url', 'URL'),
     ], 'Module Action')
 
-    group_ids = fields.Many2many('builder.res.groups', 'builder_ir_ui_menu_group_rel', 'menu_id', 'gid', string='Groups', help="If this field is empty, the menu applies to all users. Otherwise, the view applies to the users of those groups only.")
+    group_ids = fields.Many2many('builder.res.groups', 'builder_ir_ui_menu_group_rel', 'menu_id', 'gid', string='Groups', help=_("If this field is empty, the menu applies to all users. Otherwise, the view applies to the users of those groups only."))
 
     @api.onchange('action_system')
     def onchange_action_system(self):
@@ -167,11 +168,14 @@ class IrUiMenu(models.Model):
             parent_path = self.parent_id._get_full_name_one(level-1) + MENU_ITEM_SEPARATOR
         elif self.parent_ref:
             if self.parent_menu_id:
-                parent_path = '[{name}]'.format(name=self.parent_menu_id.complete_name) + MENU_ITEM_SEPARATOR
+                parent_path = '[{name}]'.format(name=self.parent_menu_id.complete_name.encode('utf-8')) + MENU_ITEM_SEPARATOR
             else:
                 parent_path = '[{ref}]'.format(ref=self.parent_ref) + MENU_ITEM_SEPARATOR
 
-        return (parent_path + self.name) if self.name else False
+        try:
+            return (parent_path + self.name.encode('utf-8'))
+        except:
+            return False
 
     @api.one
     def name_get(self):

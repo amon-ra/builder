@@ -23,6 +23,7 @@
                                    attrs="{'invisible': [['use_to_order', '=', False]], 'required': [['use_to_order', '=', True]]}"/>
                             <field name="ttype" invisible="1"/>
                             <field name="relation_ttype" required="1" readonly="0"/>
+                            <field name="help"/>
                         </group>
                     </group>
                     <notebook>
@@ -183,21 +184,24 @@
 
                                 <field name="name"/>
                                 <field name="field_description"/>
+
                                 <field name="is_inherited" invisible="1"/>
                                 <field name="redefine" attrs="{'invisible': [['is_inherited', '=', False]], }"/>
+
                             </group>
                             <group>
                                 <field name="is_rec_name"/>
                                 <field name="use_to_order"/>
                                 <field name="order"
                                        attrs="{'invisible': [['use_to_order', '=', False]], 'required': [['use_to_order', '=', True]]}"/>
+
                             </group>
                         </group>
                         <group>
                             <group>
                                 <field name="ttype"/>
                             </group>
-                            <group></group>
+                            <group><field name="help"/></group>
                         </group>
                         <notebook>
                             <page string="General">
@@ -237,7 +241,10 @@
                                         <!--<field name="relation" readonly="1" attrs="{'required': [('ttype','in',['many2one','one2many','many2many'])], 'invisible': [('ttype', 'not in', ['many2one','one2many','many2many'])]}"/>-->
                                         <field name="relation_field"
                                                attrs="{'required': [('ttype','=','one2many')], 'readonly': [('ttype','!=','one2many')], 'invisible': [('ttype', 'not in', ['one2many'])]}"/>
-
+                                    </group>
+                                </group>
+                                <group>
+                                    <group>
                                         <field name="auto_join"
                                                attrs="{'readonly': [('ttype','!=','many2one')], 'invisible': [('ttype', 'not in', ['many2one'])]}"/>
                                         <field name="delegate"

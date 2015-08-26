@@ -1,5 +1,7 @@
 from openerp.exceptions import ValidationError
 from openerp import models, api, fields, _
+import logging
+logger = logging.getLogger(__name__)
 
 FIELD_WIDGETS_ALL = [
     ('barchart', "FieldBarChart"),
@@ -39,6 +41,7 @@ FIELD_WIDGETS_ALL = [
     ('x2many_counter', "X2ManyCounter"),
 ]
 
+MODEL_FIELD_ID={}
 
 class ViewSelector(models.TransientModel):
     _name = 'builder.views.selector'
@@ -248,3 +251,24 @@ class AbstractViewField(models.AbstractModel):
     @api.depends('field_id.ttype')
     def _compute_field_ttype(self):
         self.field_ttype = self.field_id.ttype
+
+    def _calculate_models(self):
+        """
+
+        :type self: object
+        """
+        global MODEL_FIELD_ID
+        logger.debug("Selection created")
+        cm = self._context.get('default_model_id')
+        if cm:
+            model_id = self.env['builder.ir.model'].search([('id','=',cm)])
+            MODEL_FIELD_ID[cm] = [(model_id.id,model_id.display_name)]
+            for m in model_id.inherit_model_ids:
+                MODEL_FIELD_ID[cm].append((m.module_model_id.id,m.model_display))
+            logger.debug(MODEL_FIELD_ID)
+            return MODEL_FIELD_ID[cm]
+        else:
+            logger.debug(MODEL_FIELD_ID)
+            return []
+
+    field_model = fields.Selection(_calculate_models, string='Model')

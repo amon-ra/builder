@@ -44,7 +44,9 @@ class IrFields(models.Model):
     relation = fields.Char('Object Relation',
                            help="For relationship fields, the technical name of the target model")
 
-    relation_model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='set null')
+    #ir.model
+    #relation_model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='set null')
+    relation_model_id = fields.Reference([('builder.ir.model', 'Model'),('ir.model','System Model')], 'Model')
 
     relation_many2many_comodel_name = fields.Char('Comodel Name')
     relation_many2many_relation = fields.Char('Relation Name')
@@ -60,7 +62,7 @@ class IrFields(models.Model):
                                  help="For one2many fields, the field on the target model that implement the opposite many2one relationship")
 
     field_description = fields.Char('Field Label')
-    related = fields.Char('Related')
+    related = fields.Char('Related',help='Provides the value from an already created relation subfield')
     ttype = fields.Selection(get_field_types, 'Field Type', required=True)
     relation_ttype = fields.Selection([('many2one', 'many2one'), ('one2many', 'one2many'), ('many2many', 'many2many')],
                                       'Field Type', compute='_compute_relation_ttype',
@@ -222,7 +224,7 @@ class IrFields(models.Model):
     @api.onchange('relation_model_id', 'ttype', 'model_id')
     def _get_default_field_values(self):
         if self.ttype in relational_field_types and self.relation_model_id:
-            if self.model_id != self.relation_model_id:
+            if self.model_id.model != self.relation_model_id.model:
 
                 self.field_description = model_name(
                     self.relation_model_id.name)  # if self.model_id.id != self.relation_model_id.id else _('Parent')
@@ -248,6 +250,7 @@ class IrFields(models.Model):
                 self.name = 'parent_id' if self.ttype.endswith('2one') else 'child_ids'
 
                 self.relation_field = 'parent_id'
+                self.on_delete = 'restrict'
 
                 if self.ttype != 'many2many':
                     self.reverse_relation_name = 'child_ids' if self.ttype.endswith('2one') else 'parent_id'

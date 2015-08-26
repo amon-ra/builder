@@ -33,7 +33,7 @@ This module aims to help in the development of new modules
     'author': 'Soluciones Moebius',
     #"license": "AGPL-3",
     'website': 'http://www.solucionesmoebius.com/',
-    'depends': ['web', 'web_diagram', 'website'],
+    'depends': ['web', 'web_diagram', 'website','builder_local_module_import'],
     'data': [
         # 'security/base_security.xml',
         # 'security/ir.model.access.csv',

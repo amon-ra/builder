@@ -10,7 +10,6 @@ from openerp import models, fields, api, _, tools
 from .utils import simple_selection
 from .utils.formats import json
 
-
 MODULE_EXPORTER_RE = re.compile('_export_\w[\w_]+')
 
 
@@ -18,7 +17,8 @@ def get_module_exporters(model):
     return [
         (attr.replace('_export_', ''), attr.replace('_export_', '').capitalize()) for attr in dir(model)
         if MODULE_EXPORTER_RE.match(attr) and isinstance(getattr(model, attr), MethodType)
-    ]
+        ]
+
 
 MODULE_IMPORTER_RE = re.compile('_import_\w[\w_]+')
 
@@ -27,7 +27,7 @@ def get_module_importers(model):
     return [
         (attr.replace('_import_', ''), attr.replace('_import_', '').capitalize()) for attr in dir(model)
         if MODULE_IMPORTER_RE.match(attr) and isinstance(getattr(model, attr), MethodType)
-    ]
+        ]
 
 
 class Module(models.Model):
@@ -38,7 +38,7 @@ class Module(models.Model):
         return [(c.name, c.name) for c in self.env['ir.module.category'].search([])]
 
     name = fields.Char("Technical Name", required=True, select=True)
-    category_id = fields.Selection(simple_selection('ir.module.category', 'name') , 'Category')
+    category_id = fields.Selection(simple_selection('ir.module.category', 'name'), 'Category')
     shortdesc = fields.Char('Module Name', translate=True, required=True)
     summary = fields.Char('Summary', translate=True)
     description = fields.Text("Description", translate=True)
@@ -55,9 +55,9 @@ class Module(models.Model):
     sequence = fields.Integer('Sequence')
     # dependencies_id = fields.One2many('programming.module.dependency', 'module_id', 'Dependencies')
     auto_install = fields.Boolean('Automatic Installation',
-                                   help='An auto-installable module is automatically installed by the '
-                                        'system when all its dependencies are satisfied. '
-                                        'If the module has no dependency, it is always installed.')
+                                  help='An auto-installable module is automatically installed by the '
+                                       'system when all its dependencies are satisfied. '
+                                       'If the module has no dependency, it is always installed.')
     license = fields.Selection([
         ('GPL-2', 'GPL Version 2'),
         ('GPL-2 or any later version', 'GPL-2 or later version'),
@@ -78,8 +78,8 @@ class Module(models.Model):
     views_by_module = fields.Text(string='Views')
 
     post_install_action = fields.Reference([
-                                    ('builder.ir.actions.act_window', 'Window'),
-                                    # ('builder.ir.actions.act_url', 'URL'),
+        ('builder.ir.actions.act_window', 'Window'),
+        # ('builder.ir.actions.act_url', 'URL'),
     ], 'After Install Action')
 
     models_count = fields.Integer("Models Count", compute='_compute_models_count', store=False, search=True)
@@ -108,12 +108,43 @@ class Module(models.Model):
     snippet_bookmarklet_url = fields.Char('Link', compute='_compute_snippet_bookmarklet_url')
 
     @api.model
+    def _get_generators(self):
+        return self.env['builder.generator.base'].get_generators()
+
+    generator = fields.Selection(_get_generators, 'Version', required=True)
+    dest_dir  = fields.Char('Directorio',default='/vagrant/custom/addons/')
+    overwrite = fields.Boolean("Overwrite",_default=False)
+
+    @api.model
+    def _get_default_exporter(self):
+        generators = self.env['builder.generator.base'].get_generators()
+        if generators:
+            return generators[0][0]
+
+    @api.multi
+    def action_generate(self):
+        ids = [self.id]
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/builder/generate/{generator}/{ids}'.format(ids=','.join([str(i) for i in ids]),
+                                                                generator=self.generator),
+            'target': 'self'
+        }
+
+    @api.multi
+    def action_create(self):
+        ids = [self.id]
+        modules = self.search([
+            ('id', 'in', ids)
+        ])
+        #filename = "{name}.{ext}".format(name=modules[0].name if len(modules) == 1 else 'modules', ext="zip")
+
+        self.env[self.generator].create_modules(modules)
+
+    @api.model
     def _get_default_author(self):
         return self.env.user.name if self.env.user else None
-
-    _defaults = {
-        'author': _get_default_author
-    }
 
     @api.one
     def copy(self, default=None):
@@ -181,7 +212,7 @@ javascript:(function(){
             'view_type': 'form',
             'view_mode': 'kanban,tree,form',
             'res_model': 'builder.data.file',
-            'views': [(False, 'kanban'),(False, 'tree'), (False, 'form')],
+            'views': [(False, 'kanban'), (False, 'tree'), (False, 'form')],
             'domain': [('module_id', '=', self.id)],
             'search_view_id': search.id if search else False,
             # 'target': 'current',
@@ -468,7 +499,6 @@ javascript:(function(){
             },
         }
 
-
     @api.multi
     def action_website_snippets(self):
 
@@ -534,6 +564,11 @@ javascript:(function(){
     def _import_odoo(self, importer):
         return json.JsonImport(self.env).build(self, decodestring(importer.file))
 
+    _defaults = {
+        'author': _get_default_author,
+        'generator': _get_default_exporter
+    }
+
 
 class DataFile(models.Model):
     _name = 'builder.data.file'
@@ -582,4 +617,5 @@ class DataFile(models.Model):
             self.extension = False
             self.content_type = False
             self.image_small = False
-            self.is_image = False
+            self.is_image=  False
+

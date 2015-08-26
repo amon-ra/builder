@@ -1,6 +1,7 @@
+
 from openerp.addons.web import http
 from openerp.addons.web.controllers.main import content_disposition
-from openerp.addons.web.http import request
+from openerp.addons.web.http import request as request
 
 
 class MainController(http.Controller):
@@ -22,6 +23,21 @@ class MainController(http.Controller):
                 ('Content-Disposition', content_disposition(filename))
             ]
         )
+
+    @http.route('/builder/create/<string:generator>/<string:modules>', type='http', auth="user")
+    def create(self, generator, modules, **kwargs):
+
+        generator = request.env[generator]
+        modules = request.env['builder.ir.module.module'].search([
+            ('id', 'in', modules.split(','))
+        ])
+        #filename = "{name}.{ext}".format(name=modules[0].name if len(modules) == 1 else 'modules', ext="zip")
+
+        generator.create_modules(modules)
+
+        #return request.website.render("builder.module_form",modules[0])
+        #return request.redirect('/')
+
 
     @http.route('/builder/export/<string:exchanger>/<string:modules>', type='http', auth="user")
     def export(self, exchanger, modules, **kwargs):

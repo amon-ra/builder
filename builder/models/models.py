@@ -10,10 +10,12 @@ class IrModel(models.Model):
 
     _rec_name = 'model'
 
+    is_nested = fields.Boolean ('Nested Model Set')
     sequence = fields.Integer('Sequence')
     module_id = fields.Many2one('builder.ir.module.module', 'Module', required=True, select=1, ondelete='cascade')
     name = fields.Char('Description', required=True)
     model = fields.Char('Model', required=True, select=1)
+
     info = fields.Text('Information')
     rec_name_field_id = fields.Many2one('builder.ir.model.fields', 'Record Name', compute='_compute_rec_name_field_id',
                                         inverse='_inverse_rec_name_field_id',
@@ -248,6 +250,8 @@ class IrModel(models.Model):
             },
         }
 
+    #def write(self, cr, uid, ids, vals, context=None):
+    #    return super(builder_ir_model, self).write(cr, uid, ids, vals, context)
 
 class ModelMethod(models.Model):
     _name = 'builder.ir.model.method'

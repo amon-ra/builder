@@ -2,8 +2,10 @@ from ..fields import snake_case
 from openerp import models, fields, api
 from .base import FIELD_WIDGETS_ALL
 
-__author__ = 'one'
+import logging
+logger = logging.getLogger(__name__)
 
+__author__ = 'one'
 
 class TreeView(models.Model):
     _name = 'builder.views.tree'
@@ -41,6 +43,7 @@ class TreeView(models.Model):
     def action_save(self):
         return {'type': 'ir.actions.act_window_close'}
 
+
     @api.onchange('model_id')
     def _onchange_model_id(self):
         model_id = self.model_id
@@ -57,10 +60,9 @@ class TreeView(models.Model):
                 if field.is_inherited and not self.env.context.get('add_inherited_fields', True):
                     continue
                 field_list.append({'field_id': field.id, 'field_ttype': field.ttype, 'model_id': model_id.id,
-                                   'special_states_field_id': model_id.special_states_field_id.id})
+                                    'special_states_field_id': model_id.special_states_field_id.id})
 
             self.field_ids = field_list
-
 
 class TreeField(models.Model):
     _name = 'builder.views.tree.field'
@@ -76,10 +78,7 @@ class TreeField(models.Model):
     readonly = fields.Boolean('Readonly')
     domain = fields.Char('Domain')
 
-    @api.one
-    @api.depends('field_id.ttype', 'view_id')
-    def _compute_field_type(self):
-        if self.field_id:
-            self.field_ttype = self.field_id.ttype
+
+
 
 

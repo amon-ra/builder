@@ -102,7 +102,8 @@
                                 <field name="author" class="oe_inline"/>
                             </h3>
                             <div>
-                                <button name="%(builder.act_builder_ir_module_module_generate_wizard)s" string="Download" type="action" id="button_download" class="oe_highlight"/>
+                                <button string="Download" name="action_generate" type="object" id="button_download" class="oe_highlight"/>
+                                <button string="Build local" name="action_create" type="object" id="button_builder_create" class="oe_highlight"/>
                             </div>
                         </div>
                         <div class="oe_clear"/>
@@ -113,12 +114,15 @@
                                         <field name="website" widget="url"/>
                                         <field name="category_id" widget="selection"/>
                                         <field name="summary"/>
+                                        <field name="dest_dir"/>
+                                        <field name="overwrite" />
                                     </group>
                                     <group>
                                         <field name="id" readonly="1" invisible="1"/>
                                         <field name="name"/>
                                         <field name="license"/>
                                         <field name="version"/>
+                                        <field name="generator"/>
                                     </group>
                                 </group>
                                 <field name="description_html" class='oe_styling_v8'/>
@@ -283,7 +287,6 @@
                                     </page>
                                 </notebook>
                             </page>
-
                         </notebook>
                     </sheet>
                 </form>
