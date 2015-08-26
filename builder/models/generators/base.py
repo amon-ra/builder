@@ -3,6 +3,7 @@ import os
 
 from ..utils.jinja2.utils import groups_attribute, field_options, field_attrs
 from ..utils.zip import ZipFile, ModuleZipFile
+from ..utils.local import LocalDir,ModuleLocalFile
 from openerp import models, api
 
 
@@ -64,6 +65,18 @@ class GeneratorBase(models.TransientModel):
         [self.generate_module(ModuleZipFile(zip_file, module), module) for module in modules]
 
         return zip_file.get_zip()
+
+    @api.model
+    def create_modules(self, modules):
+        jinja_env = self.create_jinja_env()
+
+        jinja_env.globals.update(self.get_jinja_globals())
+        jinja_env.filters.update(self.get_jinja_filters())
+
+        local_file = LocalDir(jinja_env)
+        [self.generate_module(ModuleLocalFile(local_file, module), module) for module in modules]
+
+        return True
 
     @api.model
     def generate_module(self, zip_file, module):

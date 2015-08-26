@@ -111,10 +111,6 @@ class Module(models.Model):
     def _get_default_author(self):
         return self.env.user.name if self.env.user else None
 
-    _defaults = {
-        'author': _get_default_author
-    }
-
     @api.one
     def copy(self, default=None):
         default = dict(default or {})
@@ -533,6 +529,46 @@ javascript:(function(){
     @api.model
     def _import_odoo(self, importer):
         return json.JsonImport(self.env).build(self, decodestring(importer.file))
+
+    @api.model
+    def _get_generators(self):
+        return self.env['builder.generator.base'].get_generators()
+
+    generator = fields.Selection(_get_generators, 'Version', required=True)
+    dest_dir  = fields.Char('Directorio',default='/vagrant/custom/addons/')
+    overwrite = fields.Boolean("Overwrite",_default=False)
+
+    @api.model
+    def _get_default_exporter(self):
+        generators = self.env['builder.generator.base'].get_generators()
+        if generators:
+            return generators[0][0]
+
+    @api.multi
+    def action_generate(self):
+        ids = [self.id]
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/builder/generate/{generator}/{ids}'.format(ids=','.join([str(i) for i in ids]),
+                                                                generator=self.generator),
+            'target': 'self'
+        }
+
+    @api.multi
+    def action_create(self):
+        ids = [self.id]
+        modules = self.search([
+            ('id', 'in', ids)
+        ])
+        #filename = "{name}.{ext}".format(name=modules[0].name if len(modules) == 1 else 'modules', ext="zip")
+
+        self.env[self.generator].create_modules(modules)
+
+    _defaults = {
+        'author': _get_default_author,
+        'generator': _get_default_exporter
+    }
 
 
 class DataFile(models.Model):
