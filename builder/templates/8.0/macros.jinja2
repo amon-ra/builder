@@ -35,9 +35,13 @@ class {{ class_name }}(models.TransientModel):
                     or
                     <button string="Cancel" type="object" name="cancel" class="oe_link"></button>
                 </header>
+                <sheet>
+                <group col="4">
                 {% for field in model.field_ids %}
                 <field name="{{ field.name }}" ></field>
                 {% endfor %}
+                </group>
+                </sheet>
             </form>
         </field>
     </record>
