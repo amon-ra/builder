@@ -78,7 +78,7 @@
                                             <group>
                                                 <field name="ttype"/>
                                             </group>
-                                            <group></group>
+                                            <group><field name="help"/></group>
                                         </group>
                                         <notebook>
                                             <page string="General">
@@ -230,7 +230,6 @@
                                 <group>
                                     <group string="Inherit">
                                         <field nolabel="1" name="inherit_model_ids"
-                                               domain="[('module_id', '=', module_id)]"
                                                context="{'default_module_id': module_id, 'default_model_id': id}">
                                             <tree>
                                                 <!--<field name="sequence" widget="handle"/>-->
@@ -240,7 +239,6 @@
                                     </group>
                                     <group string="Inherits">
                                         <field nolabel="1" name="inherits_model_ids"
-                                               domain="[('module_id', '=', module_id)]"
                                                context="{'default_module_id': module_id, 'default_model_id': id}">
                                             <tree>
                                                 <field name="sequence" widget="handle"/>
@@ -346,7 +344,7 @@
                         <group>
                             <field name="module_id" invisible="1"/>
                             <field name="model_source"/>
-                            <field name="module_model_id" domain="[('module_id', '=', module_id)]"
+                            <field name="module_model_id"
                                    attrs="{'invisible': [('model_source', 'not in', ['module'])], 'readonly': [('model_source', 'not in', ['module'])], 'required': [('model_source', 'in', ['module'])]}"/>
                             <field name="system_model_id"
                                    attrs="{'invisible': [('model_source', 'not in', ['system'])], 'readonly': [('model_source', 'not in', ['system'])], 'required': [('model_source', 'in', ['system'])]}"/>
@@ -371,7 +369,7 @@
                             <field name="module_id" invisible="1"/>
                             <field name="model_id" invisible="1"/>
                             <field name="model_source"/>
-                            <field name="module_model_id" domain="[('module_id', '=', module_id)]"
+                            <field name="module_model_id"
                                    attrs="{'invisible': [('model_source', 'not in', ['module'])], 'readonly': [('model_source', 'not in', ['module'])], 'required': [('model_source', 'in', ['module'])]}"/>
                             <field name="system_model_id"
                                    attrs="{'invisible': [('model_source', 'not in', ['system'])], 'readonly': [('model_source', 'not in', ['system'])], 'required': [('model_source', 'in', ['system'])]}"/>

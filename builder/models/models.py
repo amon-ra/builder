@@ -10,6 +10,7 @@ class IrModel(models.Model):
 
     _rec_name = 'model'
 
+    is_nested = fields.Boolean ('Nested Model Set')
     sequence = fields.Integer('Sequence')
     module_id = fields.Many2one('builder.ir.module.module', 'Module', required=True, select=1, ondelete='cascade')
     name = fields.Char('Description', required=True)

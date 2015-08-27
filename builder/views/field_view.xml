@@ -23,6 +23,7 @@
                                    attrs="{'invisible': [['use_to_order', '=', False]], 'required': [['use_to_order', '=', True]]}"/>
                             <field name="ttype" invisible="1"/>
                             <field name="relation_ttype" required="1" readonly="0"/>
+                            <field name="help"/>
                         </group>
                     </group>
                     <notebook>

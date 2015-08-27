@@ -21,7 +21,7 @@
                     </group>
                     <notebook>
                         <page string="Items" attrs="{'invisible': [('inherit_view', '=', True)]}">
-                            <field name="field_ids" nolabel="1" domain="[('model_id', '=', model_id)]" context="{'default_wizard_id': id}">
+                            <field name="field_ids" nolabel="1" domain="[('model_id', '=', model_id)]" context="{'default_model_id': model_id,'default_wizard_id': id}">
                                 <tree string="Items" >
                                     <field name="sequence" widget="handle" />
                                     <field name="type" />
@@ -99,11 +99,12 @@
                             <field name="special_states_field_id" invisible="1"/>
                             <field name="model_id" invisible="1"/>
                             <field name="field_ttype" invisible="1" />
+                            <field name="field_model" />
                             <field name="type"/>
-                            <field name="field_id" domain="[('model_id', '=', model_id)]" options="{'no_create': True}" attrs="{'invisible': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['field'])], 'readonly': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['field'])], 'required': [('type', 'in', ['field'])]}"/>
+                            <field name="field_id" domain="[('model_id', '=', field_model)]" options="{'no_create': True}" attrs="{'invisible': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['field'])], 'readonly': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['field'])], 'required': [('type', 'in', ['field'])]}"/>
                             <field name="attr_string" attrs="{'required': [('type', 'in', ['filter'])], 'invisible': [('type', 'in', ['separator'])]}"/>
                             <field name="attr_name" attrs="{'invisible': [('type', 'in', ['separator', 'field'])]}"/>
-                            <field name="group_field_id" domain="[('model_id', '=', model_id)]" options="{'no_create': True}" attrs="{'invisible': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['filter'])], 'readonly': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['filter'])]}"/>
+                            <field name="group_field_id" domain="[('model_id', '=', field_model)]" options="{'no_create': True}" attrs="{'invisible': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['filter'])], 'readonly': ['|', ('type', 'in', ['separator']), ('type', 'not in', ['filter'])]}"/>
                         </group>
                         <group>
                             <field name="group" />

@@ -41,7 +41,7 @@
                             </group>
                         </page>
                         <page string="Fields" attrs="{'invisible': [('inherit_view', '=', True)]}">
-                            <field name="field_ids" nolabel="1" domain="[('model_id', '=', model_id)]">
+                            <field name="field_ids" nolabel="1">
                                 <tree string="Fields"
                                       context="{'default_special_states_field_id': parent.special_states_field_id, 'default_model_id': model_id}">
                                     <field name="sequence" widget="handle"/>
@@ -205,7 +205,8 @@
                         <group>
                             <field name="special_states_field_id" invisible="1"/>
                             <field name="model_id" invisible="1"/>
-                            <field name="field_id" domain="[('model_id', '=', model_id)]"
+                            <field name="field_model" />
+                            <field name="field_id" domain="[('model_id', '=', field_model)]"
                                    options="{'no_create': True}"/>
                             <field name="field_ttype" invisible="1"/>
                             <field name="widget"/>
