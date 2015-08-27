@@ -78,7 +78,7 @@
                                             <group>
                                                 <field name="ttype"/>
                                             </group>
-                                            <group></group>
+                                            <group><field name="help"/></group>
                                         </group>
                                         <notebook>
                                             <page string="General">
