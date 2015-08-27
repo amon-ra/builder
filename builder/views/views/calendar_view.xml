@@ -16,7 +16,6 @@
                         </group>
                         <group>
                             <field name="inherit_view" attrs="{'invisible': [('model_inherit_type', '=', False)]}"/>
-                            <field name="field_model" />
                         </group>
                     </group>
                     <notebook>
@@ -25,23 +24,23 @@
                                 <group string="Date Settings">
                                     <field name="attr_date_start_ttype" invisible="1"/>
                                     <field name="attr_date_start_field_id" required="1"
-                                           domain="[('model_id', '=', field_model), ('ttype', 'in', ['date', 'datetime'])]"
+                                           domain="[('model_id', '=', model_id), ('ttype', 'in', ['date', 'datetime'])]"
                                            options="{'no_create': True}"/>
                                     <field name="attr_date_stop_field_id"
-                                           domain="[('model_id', '=', field_model), ('ttype', 'in', ['date', 'datetime'])]"
+                                           domain="[('model_id', '=', model_id), ('ttype', 'in', ['date', 'datetime'])]"
                                            options="{'no_create': True}"/>
                                     <field name="attr_day_length_field_id"
-                                           domain="[('model_id', '=', field_model), ('ttype', 'in', ['integer', 'float'])]"
+                                           domain="[('model_id', '=', model_id), ('ttype', 'in', ['integer', 'float'])]"
                                            options="{'no_create': True}"/>
                                     <field name="attr_date_delay_field_id"
-                                           domain="[('model_id', '=', field_model), ('ttype', 'in', ['integer', 'float'])]"
+                                           domain="[('model_id', '=', model_id), ('ttype', 'in', ['integer', 'float'])]"
                                            options="{'no_create': True}"/>
                                     <field name="attr_all_day"
                                            attrs="{'invisible': [('attr_date_start_ttype', 'in', ['date'])]}"/>
                                 </group>
                                 <group string="Other Settings">
                                     <field name="attr_color_ttype" invisible="1"/>
-                                    <field name="attr_color_field_id" domain="[('model_id', '=', field_model)]"
+                                    <field name="attr_color_field_id" domain="[('model_id', '=', model_id)]"
                                            options="{'no_create': True}"/>
                                     <field name="attr_color_is_attendee"
                                            attrs="{'invisible': ['|', ('attr_color_ttype', 'not in', ['one2many', 'many2many', 'many2one']), ('attr_color_field_id', '=', False)], 'readonly': ['|', ('attr_color_ttype', 'not in', ['one2many', 'many2many', 'many2one']), ('attr_color_field_id', '=', False)]}"/>
@@ -56,7 +55,7 @@
 
                         </page>
                         <page string="Fields" attrs="{'invisible': [('inherit_view', '=', True)]}">
-                            <field name="field_ids" nolabel="1" domain="[('model_id', '=', field_model)]">
+                            <field name="field_ids" nolabel="1" domain="[('model_id', '=', model_id)]">
                                 <tree string="Fields"
                                       context="{'default_special_states_field_id': parent.special_states_field_id}">
                                     <field name="sequence" widget="handle"/>

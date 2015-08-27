@@ -260,16 +260,25 @@ class AbstractViewField(models.AbstractModel):
         """
         global MODEL_FIELD_ID
         logger.debug("Selection created")
+        logger.debug(self._context)
         cm = self._context.get('default_model_id')
+        current_id = self._context.get('uid')
+        if not current_id:
+            current_id = 0
         if cm:
             model_id = self.env['builder.ir.model'].search([('id','=',cm)])
-            MODEL_FIELD_ID[cm] = [(model_id.id,model_id.display_name)]
+            MODEL_FIELD_ID[current_id] = [(model_id.id,model_id.display_name)]
             for m in model_id.inherit_model_ids:
-                MODEL_FIELD_ID[cm].append((m.module_model_id.id,m.model_display))
+                MODEL_FIELD_ID[current_id].append((m.module_model_id.id,m.model_display))
+            logger.debug("calculated")
             logger.debug(MODEL_FIELD_ID)
-            return MODEL_FIELD_ID[cm]
+            #logger.debug(MODEL_FIELD_ID)
+            return MODEL_FIELD_ID[current_id]
         else:
             logger.debug(MODEL_FIELD_ID)
-            return []
+            try:
+                return MODEL_FIELD_ID[current_id]
+            except:
+                return []
 
     field_model = fields.Selection(_calculate_models, string='Model')
