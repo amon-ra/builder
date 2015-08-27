@@ -43,7 +43,7 @@
                             <group>
                                 <field name="rec_name_field_id"
                                        domain="[('model_id', '=', id), ('ttype', 'in', ['char', 'text', 'date', 'datetime', 'selection'])]"/>
-
+                                <field name="is_nested"/>
                             </group>
                         </group>
                         <notebook>
