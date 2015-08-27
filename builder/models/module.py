@@ -544,7 +544,7 @@ javascript:(function(){
         if generators:
             return generators[0][0]
 
-    @api.multi
+    @api.one
     def action_generate(self):
         ids = [self.id]
 
@@ -555,7 +555,7 @@ javascript:(function(){
             'target': 'self'
         }
 
-    @api.multi
+    @api.one
     def action_create(self):
         ids = [self.id]
         modules = self.search([
@@ -564,6 +564,7 @@ javascript:(function(){
         #filename = "{name}.{ext}".format(name=modules[0].name if len(modules) == 1 else 'modules', ext="zip")
 
         self.env[self.generator].create_modules(modules)
+
 
     _defaults = {
         'author': _get_default_author,
