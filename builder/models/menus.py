@@ -167,11 +167,14 @@ class IrUiMenu(models.Model):
             parent_path = self.parent_id._get_full_name_one(level-1) + MENU_ITEM_SEPARATOR
         elif self.parent_ref:
             if self.parent_menu_id:
-                parent_path = '[{name}]'.format(name=self.parent_menu_id.complete_name) + MENU_ITEM_SEPARATOR
+                parent_path = '[{name}]'.format(name=self.parent_menu_id.complete_name.encode('utf-8')) + MENU_ITEM_SEPARATOR
             else:
                 parent_path = '[{ref}]'.format(ref=self.parent_ref) + MENU_ITEM_SEPARATOR
 
-        return (parent_path + self.name) if self.name else False
+        try:
+            return parent_path + self.name.encode('utf-8')
+        except:
+            return False
 
     @api.one
     def name_get(self):
