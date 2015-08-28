@@ -177,6 +177,8 @@
                                                     icon="fa-magic" context="{}"/>
                                             <button class="oe_inline oe_stat_button" string="Import Models" name="%(act_builder_ir_model_import_wizard)d" type="action"
                                                     icon="fa-reply" context="{}"/>
+                                            <button class="oe_inline oe_stat_button" string="Import Local Models" name="%(act_builder_ir_model_import_wizard)d" type="action"
+                                                    icon="fa-reply" context="{}"/>
                                         </div>
                                         <field name="model_ids" editable="bottom" context="{'default_module_id': active_id}">
                                             <tree string="Models" context="{'default_module_id': active_id}">

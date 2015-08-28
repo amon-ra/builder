@@ -19,6 +19,9 @@
                     <group>
                         <field name="model_ids" />
                     </group>
+                    <group>
+                        <field name="local_model_ids" domain="['|',('inherit_type','not like','class'),('inherit_type','=',False)]" />
+                    </group>
                     <footer>
                         <button name="action_import" string="Import" type="object" class="oe_highlight"/>
                         or

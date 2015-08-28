@@ -15,7 +15,9 @@ class ModelLine(models.TransientModel):
 class ModelImport(models.TransientModel):
     _name = 'builder.ir.model.import.wizard'
 
-    model_ids = fields.Many2many('ir.model', 'builder_ir_model_import_wizard_model_rel', 'wizard_id', 'model_id', 'Models')
+    model_ids = fields.Many2many('ir.model', 'builder_ir_model_import_wizard_model_rel', 'wizard_id', 'model_id', 'System Models')
+    local_model_ids = fields.Many2many('builder.ir.model', 'builder_builder_ir_model_import_wizard_model_rel', 'wizard_id', 'model_id', 'Module Models')
+
     exclude_fields = fields.Boolean('Exclude Fields')
     create_fields = fields.Boolean('Include Fields')
     relations_only = fields.Boolean('Relations Only')
@@ -30,7 +32,7 @@ class ModelImport(models.TransientModel):
         for model in model_items:
             module_model = self.env['builder.ir.model'].search([('module_id', '=', module.id), ('model', '=', model.model)])
 
-            for field in model.field_id:
+            for field in model.field_ids:
                 if not self.set_inherited and self.exclude_auto_fields and field.name in ['id', 'write_date', 'create_date']:
                     continue
 
@@ -102,7 +104,28 @@ class ModelImport(models.TransientModel):
 
                 model_map[model.model] = new_model
 
+        for model in self.local_model_ids:
+            module_model = self.env['builder.ir.model'].search([('module_id', '=', module.id), ('model', '=', model.model)])
+
+            if model.module_id:
+                module.add_dependency(model.module_id.name)
+
+            if not module_model.id:
+                new_model = model_obj.create({
+                    'module_id': self.env.context.get('active_id'),
+                    'name': model.name,
+                    'model': model.model,
+                    'osv_memory': model.osv_memory,
+                    # 'inherit_model': self.set_inherited and model.model or False
+                })
+
+                if self.set_inherited:
+                    new_model['inherit_model_ids'] = [{'model_source': 'system', 'system_model_id': model.id, 'system_model_name': model.model}]
+
+                model_map[model.model] = new_model
+
         if (self.set_inherited and not self.exclude_fields) or (not self.set_inherited and (self.create_fields or self.relations_only) ):
             self._create_model_fields(module, self.model_ids, model_map, self.relations_only)
+            self._create_model_fields(module, self.local_model_ids, model_map, self.relations_only)
 
         return {'type': 'ir.actions.act_window_close'}
