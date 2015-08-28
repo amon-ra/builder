@@ -44,8 +44,9 @@ class IrFields(models.Model):
     relation = fields.Char('Object Relation',
                            help="For relationship fields, the technical name of the target model")
 
-    relation_model_id = fields.Reference([('builder.ir.model', 'Model'),('ir.model','System Model')], 'Model',
-                                         ondelete='set null')
+    #relation_model_id = fields.Reference([('builder.ir.model', 'Model'),('ir.model','System Model')], 'Model',
+    #                                     ondelete='set null')
+    relation_model_id =  fields.Many2one('builder.ir.model', 'Model', ondelete='set null')
 
     relation_many2many_comodel_name = fields.Char('Comodel Name')
     relation_many2many_relation = fields.Char('Relation Name')
