@@ -35,9 +35,13 @@ class {{ class_name }}(models.TransientModel):
                     or
                     <button string="Cancel" type="object" name="cancel" class="oe_link"></button>
                 </header>
+                <sheet>
+                <group col="4">
                 {% for field in model.field_ids %}
                 <field name="{{ field.name }}" ></field>
                 {% endfor %}
+                </group>
+                </sheet>
             </form>
         </field>
     </record>
@@ -270,6 +274,11 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
         {%- if field.allow_inverse -%} inverse='{{ field.inverse_method_name }}',{%- endif -%}
         {%- if field.allow_search -%} search='{{ field.search_method_name }}',{%- endif -%}
         {%- if field.allow_default -%} default='{{ field.default_method_name }}',{%- endif -%})
+    {%  if field.is_nested and field.name == 'parent_id' %}
+    _parent_store = True
+    parent_left = fields.Integer ('Parent Left',index=True)
+    parent_right = fields.Integer ('Parent right',index=True)
+    {% endif %}
     {% endif -%}
 {%- endmacro %}
 

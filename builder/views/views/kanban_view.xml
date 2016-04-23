@@ -36,7 +36,7 @@
 
                         </page>
                         <page string="Fields" attrs="{'invisible': [('inherit_view', '=', True)]}">
-                            <field name="field_ids" domain="[('model_id', '=', model_id)]"/>
+                            <field name="field_ids" context="{'default_model_id': model_id}"/>
                         </page>
                         <page string="Template" attrs="{'invisible': [('inherit_view', '=', True)]}">
                             <field name="attr_template" nolabel="1" widget="ace" theme="tomorrow" mode="xml"
@@ -102,6 +102,22 @@
             <field name="model">builder.views.kanban.field</field>
             <field name="arch" type="xml">
                 <form string="Fields">
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_builder_views_kanban_field">
+            <field name="name">builder.views.kanban.field</field>
+            <field name="model">builder.views.kanban.field</field>
+            <field name="arch" type="xml">
+                <form string="Fields">
+                    <group>
+                            <field name="model_id" invisible="1"/>
+                            <field name="field_model" />
+                            <field name="field_id"
+                                   domain="[('model_id', '=', field_model), ('ttype', 'not in', ['one2many', 'many2many'])]"
+                                   options="{'no_create': True}"/>
+                    </group>
                 </form>
             </field>
         </record>

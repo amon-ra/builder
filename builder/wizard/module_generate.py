@@ -29,3 +29,15 @@ class ModuleGenerate(models.TransientModel):
             'url': '/builder/generate/{generator}/{ids}'.format(ids=','.join([str(i) for i in ids]), generator=self.generator),
             'target': 'self'
         }
+
+    @api.multi
+    def action_create(self):
+        ids = self.env.context.get('active_ids') or ([self.env.context.get('active_id')] if self.env.context.get('active_id') else [])
+        modules = self.search([
+            ('id', 'in', ids)
+        ])
+        #filename = "{name}.{ext}".format(name=modules[0].name if len(modules) == 1 else 'modules', ext="zip")
+
+        self.env[self.generator].create_modules(modules)
+
+        return {'type': 'ir.actions.act_window_close'}
