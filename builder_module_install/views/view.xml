@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="builder_ir_module_module_form_view">
+            <field name="name">builder.ir.module.module.form</field>
+            <field name="model">builder.ir.module.module</field>
+            <field name="inherit_id" ref="builder.module_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@id='button_download']" position="after">
+                    <field name="system_module_state" invisible="1"/>
+                    <button name="button_install" string="Install" type="object" class="oe_highlight" attrs="{'invisible': [('system_module_state', 'not in', ['missing', 'uninstalled'])]}"/>
+                    <button name="button_upgrade" string="Upgrade" type="object" class="oe_highlight" attrs="{'invisible': [('system_module_state', 'not in', ['installed'])]}"/>
+                    <button name="button_uninstall" string="Uninstall" type="object" attrs="{'invisible': [('system_module_state', 'not in', ['installed'])]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
