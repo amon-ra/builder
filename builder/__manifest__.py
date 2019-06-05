@@ -86,7 +86,7 @@ This module aims to help in the development of new modules
         'views/data_view.xml',
         'views/security_view.xml',
         'views/cron_view.xml',
-        'views/workflow_view.xml',
+        # 'views/workflow_view.xml',
         'views/menu.xml',
 
         'views/backend_assets.xml',
@@ -94,7 +94,7 @@ This module aims to help in the development of new modules
         'views/designer/website_page_designer.xml',
         'views/designer/designer_snippets.xml',
 
-        'security/ir.model.access.csv',
+        # 'security/ir.model.access.csv',
     ],
     'test': [
         'test/test_demo.yml',

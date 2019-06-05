@@ -19,8 +19,9 @@
             <field name="name">builder.res.config.settings.form</field>
             <field name="model">builder.res.config.settings</field>
             <field name="arch" type="xml">
-                <form string="Config View">
+                <form string="Config View"> 
                     <sheet>
+                    <field name="module_id" invisible="1"/>
                         <div class="oe_right oe_button_box" name="buttons"
                              invisible="not context.get('active_id', False)">
                             <button class="oe_inline oe_stat_button" string="Fields" name="action_fields" type="object"
@@ -28,7 +29,7 @@
                         </div>
                         <group>
                             <group>
-                                <field name="module_id" invisible="1"/>
+                                
                                 <field name="model"/>
                             </group>
                             <group>
@@ -71,7 +72,7 @@
                                                 </group>
                                             </page>
                                             <page string="Groups" attrs="{'invisible': [('setting_field_type', 'not in', ['group'])]}">
-                                                <field name="group_ids" domain="[('module_id', '=', module_id)]" attrs="{'required': [('setting_field_type', 'in', ['group'])]}"/>
+                                                <field name="group_ids" domain="[('module_id', '=', toggle_module_id)]" attrs="{'required': [('setting_field_type', 'in', ['group'])]}"/>
                                             </page>
                                             <page string="Implied Group"
                                                   attrs="{'invisible': [('setting_field_type', 'not in', ['group'])]}" >
@@ -250,7 +251,7 @@
                                 </group>
                             </page>
                             <page string="Groups" attrs="{'invisible': [('setting_field_type', 'not in', ['group'])]}">
-                                <field name="group_ids" domain="[('module_id', '=', module_id)]" attrs="{'required': [('setting_field_type', 'in', ['group'])]}"/>
+                                <field name="group_ids" domain="[('module_id', '=', toggle_module_id)]" attrs="{'required': [('setting_field_type', 'in', ['group'])]}"/>
                             </page>
                             <page string="Implied Group"
                                   attrs="{'invisible': [('setting_field_type', 'not in', ['group'])]}" >

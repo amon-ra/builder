@@ -12,6 +12,8 @@
                             <field name="model_name" invisible="1"/>
                             <field name="model_inherit_type" invisible="1"/>
                             <field name="name"/>
+                            <field name="type" invisible="1"/>
+                            <field name="special_states_field_id"  invisible="1"/>                            
                             <field name="xml_id"/>
 
                         </group>

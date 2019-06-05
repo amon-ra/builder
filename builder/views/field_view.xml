@@ -11,7 +11,7 @@
                         <group>
                             <field name="name"/>
                             <field name="field_description"/>
-                            <!--<field name="module_id" invisible="1"/>-->
+                            <field name="module_id" invisible="1"/>
                             <field name="model_id" invisible="1"/>
                             <field name="relation_model_id" invisible="1"/>
                             <field name="special_states_field_id" invisible="1"/>

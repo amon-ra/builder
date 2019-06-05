@@ -153,7 +153,7 @@
                                                 <field name="states_ids" mode="tree">
                                                     <tree editable="bottom">
                                                         <field name="state_id"
-                                                               domain="[('field_id.model_id', '=', parent.model_id)]"
+                                                               domain="[('field_id.model_id', '=', parent.id)]"
                                                                options="{'no_open': True}"/>
                                                         <field name="required"/>
                                                         <field name="readonly"/>

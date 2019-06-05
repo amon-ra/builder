@@ -13,7 +13,7 @@ from . import (
     security,
     data,
     cron,
-    workflow,
+    # workflow,
     res_config_model,
     generators,
     exchangers,

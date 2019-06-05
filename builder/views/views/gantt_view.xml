@@ -11,6 +11,7 @@
                             <field name="model_id" invisible="1"/>
                             <field name="model_name" invisible="1"/>
                             <field name="model_inherit_type" invisible="1"/>
+                            <field name="type" invisible="1"/>
                             <field name="name"/>
                             <field name="xml_id"/>
 

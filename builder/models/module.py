@@ -101,7 +101,7 @@ class Module(models.Model):
     action_ids = fields.One2many('builder.ir.actions.actions', 'module_id', 'Actions', copy=True)
     action_window_ids = fields.One2many('builder.ir.actions.act_window', 'module_id', 'Window Actions', copy=True)
     action_url_ids = fields.One2many('builder.ir.actions.act_url', 'module_id', 'URL Actions', copy=True)
-    workflow_ids = fields.One2many('builder.workflow', 'module_id', 'Workflows', copy=True)
+    # workflow_ids = fields.One2many('builder.workflow', 'module_id', 'Workflows', copy=True)
     backend_asset_ids = fields.One2many('builder.web.asset', 'module_id', 'Assets', copy=True)
 
     data_file_ids = fields.One2many('builder.data.file', 'module_id', 'Data Files', copy=True)

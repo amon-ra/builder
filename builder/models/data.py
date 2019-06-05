@@ -19,7 +19,7 @@ def utf_8_encoder(unicode_csv_data):
 
 
 class Lambda(models.Model):
-    _name = b'builder.lambda'
+    _name = 'builder.lambda'
 
     name = fields.Char(string='Name', required=True)
     code = fields.Text(string='Code', required=True)
@@ -40,12 +40,12 @@ class Lambda(models.Model):
 
 
 class ModelDataAttributeProcess(models.Model):
-    _name = b'builder.model.data.change'
+    _name = 'builder.model.data.change'
 
     sequence = fields.Integer('Sequence')
     name = fields.Char(string='Name', related='lambda_id.name')
     attribute_id = fields.Many2one(
-        comodel_name=b'builder.model.data.attribute',
+        comodel_name='builder.model.data.attribute',
         string='Attribute',
         ondelete='cascade',
         required=True,
@@ -53,7 +53,7 @@ class ModelDataAttributeProcess(models.Model):
     )
 
     lambda_id = fields.Many2one(
-        comodel_name=b'builder.lambda',
+        comodel_name='builder.lambda',
         string='Lambda',
         ondelete='cascade',
         required=True,
@@ -67,14 +67,14 @@ ATTRIBUTE_PATTERN = re.compile('[\w_]+')
 
 
 class ModelDataAttribute(models.Model):
-    _name = b'builder.model.data.attribute'
+    _name = 'builder.model.data.attribute'
 
     name = fields.Char(string='Input Attribute', required=True)
     model_attr = fields.Char(string='Model Attribute')
     filters = fields.Char(string='Filters')
     xml_attr = fields.Char(string='XML Attribute')
     model_id = fields.Many2one(
-        comodel_name=b'builder.model.data',
+        comodel_name='builder.model.data',
         string='File',
         ondelete='cascade',
         domain=[],
@@ -83,7 +83,7 @@ class ModelDataAttribute(models.Model):
     xml_id = fields.Boolean('XML ID', default=False)
 
     change_ids = fields.One2many(
-        comodel_name=b'builder.model.data.change',
+        comodel_name='builder.model.data.change',
         inverse_name='attribute_id',
         string='Filters', copy=True
     )
@@ -125,24 +125,24 @@ XML_TEMPLATE = Template("""<?xml version="1.0"?>
 
 
 class ModelData(models.Model):
-    _name = b'builder.model.data'
+    _name = 'builder.model.data'
 
-    module_id = fields.Many2one(b'builder.ir.module.module', 'Module', ondelete='cascade', required=True)
+    module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade', required=True)
     name = fields.Char(string='Name', required=True)
-    model_id = fields.Many2one(b'builder.ir.model', 'Model', ondelete='set null')
+    model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='set null')
     model = fields.Char(string='Model ID', required=True)
     input_file = fields.Binary('File', required=True)
     input_text = fields.Text('File Text', compute='_compute_input_text', store=True)
     importer = fields.Selection(selection='_get_importer_selection', string='Importer', required=True)
 
     key_id = fields.Many2one(
-        comodel_name=b'builder.model.data.attribute',
+        comodel_name='builder.model.data.attribute',
         string='Key',
         compute='_compute_key_id'
     )
 
     attribute_ids = fields.One2many(
-        comodel_name=b'builder.model.data.attribute',
+        comodel_name='builder.model.data.attribute',
         inverse_name='model_id',
         string='Attributes', copy=True
     )
@@ -222,7 +222,7 @@ class ModelData(models.Model):
 
     # @api.one
     def compute_xml_id(self, data):
-        key = self.env[b'builder.model.data.attribute'].search([
+        key = self.env['builder.model.data.attribute'].search([
             ('model_id', '=', self.id),
             ('xml_id', '=', True)
         ])
@@ -230,7 +230,7 @@ class ModelData(models.Model):
 
 
 class Module(models.Model):
-    _name = b'builder.ir.module.module'
-    _inherit = [b'builder.ir.module.module']
+    _name = 'builder.ir.module.module'
+    _inherit = ['builder.ir.module.module']
 
-    data_ids = fields.One2many(b'builder.model.data', b'module_id', 'Data', copy=True)
+    data_ids = fields.One2many('builder.model.data', 'module_id', 'Data', copy=True)
