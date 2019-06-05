@@ -1,0 +1,13 @@
+from odoo.addons.web import http
+from odoo.addons.web.controllers.main import content_disposition
+from odoo.addons.web.http import request
+import logging
+_logger = logging.getLogger(__name__)
+
+class MainController(http.Controller):
+    {% for page in pages %}
+    @http.route('{{ page.controller_route }}', type='http', auth="public", website=True)
+    def page{{ loop.index }}(self, **kwargs):
+
+        return request.website.render('{{ page.module_id.name }}.{{ page.attr_id }}', {})
+    {% endfor %}

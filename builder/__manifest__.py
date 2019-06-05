@@ -97,7 +97,7 @@ This module aims to help in the development of new modules
         # 'security/ir.model.access.csv',
     ],
     'test': [
-        'test/test_demo.yml',
+        # 'test/test_demo.yml',
     ],
     'images': [
         'static/description/module_info.png',

@@ -124,6 +124,10 @@
                                     </ul>
                                 </li>
                             </ul>
+                            <div id="button_download_container">
+                                <button name="%(builder.act_builder_ir_module_module_generate_wizard)s" style="margin-right:2px;"
+                                        string="Download" type="action" id="button_download" class="oe_highlight"/>
+                            </div>                            
                         </div>
 
                         <field name="icon_image" widget="image" filename="icon_image_name" class="oe_avatar oe_left"/>
@@ -135,10 +139,7 @@
                                 By
                                 <field name="author" class="oe_inline"/>
                             </h3>
-                            <div>
-                                <button name="%(builder.act_builder_ir_module_module_generate_wizard)s"
-                                        string="Download" type="action" id="button_download" class="oe_highlight"/>
-                            </div>
+
                         </div>
                         <div class="oe_clear"/>
                         <notebook>
@@ -371,6 +372,7 @@
             <field name="model">builder.ir.module.module</field>
             <field name="arch" type="xml">
                 <kanban>
+                    <field name='id' invisible="1" />
                     <field name="icon_image"/>
                     <field name="name"/>
                     <field name="summary"/>
@@ -430,9 +432,6 @@
             <field name="name">builder.ir.module.module.diagram</field>
             <field name="model">builder.ir.module.module</field>
             <field name="arch" type="xml">
-                <!-- <form>
-                    <field name="name" />
-                </form> -->
                 <diagram string="UML Editor">
                     <!-- <node object="builder.ir.model" position_x="diagram_position_x" position_y="diagram_position_y" shape="rectangle:True" bgcolor="gray:osv_memory==True;lightcyan:inherit_type=='prototype';lightgreen:inherit_type=='class';lightyellow:inherit_type=='mixed';lightsalmon:inherit_type=='delegation'"> -->
                     <node object="builder.ir.model" shape="rectangle:True" />
@@ -505,6 +504,7 @@
             <field name="model">builder.data.file</field>
             <field name="arch" type="xml">
                 <kanban quick_create="false" create="true" delete="true">
+                    <field name='id' invisible="1" />
                     <field name="file_type_icon"/>
                     <field name="is_image"/>
                     <field name="in_media"/>

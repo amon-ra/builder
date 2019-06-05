@@ -1,0 +1,8 @@
+{%- include 'python_file_header.py.jinja2' ignore missing %}
+{% import 'macros.jinja2' as macros %}
+from odoo import models, fields, api, tools, _
+# import odoo.addons.decimal_precision as dp
+{% for setting in settings %}
+
+{{ macros.builder_res_config_settings_model(setting) }}
+{%- endfor -%}
