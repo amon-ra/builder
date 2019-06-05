@@ -159,8 +159,8 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
         return super({{ class_name }}, self).write(vals)
     {% endif -%}
     {% if model.rewrite_unlink_method -%}
-    def unlink(self, cr, uid, ids, context=None):
-        return super({{ class_name }}, self).unlink(self, cr, uid, ids, context=None):
+    def unlink(self):
+        return super({{ class_name }}, self).unlink(self):
     {% endif -%}
     {% for button in model.status_bar_button_ids -%}
     {{ builder_ir_model_status_bar_button(button) }}

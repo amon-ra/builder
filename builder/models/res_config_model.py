@@ -1,6 +1,6 @@
 import re
 
-from openerp import models, fields, api, _
+from odoo import models, fields, api, _
 
 
 class SettingModel(models.Model):
@@ -93,18 +93,18 @@ class SettingModelField(models.Model):
     def onchange_relation_model_id(self):
         self.relation = self.relation_model_id.model if self.relation_model_id else False
 
-    @api.one
     @api.onchange('setting_field_type', 'toggle_module_name', 'default_field_name', 'group_name')
     @api.depends('setting_field_type', 'toggle_module_name', 'default_field_name', 'group_name')
     def _compute_field_name(self):
-        if self.setting_field_type == 'module' and self.toggle_module_name:
-            self.name = "module_{}".format(self.toggle_module_name)
-            self.ttype = 'boolean'
-        elif self.setting_field_type == 'default' and self.default_field_name:
-            self.name = "default_{}".format(self.default_field_name)
-        elif self.setting_field_type == 'group' and self.group_name:
-            self.name = "group_{}".format(re.sub('\.', '_', self.group_name))
-            self.ttype = 'boolean'
+        for obj in self:
+            if obj.setting_field_type == 'module' and obj.toggle_module_name:
+                obj.name = "module_{}".format(obj.toggle_module_name)
+                obj.ttype = 'boolean'
+            elif obj.setting_field_type == 'default' and obj.default_field_name:
+                obj.name = "default_{}".format(obj.default_field_name)
+            elif obj.setting_field_type == 'group' and obj.group_name:
+                obj.name = "group_{}".format(re.sub('\.', '_', obj.group_name))
+                obj.ttype = 'boolean'
 
     @api.onchange('toggle_module_id')
     def onchange_toggle_module_id(self):

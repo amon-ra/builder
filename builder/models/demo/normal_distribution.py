@@ -1,5 +1,5 @@
 import random
-from openerp import models, api, fields
+from odoo import models, api, fields
 
 __author__ = 'one'
 

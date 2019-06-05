@@ -1,5 +1,5 @@
-from openerp.exceptions import ValidationError
-from openerp import models, api, fields, _
+from odoo.exceptions import ValidationError
+from odoo import models, api, fields, _
 
 FIELD_WIDGETS_ALL = [
     ('barchart', "FieldBarChart"),
@@ -197,7 +197,7 @@ class View(models.Model):
     @api.multi
     def action_open_view(self):
         model = self._model
-        action = model.get_formview_action(self.env.cr, self.env.uid, self.ids, self.env.context)
+        action = model.get_formview_action( self.ids)
         action.update({'target': 'new'})
         return action
 

@@ -2,7 +2,7 @@ from lxml import html
 import lxml.etree as etree
 __author__ = 'one'
 
-from openerp import models, api, fields, _
+from odoo import models, api, fields, _
 
 
 class PageImport(models.TransientModel):

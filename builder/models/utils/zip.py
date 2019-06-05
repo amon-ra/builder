@@ -1,6 +1,6 @@
 import posixpath
 import zipfile
-from StringIO import StringIO
+from io import StringIO
 
 
 class ZipFile(object):

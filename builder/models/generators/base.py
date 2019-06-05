@@ -3,7 +3,7 @@ import os
 
 from ..utils.jinja2.utils import groups_attribute, field_options, field_attrs
 from ..utils.zip import ZipFile, ModuleZipFile
-from openerp import models, api
+from odoo import models, api
 
 
 class GeneratorBase(models.TransientModel):

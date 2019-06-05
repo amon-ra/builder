@@ -1,6 +1,6 @@
 from collections import defaultdict
 from ..fields import snake_case
-from openerp import models, fields, api
+from odoo import models, fields, api
 
 __author__ = 'one'
 

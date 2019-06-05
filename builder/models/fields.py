@@ -3,9 +3,9 @@ import types
 
 from .utils import get_field_types
 
-from openerp.exceptions import except_orm
-from openerp import models, api, fields, _
-from openerp import fields  as fields_old
+from odoo.exceptions import except_orm
+from odoo import models, api, fields, _
+from odoo import fields  as fields_old
 
 __author__ = 'one'
 
@@ -36,11 +36,11 @@ class IrFields(models.Model):
         context = {}
         # Avoid too many nested `if`s below, as RedHat's Python 2.6
         # break on it. See bug 939653.
-        for i in fields_old.__dict__.iteritems():
-            print i
+        for i in fields_old.__dict__.items():
+            print(i)
         r= sorted([
-            (k, k) for k, v in fields_old.__dict__.iteritems()
-            if type(v) == types.TypeType and \
+            (k, k) for k, v in fields_old.__dict__.items()
+            if type(v) == type and \
             #issubclass(v, fields_old._column) and \
             #v != fields_old._column and \
             #not v._deprecated and \
@@ -50,7 +50,7 @@ class IrFields(models.Model):
                 context.get('from_diagram', False) and (k in ['one2many', 'many2one', 'many2many'])))
 
         ])
-        print r
+        print(r)
         return r
 
     model_id = fields.Many2one('builder.ir.model', 'Model', index=1, ondelete='cascade')
@@ -299,7 +299,7 @@ class IrFields(models.Model):
     }
 
 
-    def _check_selection(self, cr, uid, selection, context=None):
+    def _check_selection(self, selection):
         try:
             selection_list = eval(selection)
         except Exception:

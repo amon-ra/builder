@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
         <!-- Template Choice page -->
         <template id="builder.page_designer" name="Page Designer">
@@ -70,7 +70,7 @@
             <t t-set="website.footer"></t>
         </template>
     </data>
-</openerp>
+</odoo>
 
 
 

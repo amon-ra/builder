@@ -4,8 +4,8 @@
     var QWeb = instance.web.qweb;
 
     var odoo_tags = {
-        "!top": ["openerp", 'menuitem'],
-        openerp: {
+        "!top": ["odoo", 'menuitem'],
+        odoo: {
           children: ['data']
         },
 
@@ -76,4 +76,4 @@
     };
 
 
-})(openerp);
+})(odoo);

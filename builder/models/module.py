@@ -6,7 +6,7 @@ import os
 import mimetypes
 import string
 
-from openerp import models, fields, api, _, tools
+from odoo import models, fields, api, _, tools
 from .utils import simple_selection
 from .utils.formats import json
 
@@ -115,7 +115,6 @@ class Module(models.Model):
         'author': _get_default_author
     }
 
-    @api.one
     def copy(self, default=None):
         default = dict(default or {})
         default['shortdesc'] = _('%s (copy)') % self.shortdesc
@@ -508,7 +507,7 @@ javascript:(function(){
             },
         }
 
-    def action_edit_description_html(self, cr, uid, ids, context=None):
+    def action_edit_description_html(self):
         if not len(ids) == 1:
             raise ValueError('One and only one ID allowed for this action')
         url = '/builder/page/designer?model={model}&res_id={id}&enable_editor=1'.format(id=ids[0], model=self._name)

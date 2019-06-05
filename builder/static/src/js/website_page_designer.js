@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    var website = openerp.website;
+    var website = odoo.website;
 
     website.if_dom_contains('#page_designer', function () {
         website.snippet.BuildingBlock.include({
@@ -19,7 +19,7 @@
             //$('#email_body').addClass('oe_dirty');
             //$('#email_body_html').addClass('oe_dirty');
 
-            openerp.website.editor_bar.edit();
+            odoo.website.editor_bar.edit();
             event.preventDefault();
         });
     });

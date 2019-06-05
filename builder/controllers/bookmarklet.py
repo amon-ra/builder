@@ -1,6 +1,6 @@
 import werkzeug
-from openerp.http import request
-from openerp import http
+from odoo.http import request
+from odoo import http
 
 __author__ = 'deimos'
 

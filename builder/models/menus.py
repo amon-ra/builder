@@ -20,8 +20,9 @@
 #
 ##############################################################################
 
-from openerp import models, fields, api, tools, _
-from openerp.osv import osv
+from odoo import models, fields, api, tools, _
+from odoo.exceptions import ValidationError
+from odoo import models
 MENU_ITEM_SEPARATOR = "/"
 
 
@@ -51,11 +52,9 @@ class IrUiMenu(models.Model):
             'all_menu_ids': [i.id for i in menu_roots],
         }
 
-    def _get_full_name(self, cr, uid, ids, name=None, args=None, context=None):
-        if context is None:
-            context = {}
+    def _get_full_name(self, ids, name=None, args=None):
         res = {}
-        for elmt in self.browse(cr, uid, ids, context=context):
+        for elmt in self.browse(ids):
             res[elmt.id] = self._get_one_full_name(elmt)
         return res
 
@@ -177,7 +176,7 @@ class IrUiMenu(models.Model):
     def name_get(self):
         return self.id, self._get_full_name_one()
 
-    def _rec_message(self, cr, uid, ids, context=None):
+    def _rec_message(self, ids):
         return _('Error ! You can not create recursive Menu.')
 
     @property
@@ -185,7 +184,7 @@ class IrUiMenu(models.Model):
         return self.xml_id if '.' in self.xml_id else '{module}.{xml_id}'.format(module=self.module_id.name, xml_id=self.xml_id)
 
     _constraints = [
-        (osv.osv._check_recursion, _rec_message, ['parent_id'])
+        (models.Model._check_recursion, _rec_message, ['parent_id'])
     ]
     _defaults = {
         'sequence': 10,

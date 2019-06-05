@@ -1,20 +1,23 @@
 import logging
-from openerp.addons.base.ir.ir_cron import str2tuple
+# from odoo.addons.base.ir.ir_cron import str2tuple
+from odoo.tools.safe_eval import safe_eval
 import psycopg2
 from datetime import datetime
 
-from openerp.osv import osv
-from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
-from openerp.tools.safe_eval import safe_eval as eval
-from openerp.tools.translate import _
-from openerp.modules import load_information_from_description_file
+from odoo import models, api, fields
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from odoo.tools.safe_eval import safe_eval as eval
+from odoo.tools.translate import _
+from odoo.modules import load_information_from_description_file
 
 from odoo import fields
 
 _logger = logging.getLogger(__name__)
 
+def str2tuple(s):
+    return safe_eval('tuple(%s)' % (s or ''))
 
-class ir_cron(osv.osv):
+class ir_cron(models.Model):
     """ Model describing cron jobs (also called actions or tasks).
     """
 
@@ -47,21 +50,19 @@ class ir_cron(osv.osv):
         'active' : 1,
     }
 
-    def _check_args(self, cr, uid, ids, context=None):
+    @api.constrains('args')
+    def _check_args(self, ids):
         try:
-            for this in self.browse(cr, uid, ids, context):
+            for this in self.browse(ids):
                 str2tuple(this.args)
         except Exception:
             return False
         return True
 
-    _constraints = [
-        (_check_args, 'Invalid arguments', ['args']),
-    ]
+    @api.model
+    def toggle(self,  model, domain):
+        active = bool(self.env[model].search_count(domain))
 
-    def toggle(self, cr, uid, ids, model, domain, context=None):
-        active = bool(self.pool[model].search_count(cr, uid, domain, context=context))
-
-        return self.try_write(cr, uid, ids, {'active': active}, context=context)
+        return self.try_write({'active': active})
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

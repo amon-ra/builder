@@ -1,8 +1,8 @@
 from io import BytesIO
-from openerp.release import version_info
+from odoo.release import version_info
 
 __author__ = 'one'
-from openerp import models, fields, api, _
+from odoo import models, fields, api, _
 
 
 class Module(models.Model):
@@ -31,7 +31,7 @@ class Module(models.Model):
             res = module_obj.import_zipfile(fp, force=force)
 
             return {'type': 'ir.actions.act_window_close'}
-        except KeyError, e:
+        except KeyError as e:
             raise UserWarning(_('Module Builder does not provide a generator for your current odoo version.'))
 
     @api.multi

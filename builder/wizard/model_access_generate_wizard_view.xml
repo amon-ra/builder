@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <!-- Access Generate -->
         <record model="ir.ui.view" id="builder_ir_model_access_generate_wizard_form_view">
@@ -41,4 +41,4 @@
 
         <!-- Access Generate -->
     </data>
-</openerp>
+</odoo>

@@ -1,5 +1,5 @@
-from openerp import models, fields, api
-from openerp import _
+from odoo import models, fields, api
+from odoo import _
 
 
 class ModelDependency(models.Model):

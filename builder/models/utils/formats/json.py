@@ -1,12 +1,14 @@
-from StringIO import StringIO
-import simplejson
+from io import StringIO
 import zipfile
 import zlib
-import openerp
-from openerp.fields import _RelationalMulti
+from odoo.fields import _RelationalMulti
 
 __author__ = 'charlie'
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 class JsonExport:
     env = None
@@ -23,7 +25,7 @@ class JsonExport:
 
         object = module.read([column for column in columns])[0]
 
-        object = {k: v for k, v in object.iteritems() if v}
+        object = {k: v for k, v in object.items() if v}
 
         object.pop('id')
 
@@ -32,7 +34,7 @@ class JsonExport:
 
     def __get_link_column(self, module, record):
 
-        return [column for column in record.keys()
+        return [column for column in list(record.keys())
                 if module._fields[column].relational and
                 not module._fields[column].compute and record.get(column)]
 
@@ -106,7 +108,7 @@ class JsonImport:
         relational = {}
         related_fields = {}
 
-        for k,v in data.iteritems():
+        for k,v in data.items():
             if isinstance(v,dict):
                 if v['relational_multi'] == 1:
                     relational_multi[k] = v
@@ -116,22 +118,22 @@ class JsonImport:
                 related_fields[k] = v
 
         if len(inverse_field) > 0:
-            k,v = inverse_field.items()[0]
+            k,v = list(inverse_field.items())[0]
             related_fields[k] = v
 
         record = model_obj.create(related_fields)
 
-        for k,v in relational_multi.iteritems():
+        for k,v in relational_multi.items():
             comodel = self.env[v['comodel_name']]
 
             for rec_ in v['recordset']:
               self.build_model(comodel,rec_,{record._fields[k].inverse_name:record.id})
 
 
-        for k,v in relational.iteritems():
+        for k,v in relational.items():
             comodel = self.env[v['comodel_name']]
 
-            search_query =[(k_,"=",v_) for k_,v_ in v['recordset'].iteritems()]
+            search_query =[(k_,"=",v_) for k_,v_ in v['recordset'].items()]
             rec_ = comodel.search(search_query,limit = 1)
             record.write({k:rec_.id})
 

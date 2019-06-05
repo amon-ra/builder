@@ -1,6 +1,6 @@
 from ..fields import snake_case
-from openerp.exceptions import ValidationError
-from openerp import models, fields, api, _
+from odoo.exceptions import ValidationError
+from odoo import models, fields, api, _
 from .base import FIELD_WIDGETS_ALL
 from collections import defaultdict
 

@@ -2,21 +2,21 @@ from odoo import fields
 
 __author__ = 'one'
 
-# from openerp import models, api, fields, _
-from openerp.osv import osv
-from openerp import SUPERUSER_ID
-from openerp import _, api
+# from odoo import models, api, fields, _
+from odoo import models
+from odoo import SUPERUSER_ID
+from odoo import _, api
+from odoo.exceptions import ValidationError
 
-
-class Groups(osv.osv):
+class Groups(models.Model):
     _name = "builder.res.groups"
     _description = "Access Groups"
     _rec_name = 'full_name'
     _order = 'sequence, name'
 
-    def _get_full_name(self, cr, uid, ids, field, arg, context=None):
+    def _get_full_name(self):
         res = {}
-        for g in self.browse(cr, uid, ids, context):
+        for g in self:
             if (g.category_type == 'system') and g.category_id:
                 res[g.id] = '%s / %s' % (g.category_id.name, g.name)
             elif (g.category_type == 'system') and g.category_ref:
@@ -27,7 +27,7 @@ class Groups(osv.osv):
                 res[g.id] = g.name
         return res
 
-    def _get_trans_implied(self, cr, uid, ids, field, arg, context=None):
+    def _get_trans_implied(self):
         "computes the transitive closure of relation implied_ids"
         memo = {}  # use a memo for performance and cycle avoidance
 
@@ -40,8 +40,8 @@ class Groups(osv.osv):
             return memo[g]
 
         res = {}
-        for g in self.browse(cr, SUPERUSER_ID, ids, context):
-            res[g.id] = map(int, computed_set(g))
+        for g in self:
+            res[g.id] = list(map(int, computed_set(g)))
         return res
 
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
@@ -72,17 +72,18 @@ class Groups(osv.osv):
          'The name of the group must be unique within an application!')
     ]
 
-    def copy(self, cr, uid, id, default=None, context=None):
-        group_name = self.read(cr, uid, [id], ['name'])[0]['name']
+    def copy(self, default=None):
+        # group_name = self.read(cr, uid, [id], ['name'])[0]['name']
+        group_name = self.name
         default.update({'name': _('%s (copy)') % group_name})
-        return super(Groups, self).copy(cr, uid, id, default, context)
+        return super(Groups, self).copy(default)
 
-    def write(self, cr, uid, ids, vals, context=None):
+    def write(self, vals):
         if 'name' in vals:
             if vals['name'].startswith('-'):
                 raise osv.except_osv(_('Error'),
                                      _('The name of the group can not start with "-"'))
-        res = super(Groups, self).write(cr, uid, ids, vals, context=context)
+        res = super(Groups, self).write( vals)
         return res
 
     @api.onchange('category_ref')
@@ -104,7 +105,7 @@ class Groups(osv.osv):
                                                                              xml_id=self.xml_id)
 
 
-class IrModelAccess(osv.osv):
+class IrModelAccess(models.Model):
     _name = 'builder.ir.model.access'
 
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
@@ -122,25 +123,29 @@ class IrModelAccess(osv.osv):
     #         vals['module_id'] = self.pool['builder.ir.model'].search(cr, uid, [('id', '=', vals['model_id'])])
 
 
-class IrRule(osv.osv):
+class IrRule(models.Model):
     _name = 'builder.ir.rule'
     _order = 'model_id, name'
 
-    def _get_value(self, cr, uid, ids, field_name, arg, context=None):
+    def _get_value(self):
         res = {}
-        for rule in self.browse(cr, uid, ids, context):
+        for rule in self:
             if not rule.groups:
                 res[rule.id] = True
             else:
                 res[rule.id] = False
         return res
 
-    def _check_model_obj(self, cr, uid, ids, context=None):
-        return not any(rule.model_id.osv_memory for rule in self.browse(cr, uid, ids, context))
-
-    def _check_model_name(self, cr, uid, ids, context=None):
+    @api.constrains('module_id')
+    def _check_model_obj(self):
+        if any(rule.model_id.osv_memory for rule in self):
+            raise  ValidationError(_('Rules can not be applied on Transient models.'))
+        if any(rule.model_id.model == 'ir.rule' for rule in self):
+            raise ValidationError(_('Rules can not be applied on the Record Rules model.'))
+             
+    # def _check_model_name(self):
         # Don't allow rules on rules records (this model).
-        return not any(rule.model_id.model == 'ir.rule' for rule in self.browse(cr, uid, ids, context))
+        # return not 
 
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
     name = fields.Char('Name', index=1)
@@ -167,7 +172,7 @@ class IrRule(osv.osv):
             'CHECK (perm_read!=False or perm_write!=False or perm_create!=False or perm_unlink!=False)',
             'Rule must have at least one checked access right !'),
     ]
-    _constraints = [
-        (_check_model_obj, 'Rules can not be applied on Transient models.', ['model_id']),
-        (_check_model_name, 'Rules can not be applied on the Record Rules model.', ['model_id']),
-    ]
+    # _constraints = [
+    #     (_check_model_obj, 'Rules can not be applied on Transient models.', ['model_id']),
+    #     (_check_model_name, 'Rules can not be applied on the Record Rules model.', ['model_id']),
+    # ]

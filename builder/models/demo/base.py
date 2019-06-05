@@ -3,7 +3,7 @@ import os
 import pickle
 import random
 
-from openerp import models, api, fields, _
+from odoo import models, api, fields, _
 
 
 class GeneratorInterface(models.AbstractModel):
@@ -32,7 +32,7 @@ class GeneratorInterface(models.AbstractModel):
                         self._demo_data[filename] = json.loads(open(fullname).read())
                     else:
                         self._demo_data[filename] = open(fullname).read()
-                except Exception, e:
+                except Exception as e:
                     return {}
         return self._demo_data.get(filename, {})
 
@@ -105,7 +105,7 @@ class Generator(models.Model):
     @api.multi
     def action_open_view(self):
         model = self._model
-        action = model.get_formview_action(self.env.cr, self.env.uid, self.ids, self.env.context)
+        action = model.get_formview_action( self.ids)
         action.update({'target': 'new'})
         return action
 
@@ -127,7 +127,7 @@ class IrModel(models.Model):
     @api.depends('demo_records', 'model')
     def _compute_demo_xml_id_sample(self):
         tmpl = '{model}_'.format(model=self.model.lower().replace('.', '_')) + '{id}' if self.model else 'model_'
-        self.demo_xml_id_sample = pickle.dumps([tmpl.format(id=i) for i in xrange(self.demo_records)])
+        self.demo_xml_id_sample = pickle.dumps([tmpl.format(id=i) for i in range(self.demo_records)])
 
     @api.multi
     def demo_xml_id(self, index):

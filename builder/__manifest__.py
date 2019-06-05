@@ -21,7 +21,7 @@
 
 {
     'name': 'Module Builder',
-    'version': '1.10',
+    'version': '11.0.1.0.0',
     'category': 'Programming',
     'summary': 'Build your modules right inside Odoo',
     'description': """
@@ -29,10 +29,10 @@ This module aims to help in the development of new modules
 =======================================================================================
 
 """,
-    'author': 'Soluciones Moebius',
+    'author': 'Soluciones Moebius, Oondeo C.B.',
     #"license": "AGPL-3",
-    'website': 'http://www.solucionesmoebius.com/',
-    'depends': ['web', 'web_diagram', 'website','software'],
+    'website': 'https://www.oondeo.es/',
+    'depends': ['web', 'web_diagram', 'website'], #software
     'data': [
         # 'security/base_security.xml',
         # 'security/ir.model.access.csv',

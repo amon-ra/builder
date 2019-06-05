@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <!--Custom List Generator -->
 
@@ -46,4 +46,4 @@
 
         <!--Custom List Generator -->
     </data>
-</openerp>
+</odoo>

@@ -3,7 +3,7 @@ import string
 
 __author__ = 'one'
 
-from openerp import models, api, fields, _
+from odoo import models, api, fields, _
 import re
 
 
@@ -49,7 +49,7 @@ class M2mGenerator(models.Model):
             return self.format_ref_values(random.sample(self.reference_list.split('|'), random.randint(self.min_reference_count, self.max_reference_count)))
         else:
             if field.relation_model_id:
-                sample = random.sample(range(0, field.relation_model_id.demo_records), random.randint(self.min_reference_count, self.max_reference_count))
+                sample = random.sample(list(range(0, field.relation_model_id.demo_records)), random.randint(self.min_reference_count, self.max_reference_count))
                 return self.format_ref_values([field.relation_model_id.demo_xml_id(index) for index in sample])
             else:
                 return False

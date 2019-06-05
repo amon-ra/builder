@@ -1,6 +1,6 @@
 import types
-from openerp import api
-from openerp import fields as fields_old
+from odoo import api
+from odoo import fields as fields_old
 
 
 def simple_selection(model, value_field, label_field=None, domain=None):
@@ -18,8 +18,8 @@ def get_field_types(model):
     # Avoid too many nested `if`s below, as RedHat's Python 2.6
     # break on it. See bug 939653.
     return sorted([
-        (k, k) for k, v in fields_old.__dict__.iteritems()
-        if type(v) == types.TypeType and \
+        (k, k) for k, v in fields_old.__dict__.items()
+        if type(v) == type and \
         issubclass(v, fields_old._column) and \
         v != fields_old._column and \
         not v._deprecated and \

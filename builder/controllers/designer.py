@@ -16,12 +16,12 @@ class WebsiteDesigner(http.Controller):
             return request.redirect('/')
 
         res_id = int(res_id)
-        obj_ids = request.registry[model].exists(request.cr, request.uid, [res_id], context=request.context)
+        obj_ids = request.registry[model].browse([res_id])
         if not obj_ids:
             return request.redirect('/')
         # try to find fields to display / edit -> as t-field is static, we have to limit
-        cr, uid, context = request.cr, request.uid, request.context
-        record = request.registry[model].browse(cr, uid, res_id, context=context)
+        # cr, uid, context = request.cr, request.uid, request.context
+        record = request.registry[model].browse([id])
         model_name = request.registry[model]._description
 
         values = {
@@ -42,12 +42,12 @@ class WebsiteDesigner(http.Controller):
             return request.redirect('/')
         model_fields = request.registry[model]._fields
         res_id = int(res_id)
-        obj_ids = request.registry[model].exists(request.cr, request.uid, [res_id], context=request.context)
+        obj_ids = request.registry[model].browse([res_id])
         if not obj_ids:
             return request.redirect('/')
         # try to find fields to display / edit -> as t-field is static, we have to limit
-        cr, uid, context = request.cr, request.uid, request.context
-        record = request.registry[model].browse(cr, uid, res_id, context=context)
+        # cr, uid, context = request.cr, request.uid, request.context
+        record = request.registry[model].browse([id])
 
         return_url = '/web#return_label=Website&model={model}&id={id}&view_type=form'.format(model=model, id=record.id)
         if model == 'builder.ir.module.module':

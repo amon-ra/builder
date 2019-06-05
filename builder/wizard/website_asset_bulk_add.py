@@ -1,6 +1,6 @@
 __author__ = 'one'
 
-from openerp import models, api, fields, _
+from odoo import models, api, fields, _
 
 
 class ModelImport(models.TransientModel):

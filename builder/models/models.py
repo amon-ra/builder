@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from openerp import models, fields, api, _
+from odoo import models, fields, api, _
 
 
 class IrModel(models.Model):

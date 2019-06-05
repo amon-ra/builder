@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <!-- Groups -->
         <record model="ir.ui.view" id="builder_res_groups_tree_view">
@@ -209,4 +209,4 @@
 
         <!-- Model Access Control List -->
     </data>
-</openerp>
+</odoo>

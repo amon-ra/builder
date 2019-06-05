@@ -1,9 +1,9 @@
 __author__ = 'one'
 
-import StringIO
+import io
 from base64 import decodestring, encodestring
 import zipfile
-from openerp import models, api, fields, _
+from odoo import models, api, fields, _
 import posixpath
 
 
@@ -15,10 +15,10 @@ class ModuleImport(models.TransientModel):
 
     @api.one
     def action_import(self):
-        f = StringIO.StringIO()
+        f = io.StringIO()
         f.write(decodestring(self.file))
         zfile = zipfile.ZipFile(f)
-        print self.env.context
+        print(self.env.context)
 
         module = self.env[self.env.context.get('active_model')].search([('id', '=', self.env.context.get('active_id'))])
 

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <!-- Builder Module Generate Wizard -->
         <record model="ir.ui.view" id="builder_ir_module_module_generate_wizard_form_view">
@@ -39,4 +39,4 @@
 
         <!-- Builder Module Generate Wizard -->
     </data>
-</openerp>
+</odoo>

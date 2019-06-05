@@ -1,7 +1,7 @@
 from collections import defaultdict
 import base64
 
-from openerp import models, api
+from odoo import models, api
 
 
 class GeneratorV8(models.TransientModel):

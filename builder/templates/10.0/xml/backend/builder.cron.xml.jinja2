@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data noupdate="1">
         {% for cron in cron_jobs %}
         <record id="{{ module.name }}_ir_cron_{{ loop.index }}_action" model="ir.cron">
@@ -19,4 +19,4 @@
         </record>
         {% endfor %}
     </data>
-</openerp>
+</odoo>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <!-- Window Action -->
         <record model="ir.ui.view" id="builder_ir_actions_act_window_tree_view">
@@ -82,4 +82,4 @@
 
         <!-- Window Action -->
     </data>
-</openerp>
+</odoo>

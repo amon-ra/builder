@@ -5,7 +5,7 @@ import json
 __author__ = 'one'
 
 import zipfile
-from openerp import models, api, fields
+from odoo import models, api, fields
 
 
 class ModuleImport(models.TransientModel):

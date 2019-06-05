@@ -1,7 +1,7 @@
 (function(){
-    var _t = openerp.web._t;
+    var _t = odoo.web._t;
 
-    openerp.web.Sidebar.include({
+    odoo.web.Sidebar.include({
 
         start: function () {
             var self = this;
@@ -28,7 +28,7 @@
         add_export_items: function(view, res_id){
             var self  = this;
 
-            var ds = new openerp.web.DataSet(self, 'builder.ir.module.module');
+            var ds = new odoo.web.DataSet(self, 'builder.ir.module.module');
 
             ds.call('get_available_export_formats', []).done(function(formats){
                 _.each(formats, function(format){
@@ -49,7 +49,7 @@
         add_import_items: function(view, res_id){
             var self  = this;
 
-            var ds = new openerp.web.DataSet(self, 'builder.ir.module.module');
+            var ds = new odoo.web.DataSet(self, 'builder.ir.module.module');
 
             ds.call('get_available_import_formats', []).done(function(formats){
                 _.each(formats, function(format){

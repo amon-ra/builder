@@ -1,11 +1,11 @@
-from __future__ import unicode_literals
+
 import base64
 import csv
 from random import randrange
 import re
 import types
 from jinja2 import Template
-from openerp import models, fields, api, _
+from odoo import models, fields, api, _
 
 __author__ = 'deimos'
 
@@ -108,8 +108,8 @@ class ModelDataAttribute(models.Model):
 IMPORTER_PATTERN = re.compile('_import_(\w+)')
 
 
-XML_TEMPLATE = Template(u"""<?xml version="1.0"?>
-<openerp>
+XML_TEMPLATE = Template("""<?xml version="1.0"?>
+<odoo>
     <data>
         {% for object in data -%}
         <record model="{{ object.model }}" id="{{ object.id }}">
@@ -121,7 +121,7 @@ XML_TEMPLATE = Template(u"""<?xml version="1.0"?>
         </record>
         {% endfor %}
     </data>
-</openerp>""")
+</odoo>""")
 
 
 class ModelData(models.Model):
@@ -153,9 +153,9 @@ class ModelData(models.Model):
     @api.one
     @api.depends('attribute_ids.xml_id')
     def _compute_key_id(self):
-        cr, uid, context = self.env.args
-        attrs = self.resolve_2many_commands(cr, uid, 'attribute_ids', self.attribute_ids, context=context)
-        keys = [value.id for key, value in attrs.items() if value.get('id') and value.get('xml_id')]
+        # cr, uid, context = self.env.args
+        attrs = self.resolve_2many_commands('attribute_ids', self.attribute_ids)
+        keys = [value.id for key, value in list(attrs.items()) if value.get('id') and value.get('xml_id')]
         if any(keys):
             self.key_id = keys[0]
 

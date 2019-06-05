@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <!-- Random String -->
 
@@ -48,4 +48,4 @@
 
         <!-- Random String -->
     </data>
-</openerp>
+</odoo>

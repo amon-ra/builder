@@ -1,9 +1,9 @@
 from random import randint, sample
-import openerp
+import odoo
 
 __author__ = 'deimos'
 
-from openerp import models, api, fields, _
+from odoo import models, api, fields, _
 
 
 class RandomStringGenerator(models.Model):
@@ -31,12 +31,12 @@ class RandomStringGenerator(models.Model):
     @api.constrains('max_word_length')
     def _check_max_word_length(self):
         if self.min_word_length > self.max_word_length:
-            raise openerp.exceptions.Warning('Minimum Word Length can\'t be greater than Maximum Word Length')
+            raise odoo.exceptions.Warning('Minimum Word Length can\'t be greater than Maximum Word Length')
 
     @api.constrains('max_word_count')
     def _check_max_word_count(self):
         if self.min_word_count > self.max_word_count:
-            raise openerp.exceptions.Warning('Minimum Word Count can\'t be greater than Maximum Word Count')
+            raise odoo.exceptions.Warning('Minimum Word Count can\'t be greater than Maximum Word Count')
 
     _defaults = {
         'subclass_model': lambda s, c, u, cxt=None: s._name

@@ -1,5 +1,5 @@
 from ..fields import snake_case
-from openerp import models, fields, api, _
+from odoo import models, fields, api, _
 from .base import FIELD_WIDGETS_ALL
 
 __author__ = 'one'

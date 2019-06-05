@@ -1,7 +1,7 @@
 import math
-from openerp.tools import graph
-from openerp import tools
-from openerp.osv import osv
+from odoo.tools import graph
+from odoo import tools
+from odoo import models, api, fields
 
 __author__ = 'one'
 
@@ -11,7 +11,7 @@ def process_order(self):
     """
 
     if self.Is_Cyclic:
-        max_level = max(map(lambda x: len(x), self.levels.values()))
+        max_level = max([len(x) for x in list(self.levels.values())])
 
         if max_level%2:
             self.result[self.start]['y'] = (max_level+1)/2 + self.max_order + (self.max_order and 1)
@@ -23,7 +23,7 @@ def process_order(self):
     else:
         self.result[self.start]['y'] = 0
         self.tree_order(self.start, 0)
-        min_order = math.fabs(min(map(lambda x: x['y'], self.result.values())))
+        min_order = math.fabs(min([x['y'] for x in list(self.result.values())]))
 
         index = self.start_nodes.index(self.start)
         same = False
@@ -50,7 +50,7 @@ def process_order(self):
             for node in self.levels[level]:
                 self.result[node]['y'] += min_order
 
-        clean_tree = { r: v for r,v  in self.tree_list.items() if v} if self.tree_list else {}
+        clean_tree = { r: v for r,v  in list(self.tree_list.items()) if v} if self.tree_list else {}
 
         if roots:
             roots.append(self.start)
@@ -81,7 +81,7 @@ def process_order(self):
                 self.result[start]['y'] = base + factor
                 factor += 1
 
-        self.max_order = max(map(lambda x: x['y'], self.result.values()))
+        self.max_order = max([x['y'] for x in list(self.result.values())])
 
 
 def process(self, starting_node):
@@ -102,7 +102,7 @@ def process(self, starting_node):
 
                 for node in self.no_ancester:
                     for sec_node in self.transitions.get(node, []):
-                        if sec_node in self.partial_order.keys():
+                        if sec_node in list(self.partial_order.keys()):
                             self.transitions[self.start_nodes[0]].append(node)
                             break
 
@@ -193,10 +193,11 @@ def tree_order(self, node, last=0):
         return last
 
 
-class view(osv.osv):
+class view(models.Model):
     _inherit = 'ir.ui.view'
 
-    def graph_get(self, cr, uid, id, model, node_obj, conn_obj, src_node, des_node, label, scale, context=None):
+    @api.model
+    def graph_get(self, id, model, node_obj, conn_obj, src_node, des_node, label, scale):
         nodes=[]
         nodes_name=[]
         transitions=[]
@@ -210,13 +211,13 @@ class view(osv.osv):
         _Node_Obj = self.pool[node_obj]
         _Arrow_Obj = self.pool[conn_obj]
 
-        for model_key,model_value in _Model_Obj._columns.items():
+        for model_key,model_value in list(_Model_Obj._columns.items()):
                 if model_value._type=='one2many':
                     if model_value._obj==node_obj:
                         _Node_Field=model_key
                         _Model_Field=model_value._fields_id
                     flag=False
-                    for node_key,node_value in _Node_Obj._columns.items():
+                    for node_key,node_value in list(_Node_Obj._columns.items()):
                         if node_value._type=='one2many':
                              if node_value._obj==conn_obj:
                                  if src_node in _Arrow_Obj._columns and flag:
@@ -227,20 +228,22 @@ class view(osv.osv):
 
         # _Destination_Field = 'from_ids'
         # _Source_Field = 'to_ids'
-        datas = _Model_Obj.read(cr, uid, id, [],context)
-        for a in _Node_Obj.read(cr,uid,datas[_Node_Field],[]):
+        # datas = _Model_Obj.read(cr, uid, id, [],context)
+        datas = _Model_Obj
+        # for a in _Node_Obj.read(cr,uid,datas[_Node_Field],[]):
+        for a in _Node_Obj:        
             if a[_Source_Field] or a[_Destination_Field]:
                 nodes_name.append((a['id'],a['name']))
                 nodes.append(a['id'])
             else:
                 blank_nodes.append({'id': a['id'],'name':a['name']})
 
-            if a.has_key('flow_start') and a['flow_start']:
+            if 'flow_start' in a and a['flow_start']:
                 start.append(a['id'])
             else:
                 if not a[_Source_Field]:
                     no_ancester.append(a['id'])
-            for t in _Arrow_Obj.read(cr, uid, a[_Destination_Field], []):
+            for t in _Arrow_Obj.browse([a[_Destination_Field]]):
                 if des_node not in t or not t[des_node] or len(t[des_node]) == 0:
                     continue
 
@@ -249,7 +252,7 @@ class view(osv.osv):
                 label_string = ""
                 if label:
                     for lbl in eval(label):
-                        if t.has_key(tools.ustr(lbl)) and tools.ustr(t[lbl])=='False':
+                        if tools.ustr(lbl) in t and tools.ustr(t[lbl])=='False':
                             label_string += ' '
                         else:
                             label_string = label_string + " " + tools.ustr(t[lbl])
