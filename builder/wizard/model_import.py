@@ -1,7 +1,8 @@
 __author__ = 'one'
 
 from odoo import models, api, fields, _
-
+import logging
+_logger = logging.getLogger(__name__)
 
 class ModelLine(models.TransientModel):
     _name = 'builder.ir.model.import.line'
@@ -43,7 +44,7 @@ class ModelImport(models.TransientModel):
                         'selection': field.selection,
                         'required': field.required,
                         'readonly': field.readonly,
-                        'select_level': field.select_level,
+                        # 'select_level': field.select_level,
                         'translate': field.translate,
                         'size': field.size,
                         'on_delete': field.on_delete,
@@ -87,16 +88,16 @@ class ModelImport(models.TransientModel):
 
             if model.modules:
                 module.add_dependency(model.modules.split(', ')[0])
-
             if not module_model.id:
-                new_model = model_obj.create({
+                vals = {
                     'module_id': self.env.context.get('active_id'),
                     'name': model.name,
                     'model': model.model,
-                    'osv_memory': model.osv_memory,
+                    'osv_memory': model._transient == True,
                     # 'inherit_model': self.set_inherited and model.model or False
-                })
-
+                }
+                _logger.debug(vals)
+                new_model = model_obj.create(vals)
                 if self.set_inherited:
                     new_model['inherit_model_ids'] = [{'model_source': 'system', 'system_model_id': model.id, 'system_model_name': model.model}]
 

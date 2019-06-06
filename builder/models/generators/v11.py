@@ -1,5 +1,5 @@
 from collections import defaultdict
-import base64
+import base64,os
 
 from odoo import models, api
 
@@ -11,6 +11,10 @@ class GeneratorV8(models.TransientModel):
     _name = 'builder.generator.v11'
     _inherit = ['builder.generator.base']
     _description = '11.0'
+
+    @api.model
+    def get_template_paths(self):
+        return [os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'templates', '11.0'))]
 
     @api.model
     def generate_module(self, zip_file, module):
@@ -98,14 +102,14 @@ class GeneratorV8(models.TransientModel):
                     'cron_jobs': module.cron_job_ids,
                 })
 
-        if len(module.workflow_ids):
-            module_data.append('data/workflow.xml')
-            zip_file.write_template(
-                'data/workflow.xml',
-                'data/workflow.xml.jinja2', {
-                    'module': module,
-                    'workflows': module.workflow_ids,
-                })
+        # if len(module.workflow_ids):
+        #     module_data.append('data/workflow.xml')
+        #     zip_file.write_template(
+        #         'data/workflow.xml',
+        #         'data/workflow.xml.jinja2', {
+        #             'module': module,
+        #             'workflows': module.workflow_ids,
+        #         })
 
         if len(module.backend_asset_ids):
             module_data.append('views/assets.xml')

@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<odoo>
-    <data noupdate="1">
-    {%- import 'macros.jinja2' as macros -%}
-        {%- for cron in cron_jobs -%}
-            {{ macros.builder_ir_cron(cron) }}
-        {%- endfor -%}
-    </data>
-</odoo>

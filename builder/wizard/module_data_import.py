@@ -15,7 +15,7 @@ class ModuleImport(models.TransientModel):
 
     @api.one
     def action_import(self):
-        f = io.StringIO()
+        f = io.BytesIO()
         f.write(decodestring(self.file))
         zfile = zipfile.ZipFile(f)
         print(self.env.context)

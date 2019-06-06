@@ -433,11 +433,11 @@
             <field name="model">builder.ir.module.module</field>
             <field name="arch" type="xml">
                 <diagram string="UML Editor">
-                    <!-- <node object="builder.ir.model" position_x="diagram_position_x" position_y="diagram_position_y" shape="rectangle:True" bgcolor="gray:osv_memory==True;lightcyan:inherit_type=='prototype';lightgreen:inherit_type=='class';lightyellow:inherit_type=='mixed';lightsalmon:inherit_type=='delegation'"> -->
+                    <!-- <node object="builder.ir.model" position_x="diagram_position_x" position_y="diagram_position_y" shape="rectangle:True" bgcolor="gray:_transient==True;lightcyan:inherit_type=='prototype';lightgreen:inherit_type=='class';lightyellow:inherit_type=='mixed';lightsalmon:inherit_type=='delegation'"> -->
                     <node object="builder.ir.model" shape="rectangle:True" />
                         <!-- <field name="model"/> -->
                         <!-- <field name="name"/> -->
-                        <!-- <field name="osv_memory" invisible="1"/> -->
+                        <!-- <field name="_transient" invisible="1"/> -->
                         <!-- <field name="inherit_type" invisible="1"/> -->
                     <!-- </node> -->
                     <!-- <arrow object="builder.ir.model.fields" source="model_id" destination="relation_model_id" label="['diagram_arc_name']" form_view_ref="builder.builder_ir_model_fields_form_diagram_view"  context="{'form_view_id': True}"> -->

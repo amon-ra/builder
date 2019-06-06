@@ -1,8 +1,0 @@
-{%- extends 'xml/base.xml.jinja2' %}
-{% import 'macros.jinja2' as macros %}
-
-{% block content %}
-    {% for item in images %}
-            {{ macros.builder_website_media_item(item) }}
-    {% endfor %}
-{% endblock %}

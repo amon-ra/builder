@@ -1,4 +1,4 @@
-from io import BytesIO
+from io import BytesIO,StringIO
 from odoo.release import version_info
 
 __author__ = 'one'
@@ -26,6 +26,7 @@ class Module(models.Model):
         try:
 
             generator = self.env['builder.generator.v{v}'.format(v=version_info[0])]
+            _logger.debug("Installing for {v}".format(v=version_info[0]))
             module_obj = self.env['ir.module.module']
             zfileIO = generator.get_zipped_modules([self])
 
@@ -34,6 +35,17 @@ class Module(models.Model):
             res = module_obj.import_zipfile(fp, force=force)
 
             return {'type': 'ir.actions.act_window_close'}
+        except TypeError as e:
+            _logger.warn(e)
+            generator = self.env['builder.generator.v{v}'.format(v=version_info[0])]
+            module_obj = self.env['ir.module.module']
+            zfileIO = generator.get_zipped_modules([self])
+
+            fp = StringIO()
+            fp.write(zfileIO.getvalue())
+            res = module_obj.import_zipfile(fp, force=force)
+
+            return {'type': 'ir.actions.act_window_close'}            
         except KeyError as e:
             _logger.warn(e)
             _logger.warn(version_info[0])

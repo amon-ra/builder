@@ -8,9 +8,9 @@ from odoo import models, api, fields, _
 from odoo import fields  as fields_old
 
 __author__ = 'one'
-
-
+import logging
 _logger = logging.getLogger(__name__)
+
 
 
 def snake_case(name, prefix=None, suffix=None):
@@ -31,27 +31,30 @@ class IrFields(models.Model):
     _order = 'model_id, position asc'
     _description = 'Fields'
     _rec_name = 'name'
-    @api.model
-    def _get_fields_type_selection(self):
-        context = {}
-        # Avoid too many nested `if`s below, as RedHat's Python 2.6
-        # break on it. See bug 939653.
-        for i in fields_old.__dict__.items():
-            print(i)
-        r= sorted([
-            (k, k) for k, v in fields_old.__dict__.items()
-            if type(v) == type and \
-            #issubclass(v, fields_old._column) and \
-            #v != fields_old._column and \
-            #not v._deprecated and \
-            # not issubclass(v, fields_old.function)])
-            #not issubclass(v, fields_old.function) and \
-            (not context.get('from_diagram', False) or (
-                context.get('from_diagram', False) and (k in ['one2many', 'many2one', 'many2many'])))
 
-        ])
-        print(r)
-        return r
+    # @api.model
+    # def _get_fields_type_selection(self):
+    #     context = {}
+    #     # Avoid too many nested `if`s below, as RedHat's Python 2.6
+    #     # break on it. See bug 939653.
+    #     for i in fields_old.__dict__.items():
+    #         # print(i)
+    #     r= sorted([
+    #         (k, k) for k, v in fields_old.__dict__.items()
+    #         if type(v) == type and \
+    #         #issubclass(v, fields_old._column) and \
+    #         #v != fields_old._column and \
+    #         #not v._deprecated and \
+    #         # not issubclass(v, fields_old.function)])
+    #         #not issubclass(v, fields_old.function) and \
+    #         (not context.get('from_diagram', False) or (
+    #             context.get('from_diagram', False) and (k in ['one2many', 'many2one', 'many2many'])))
+
+    #     ])
+    #     # print(r)
+    #     _logger.debug(r)
+    #     import pdb;pdb.set_trace()
+    #     return r
 
     model_id = fields.Many2one('builder.ir.model', 'Model', index=1, ondelete='cascade')
     module_id = fields.Many2one('builder.ir.module.module', 'Module', related='model_id.module_id')
@@ -83,7 +86,7 @@ class IrFields(models.Model):
 
     field_description = fields.Char('Field Label')
     related = fields.Char('Related')
-    ttype = fields.Selection(_get_fields_type_selection, string='Field Type', required=True)
+    ttype = fields.Selection(get_field_types, string='Field Type', required=True)
     relation_ttype = fields.Selection([('many2one', 'many2one'), ('one2many', 'one2many'), ('many2many', 'many2many')],
                                       'Field Type', compute='_compute_relation_ttype',
                                       fnct_inv='_relation_type_set_inverse', store=False, search=True)
@@ -92,9 +95,9 @@ class IrFields(models.Model):
                                                       "For example: [('blue','Blue'),('yellow','Yellow')]")
     required = fields.Boolean('Required')
     readonly = fields.Boolean('Readonly')
-    select_level = fields.Selection(
-        [('0', 'Not Searchable'), ('1', 'Always Searchable'), ('2', 'Advanced Search (deprecated)')], 'Searchable',
-        required=True, default='0')
+    # select_level = fields.Selection(
+        # [('0', 'Not Searchable'), ('1', 'Always Searchable'), ('2', 'Advanced Search (deprecated)')], 'Searchable',
+        # required=True, default='0')
     translate = fields.Boolean('Translatable',
                                help="Whether values for this field can be translated (enables the translation mechanism for that field)")
     size = fields.Char('Size')

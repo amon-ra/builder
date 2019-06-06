@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<odoo>
-    <data noupdate="1">
-    {%- import 'macros.jinja2' as macros -%}
-        {% for wkf in workflows %}
-            {{ macros.builder_workflow(wkf) }}
-        {% endfor %}
-    </data>
-</odoo>

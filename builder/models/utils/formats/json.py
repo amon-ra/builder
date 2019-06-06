@@ -1,4 +1,4 @@
-from io import StringIO
+from io import BytesIO
 import zipfile
 import zlib
 from odoo.fields import _RelationalMulti
@@ -76,7 +76,7 @@ class JsonExport:
         return record
 
     def export(self, module):
-        zfileIO = StringIO()
+        zfileIO = BytesIO()
 
         data = self.build_json(module)
 
@@ -86,7 +86,7 @@ class JsonExport:
             'data': data
         }
 
-        raw = zlib.compress(simplejson.dumps(json_module), zlib.Z_BEST_COMPRESSION)
+        raw = zlib.compress(json.dumps(json_module), zlib.Z_BEST_COMPRESSION)
 
         zfileIO.write(raw)
         zfileIO.flush()
@@ -100,7 +100,7 @@ class JsonImport:
         self.env = enviroment
 
     def build(self, model_obj, file_data):
-        json_dump = simplejson.loads(zlib.decompress(file_data))
+        json_dump = json.loads(zlib.decompress(file_data))
         return self.build_model(model_obj, json_dump['data'])
 
     def build_model(self, model_obj, data, inverse_field={}):

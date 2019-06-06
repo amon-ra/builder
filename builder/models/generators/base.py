@@ -26,7 +26,7 @@ class GeneratorBase(models.TransientModel):
 
     @api.model
     def get_template_paths(self):
-        return [os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'templates', '8.0'))]
+        return [os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'templates', '11.0'))]
 
     @api.model
     def create_jinja_env(self):

@@ -1,9 +1,0 @@
-{%- include 'python_file_header.py.jinja2' ignore missing %}
-{%- import 'macros.jinja2' as macros %}
-from odoo import models, fields, api, tools, _
-# import odoo.addons.decimal_precision as dp
-
-
-{% for model in models -%}
-{{ macros.builder_ir_model(model) }}
-{% endfor -%}

@@ -1,6 +1,6 @@
 import posixpath
 import zipfile
-from io import StringIO
+from io import BytesIO
 
 
 def groups_attribute(groups):

@@ -1,7 +1,9 @@
-import types
+import types,inspect
 from odoo import api
 from odoo import fields as fields_old
 
+import logging
+_logger = logging.getLogger(__name__)
 
 def simple_selection(model, value_field, label_field=None, domain=None):
     domain = domain or []
@@ -17,15 +19,21 @@ def get_field_types(model):
     context = {}
     # Avoid too many nested `if`s below, as RedHat's Python 2.6
     # break on it. See bug 939653.
-    return sorted([
-        (k, k) for k, v in fields_old.__dict__.items()
-        if type(v) == type and \
-        issubclass(v, fields_old._column) and \
-        v != fields_old._column and \
-        not v._deprecated and \
-        # not issubclass(v, fields_old.function)])
-        not issubclass(v, fields_old.function) and \
-        (not context.get('from_diagram', False) or (
-            context.get('from_diagram', False) and (k in ['one2many', 'many2one', 'many2many'])))
+    # for k, v in fields_old.__dict__.items():
+    #     _logger.debug(k)
+    #     _logger.debug(v)
+    #     _logger.debug(inspect.isclass(v) and issubclass(v, fields_old.Field))
 
+    # raise "dd"
+    r =  sorted([
+        (k.lower(), k.lower()) for k, v in fields_old.__dict__.items()
+        if k != "Field" and \
+        inspect.isclass(v) and issubclass(v, fields_old.Field) \
+        # and not v._deprecated 
+        # and not issubclass(v, fields_old.function)])
+        # and not issubclass(v, fields_old.function)
+        and (not context.get('from_diagram', False) or (
+            context.get('from_diagram', False) and (k in ['One2many', 'Many2one', 'Many2many'])))
     ])
+    _logger.debug(r)
+    return r

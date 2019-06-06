@@ -5,6 +5,8 @@ import random
 
 from odoo import models, api, fields, _
 
+import logging
+_logger = logging.getLogger(__name__)
 
 class GeneratorInterface(models.AbstractModel):
     _name = 'builder.ir.model.demo.generator.base'
@@ -126,8 +128,14 @@ class IrModel(models.Model):
     @api.one
     @api.depends('demo_records', 'model')
     def _compute_demo_xml_id_sample(self):
-        tmpl = '{model}_'.format(model=self.model.lower().replace('.', '_')) + '{id}' if self.model else 'model_'
-        self.demo_xml_id_sample = pickle.dumps([tmpl.format(id=i) for i in range(self.demo_records)])
+        if self.demo_records:
+            tmpl = '{model}_'.format(model=self.model.lower().replace('.', '_')) + '{id}' if self.model else 'model_'
+            value = pickle.dumps([tmpl.format(id=i) for i in range(self.demo_records)])
+            _logger.debug(self.demo_records)
+            _logger.debug(tmpl)
+            _logger.debug(value)
+            self.demo_xml_id_sample = value
+        
 
     @api.multi
     def demo_xml_id(self, index):
