@@ -46,7 +46,7 @@ class Generator(models.Model):
     _order = 'module_id asc, model_id asc'
     _target_type = 'char'
 
-    model_id = fields.Many2one('builder.ir.model','id', ondelete='cascade')
+    model_id = fields.Many2one('builder.ir.model', ondelete='cascade')
     module_id = fields.Many2one('builder.ir.module.module', 'Module', related='model_id.module_id', ondelete='cascade',
                                 store=True)
     type = fields.Char('Type', compute='_compute_type')

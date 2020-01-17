@@ -1,0 +1,28 @@
+** Settings ***
+Documentation  Test of all elements in OpenERP
+Resource       odoo-robot-framework/odoo_10_0.robot
+Library        odoo-robot-framework/connection_erp.py
+
+*** Test Cases ***
+登陆
+Login     ${ODOO_DB}      ${USER}     ${PASSWORD}
+
+安装模块
+${module_installed}=    Install Module  ${ODOO_URL_DB}      ${ODOO_DB}      ${USER}     ${PASSWORD}    builder
+log to console    ${module_installed}
+Run Keyword Unless    ${module_installed}    Fail
+
+更新模块
+${module_upgraded}=    Upgrade Module  ${ODOO_URL_DB}      ${ODOO_DB}      ${USER}     ${PASSWORD}    builder
+log to console    ${module_upgraded}
+Run Keyword Unless    ${module_upgraded}    Fail
+
+菜单检查
+{% block content -%}
+    {%- for menu in menus %}
+        SubSubMenuXMLid {{ menu.name }}
+    {% endfor -%}
+{% endblock -%}
+
+close
+close browser

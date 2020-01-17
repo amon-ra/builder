@@ -105,7 +105,7 @@ class OdooBuilderLoader(object):
                 ]
 
                 required_attributes = model_required_attributes(model)
-                _logger.debug(required_attributes)
+                #_logger.debug(required_attributes)
                 if required_attributes.issubset(set(data.keys())) and not missing:
                     d = {
                         key: value if not isinstance(value, dict) else
@@ -121,7 +121,7 @@ class OdooBuilderLoader(object):
                     # d = {}
                     # for key, value in list(data.items()):
 
-                    _logger.debug(d)
+                    #_logger.debug(d)
                     if d:
                         obj = model.create(d)
                     if obj:
@@ -142,7 +142,7 @@ class OdooBuilderLoader(object):
                 columns = model._fields
                 for attr in list(data.keys()):
                     if attr in columns:
-                        _logger.debug(dir(columns[attr]))
+                        #_logger.debug(dir(columns[attr]))
                         if columns[attr].type == 'many2many':
                             obj.write({
                                 attr: [[6, False, [self.get_object(item).id for item in data[attr]]]]
