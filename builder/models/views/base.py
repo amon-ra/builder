@@ -1,6 +1,11 @@
 from odoo.exceptions import ValidationError
 from odoo import models, api, fields, _
 
+
+import logging
+_logger = logging.getLogger(__name__)
+
+# Oondeo
 FIELD_WIDGETS_ALL = [
     ('barchart', "FieldBarChart"),
     ('binary', "FieldBinaryFile"),
@@ -15,6 +20,7 @@ FIELD_WIDGETS_ALL = [
     ('html', "FieldTextHtml"),
     ('image', "FieldBinaryImage"),
     ('integer', "FieldFloat"),
+    ('id', "FieldID"),
     ('kanban_state_selection', "KanbanSelection"),
     ('many2many', "FieldMany2Many"),
     ('many2many_binary', "FieldMany2ManyBinaryMultiFiles"),
@@ -38,7 +44,31 @@ FIELD_WIDGETS_ALL = [
     ('url', "FieldUrl"),
     ('x2many_counter', "X2ManyCounter"),
 ]
+VIEW_TYPES = {
+    'calendar': 'builder.views.calendar',
+    'form': 'builder.views.form',
+    'gantt': 'builder.views.gantt',
+    'graph': 'builder.views.graph',
+    'kanban': 'builder.views.kanban',
+    'search': 'builder.views.search',
+    'tree': 'builder.views.tree',
+    'qweb': 'builder.ir.ui.view',
+    'diagram': 'builder.ir.ui.view',
+    'pivot': 'builder.ir.ui.pivot',
+}
 
+SEL_VIEW_TYPES = [
+            ('form', 'Form'),
+            ('tree', 'Tree'),
+            ('calendar', 'Calendar'),
+            ('gantt', 'Gantt'),
+            ('kanban', 'Kanban'),
+            ('graph', 'Graph'),
+            ('search', 'Search'),
+            ('diagram', 'Diagram'),
+            ('qweb', 'QWeb'),
+            ('pivot', 'Pivot')    
+]
 
 class ViewSelector(models.TransientModel):
     _name = 'builder.views.selector'
@@ -53,16 +83,7 @@ class ViewSelector(models.TransientModel):
     model_groups_date_field_ids = fields.One2many('builder.ir.model.fields', string='Has Date Fields',
                                                   related='model_id.groups_date_field_ids')
     type = fields.Selection(
-        [
-            ('form', 'Form'),
-            ('tree', 'Tree'),
-            ('calendar', 'Calendar'),
-            ('gantt', 'Gantt'),
-            ('kanban', 'Kanban'),
-            ('graph', 'Graph'),
-            ('search', 'Search'),
-            ('diagram', 'Diagram'),
-        ], 'Type', required=True, default='form')
+        SEL_VIEW_TYPES , 'Type', required=True, default='form')
 
     inherit_view = fields.Boolean('Inherit')
     inherit_view_id = fields.Many2one('ir.ui.view', 'Inherit View')
@@ -99,15 +120,24 @@ class ViewSelector(models.TransientModel):
 
     @api.multi
     def action_show_view(self):
-        view_type_names = {
-            'form': _('Form View View'),
-            'tree': _('Tree View View'),
-            'search': _('Search View View'),
-            'graph': _('Graph View View'),
-            'gantt': _('Gantt View View'),
-            'kanban': _('Kanban View View'),
-            'calendar': _('Calendar View View'),
-        }
+        res_id = False
+        wizard = False
+        if self.type == 'wizard':
+            self.type = 'form'
+            wizard = True
+            # res_id = self.env['builder.views.form'].create({
+            #     'wizard': True,
+            #     'type': 'form',
+            #     'model_id': self.model_id.id,
+            #     'special_states_field_id': self.special_states_field_id.id,
+            #     'module_id': self.model_id.module_id.id,
+            #     'add_inherited_fields': self.add_inherited_fields,
+            #     'inherit_view': self.inherit_view,
+            #     'inherit_view_id': self.inherit_view_id.id,
+            #     'inherit_view_ref': self.inherit_view_ref,
+            # })
+
+        view_type_names = { x[0]:x[1] for x in SEL_VIEW_TYPES}
 
         return {
             'name': view_type_names[self.type],
@@ -116,9 +146,10 @@ class ViewSelector(models.TransientModel):
             'view_mode': 'tree',
             'res_model': 'builder.views.' + self.type,
             'views': [(False, 'form')],
-            'res_id': False,
+            'res_id': res_id,
             'target': 'new',
             'context': {
+                'default_wizard': wizard,
                 'default_model_id': self.model_id.id,
                 'default_special_states_field_id': self.special_states_field_id.id,
                 'default_module_id': self.model_id.module_id.id,
@@ -130,25 +161,13 @@ class ViewSelector(models.TransientModel):
         }
 
 
-VIEW_TYPES = {
-    'calendar': 'builder.views.calendar',
-    'form': 'builder.views.form',
-    'gantt': 'builder.views.gantt',
-    'graph': 'builder.views.graph',
-    'kanban': 'builder.views.kanban',
-    'search': 'builder.views.search',
-    'tree': 'builder.views.tree',
-    'qweb': 'builder.ir.ui.view',
-    'diagram': 'builder.ir.ui.view',
-}
-
-
 class View(models.Model):
     _name = 'builder.ir.ui.view'
     _rec_name = 'xml_id'
 
     _inherit = ['ir.mixin.polymorphism.superclass']
 
+    define = fields.Boolean('Is defined',default=True)
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='CASCADE')
     model_id = fields.Many2one('builder.ir.model', ondelete='cascade')
     model_inherit_type = fields.Selection([('mixed', 'Mixed'), ('class', 'Class'), ('prototype', 'Prototype'), ('delegation', 'Delegation')], 'Inherit Type', related='model_id.inherit_type', store=False, search=True)
@@ -161,17 +180,7 @@ class View(models.Model):
 
     # type = fields.Char('View Type')
     type = fields.Selection(
-        [
-            ('form', 'Form'),
-            ('tree', 'Tree'),
-            ('calendar', 'Calendar'),
-            ('gantt', 'Gantt'),
-            ('kanban', 'Kanban'),
-            ('graph', 'Graph'),
-            ('search', 'Search'),
-            ('diagram', 'Diagram'),
-            ('qweb', 'QWeb'),
-        ], 'Type', required=True, default='form')
+       SEL_VIEW_TYPES , 'Type', required=True, default='form')
 
     name = fields.Char('View Name', required=True)
     xml_id = fields.Char('View ID', required=True)
@@ -189,6 +198,8 @@ class View(models.Model):
         inverse_name='view_id',
         string='Changes',
     )
+    arch = fields.Text('XML Data')
+    custom_arch = fields.Boolean('Custom XML')
 
     @api.onchange('type')
     def _onchange_type(self):
@@ -196,8 +207,8 @@ class View(models.Model):
 
     @api.multi
     def action_open_view(self):
-        model = self._model
-        action = model.get_formview_action( self.ids)
+        model = self
+        action = model.get_formview_action(self.ids)
         action.update({'target': 'new'})
         return action
 
@@ -226,6 +237,8 @@ class InheritViewChange(models.Model):
     inherit_view_attribute = fields.Char('Change Attribute')
     inherit_view_attribute_value = fields.Char('Change Attribute Value')
     inherit_view_field = fields.Char('Field')
+    inherit_view_arch = fields.Text('XML Data')
+    inherit_view_selector = fields.Selection([('field','Field'),('xml','XML')],default='field',string="Content Type")
 
 
 class AbstractViewField(models.AbstractModel):
@@ -243,6 +256,14 @@ class AbstractViewField(models.AbstractModel):
                                               related='view_id.model_id.special_states_field_id', string='States Field')
     module_id = fields.Many2one('builder.ir.model', related='view_id.model_id.module_id', string='Module')
     string = fields.Char('String')
+
+    def create(self, vals):
+        if vals.get('module_id',True) is False or vals.get('model_id',True) == False:
+            view_id = self.env['builder.ir.ui.view'].browse([vals['view_id']])
+            vals['model_id']=view_id.model_id.id
+            model_id = self.env['builder.ir.model'].browse([vals['model_id']])
+            vals['module_id'] = model_id.module_id.id
+        return super().create(vals)
 
     @api.one
     @api.depends('field_id.ttype')

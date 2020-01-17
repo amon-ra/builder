@@ -211,18 +211,18 @@ class view(models.Model):
         _Node_Obj = self.pool[node_obj]
         _Arrow_Obj = self.pool[conn_obj]
 
-        for model_key,model_value in list(_Model_Obj._columns.items()):
-                if model_value._type=='one2many':
+        for model_key,model_value in list(_Model_Obj._fields.items()):
+                if model_value.type=='one2many':
                     if model_value._obj==node_obj:
                         _Node_Field=model_key
                         _Model_Field=model_value._fields_id
                     flag=False
-                    for node_key,node_value in list(_Node_Obj._columns.items()):
-                        if node_value._type=='one2many':
+                    for node_key,node_value in list(_Node_Obj._fields.items()):
+                        if node_value.type=='one2many':
                              if node_value._obj==conn_obj:
-                                 if src_node in _Arrow_Obj._columns and flag:
+                                 if src_node in _Arrow_Obj._fields and flag:
                                     _Source_Field=node_key
-                                 if des_node in _Arrow_Obj._columns and not flag:
+                                 if des_node in _Arrow_Obj._fields and not flag:
                                     _Destination_Field=node_key
                                     flag = True
 

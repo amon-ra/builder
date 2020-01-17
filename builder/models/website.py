@@ -206,7 +206,7 @@ class WebsiteSnippet(models.Model):
             ('custom', 'Custom'),
         ],
         string='Category',
-        required=True
+        required=True,default='custom'
     )
 
     is_custom_category = fields.Boolean('Is Custom Category', compute='_compute_is_custom_category')
@@ -225,10 +225,6 @@ class WebsiteSnippet(models.Model):
     # Options
     siblings = fields.Char('Allowed Siblings')
     children = fields.Char('Allowed Children')
-
-    _defaults = {
-        'category': 'custom'
-    }
 
     @api.one
     @api.depends('name')

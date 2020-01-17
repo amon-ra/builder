@@ -9,7 +9,12 @@ import string
 from odoo import models, fields, api, _, tools
 from .utils import simple_selection
 from .utils.formats import json
+from .models import compute_methods
 
+# Format: START/class/id (self.env[class].browse([id]))
+BUILDER_TAG_START = '****************************** builder'
+BUILDER_TAG_END = '****************************** /builder'
+BUILDER_LINE_END = ' **************************** '
 
 MODULE_EXPORTER_RE = re.compile('_export_\w[\w_]+')
 
@@ -33,9 +38,33 @@ def get_module_importers(model):
 class Module(models.Model):
     _name = 'builder.ir.module.module'
 
+
+    @staticmethod
+    def buildertag_start(extension='.xml',name=False,oid=False):
+        if name and oid:
+            name = '/' + name + '/' + oid
+        else:
+            name = ''
+        if extension == '.py':
+            return '# ' + BUILDER_TAG_START + name + BUILDER_LINE_END + '#'
+        if extension == '.xml':
+            return '<!-- ' + BUILDER_TAG_START + name + BUILDER_LINE_END + '-->'
+        return ''
+
+    @staticmethod
+    def buildertag_end(extension='.xml'):
+        if extension == '.py':
+            return '# ' + BUILDER_TAG_END + BUILDER_LINE_END + '#'
+        if extension == '.xml':
+            return '<!-- ' + BUILDER_TAG_END + BUILDER_LINE_END + '-->'
+        return ''
     @api.model
     def _get_categories(self):
         return [(c.name, c.name) for c in self.env['ir.module.category'].search([])]
+
+    @api.model
+    def _get_default_author(self):
+        return self.env.user.name if self.env.user else None
 
     name = fields.Char("Technical Name", required=True, index=True)
     category_id = fields.Selection(simple_selection('ir.module.category', 'name') , 'Category')
@@ -43,12 +72,12 @@ class Module(models.Model):
     summary = fields.Char('Summary', translate=True)
     description = fields.Text("Description", translate=True)
     description_html = fields.Html(string='Description HTML', sanitize=False)
-    author = fields.Char("Author", required=True)
+    author = fields.Char("Author", required=True,default=_get_default_author)
     maintainer = fields.Char('Maintainer')
     contributors = fields.Text('Contributors')
     website = fields.Char("Website")
 
-    version = fields.Char('Version', default='0.1')
+    version = fields.Char('Version', default='11.0.1.0.0')
     mirror = fields.Text('CodeMirror')
 
     url = fields.Char('URL')
@@ -103,17 +132,11 @@ class Module(models.Model):
     action_url_ids = fields.One2many('builder.ir.actions.act_url', 'module_id', 'URL Actions', copy=True)
     # workflow_ids = fields.One2many('builder.workflow', 'module_id', 'Workflows', copy=True)
     backend_asset_ids = fields.One2many('builder.web.asset', 'module_id', 'Assets', copy=True)
-
+    python_file_ids = fields.One2many('builder.python.file', 'module_id', 'Custom Code', copy=True)
     data_file_ids = fields.One2many('builder.data.file', 'module_id', 'Data Files', copy=True)
     snippet_bookmarklet_url = fields.Char('Link', compute='_compute_snippet_bookmarklet_url')
 
-    @api.model
-    def _get_default_author(self):
-        return self.env.user.name if self.env.user else None
 
-    _defaults = {
-        'author': _get_default_author
-    }
 
     def copy(self, default=None):
         default = dict(default or {})
@@ -170,6 +193,19 @@ javascript:(function(){
     @api.depends('model_ids')
     def _compute_models_count(self):
         self.models_count = len(self.model_ids)
+
+    @api.multi
+    def compute_methods(self, name):
+        """ Return a list of str with method names, if is installed localy """
+        ret = []
+        try:
+            model = self.env[name]
+            for i in model._inherit:
+                ret += compute_methods(model, i)
+        except:
+            pass
+
+        return ret
 
     @api.multi
     def action_base_files(self):

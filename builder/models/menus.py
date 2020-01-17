@@ -86,11 +86,16 @@ class IrUiMenu(models.Model):
         self.parent_id = False
 
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
+    model_id = fields.Many2one('builder.ir.model',
+                               'Model',
+                               ondelete='cascade',
+                               )
+
     name = fields.Char('Menu', required=True, translate=True)
     xml_id = fields.Char('XML ID', required=True)
     complete_name = fields.Char('Complete Name', compute='_compute_complete_name')
     morder = fields.Integer('Order')
-    sequence = fields.Integer('Sequence')
+    sequence = fields.Integer('Sequence',default=10)
     child_ids = fields.One2many('builder.ir.ui.menu', 'parent_id', 'Child Ids', copy=True)
     # group_ids = fields.Many2many('builder.res.groups', 'builder_ir_ui_menu_group_rel', 'menu_id', 'gid', 'Groups', help="If you have groups, the visibility of this menu will be based on these groups. "\
     #             "If this field is empty, Odoo will compute visibility based on the related object's read access.")
@@ -183,13 +188,13 @@ class IrUiMenu(models.Model):
     def real_xml_id(self):
         return self.xml_id if '.' in self.xml_id else '{module}.{xml_id}'.format(module=self.module_id.name, xml_id=self.xml_id)
 
-    _constraints = [
-        (models.Model._check_recursion, _rec_message, ['parent_id'])
-    ]
-    _defaults = {
-        'sequence': 10,
-    }
     _order = "morder,id"
     _parent_store = True
+
+    @api.constrains('parent_id')
+    def _check_hierarchy(self):
+        if not self._check_recursion():
+            raise ValidationError(self._rec_message())
+        return True
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

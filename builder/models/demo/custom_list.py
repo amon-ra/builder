@@ -32,9 +32,11 @@ class RandomStringGenerator(models.Model):
     ], required=True, default=3)
     custom_list = fields.Char("Custom List", size=1024)
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['subclass_model']= self._name
+        return res  
 
     @api.multi
     def get_generator(self, field):

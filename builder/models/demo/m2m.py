@@ -28,9 +28,11 @@ class M2mGenerator(models.Model):
     min_reference_count = fields.Integer('Min Reference Count', default=1)
     max_reference_count = fields.Integer('Max Reference Count', default=1)
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['subclass_model']= self._name
+        return res  
 
     @api.multi
     def get_generator(self, field):

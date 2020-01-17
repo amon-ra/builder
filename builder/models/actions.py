@@ -1,11 +1,10 @@
 from odoo import fields
-
-__author__ = 'one'
-
 # from odoo import models, api, fields, _
 from odoo import models
 from odoo import SUPERUSER_ID
 from odoo import api
+
+__author__ = 'one'
 
 
 class actions(models.Model):
@@ -13,17 +12,18 @@ class actions(models.Model):
     _table = 'builder_ir_actions'
     _order = 'name'
     module_id=fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
-    xml_id=fields.Char('XML ID', required=True)
+
+    model_id = fields.Many2one('builder.ir.model',
+                               'Model',
+                               ondelete='cascade')
+    xml_id=fields.Char('XML ID', required=True, translate=True)
     name=fields.Char('Name', required=True)
     type=fields.Char('Action Type', required=True)
-    usage=fields.Char('Action Usage')
+    usage=fields.Char('Action Usage',default=lambda *a: False)
 
     help=fields.Text('Action description',
                         help='Optional help text for the users with a description of the target view, such as its usage and purpose.',
                         translate=True)
-    _defaults = {
-        'usage': lambda *a: False,
-    }
 
     @property
     def real_xml_id(self):
@@ -37,19 +37,16 @@ class ir_actions_act_url(models.Model):
     _inherit = 'builder.ir.actions.actions'
     _sequence = 'builder_ir_actions_id_seq'
     _order = 'name'
-    name=fields.Char('Action Name', translate=True)
-    type=fields.Char('Action Type', required=True)
+
+    type = fields.Char('Action Type', required=True,
+        default='builder.ir.actions.act_url')
     url=fields.Text('Action URL', required=True)
     target=fields.Selection((
         ('new', 'New Window'),
         ('self', 'This Window')),
-        'Action Target', required=True
+        'Action Target', required=True, default='new'
     )
 
-    _defaults = {
-        'type': 'builder.ir.actions.act_url',
-        'target': 'new'
-    }
 
 
 class ir_actions_act_window(models.Model):
@@ -105,7 +102,7 @@ class ir_actions_act_window(models.Model):
             res[act.id] = str(field_get)
         return res
 
-    name=fields.Char('Action Name', translate=True)
+
     view_id=fields.Many2one('builder.ir.ui.view', 'View Ref.', ondelete='set null')
     domain=fields.Char('Domain Value',
                           help="Optional domain filtering of the destination data, as a Python expression")
@@ -121,8 +118,13 @@ class ir_actions_act_window(models.Model):
                                 ('inlineview', 'Inline View')], 'Target Window')
     view_mode=fields.Char('View Mode', required=True,
                              help="Comma-separated list of allowed view modes, such as 'form', 'tree', 'calendar', etc. (Default: tree,form)")
-    view_type=fields.Selection((('tree', 'Tree'), ('form', 'Form')), string='View Type', required=True,
-                                  help="View type: Tree type to use for the tree view, set to 'tree' for a hierarchical tree view, or 'form' for a regular list view")
+    view_type = fields.Selection(
+        (('tree', 'Tree'), ('form', 'Form')),
+        string='View Type',
+        required=True,
+        help=
+        "View type: Tree type to use for the tree view, set to 'tree' for a hierarchical tree view, or 'form' for a regular list view"
+    )
     usage=fields.Char('Action Usage',
                          help="Used to filter menu and home actions from the user form.")
     view_ids=fields.One2many('ir.actions.act_window.view', 'act_window_id', 'Views', copy=True)
@@ -144,24 +146,26 @@ class ir_actions_act_window(models.Model):
     show_help=fields.Boolean('Display Help')
     help=fields.Html('Help')
 
-    _defaults = {
-        'type': 'builder.ir.actions.act_window',
-        'view_type': 'form',
-        'view_mode': 'tree,form',
-        'context': '{}',
-        'limit': 80,
-        'target': 'current',
-        'auto_refresh': 0,
-        'auto_search': True,
-        'multi': False,
-        'help': """
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['type'] = 'builder.ir.actions.act_window'
+        res['view_type'] = 'form'
+        res['view_mode'] = 'tree,form'
+        res['context'] = '{}'
+        res['limit'] = 80
+        res['target'] = 'current'
+        res['auto_refresh'] = 0
+        res['auto_search'] = True
+        res['multi'] = False
+        res['help'] = """
           <p class="oe_view_nocontent_create">
             Click to create a new model.
           </p><p>
             This is an example of help content.
           </p>
         """
-    }
+        return res
 
     @api.onchange('model_id')
     def onchange_model_id(self):

@@ -25,9 +25,11 @@ class AutoincrementGenerator(models.Model):
     start_number = fields.Float('Start at', required=True, default=1)
     increment = fields.Float('Increment', required=True, default=1)
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['subclass_model']= self._name
+        return res  
 
     @api.model
     def format_value(self, field, value):

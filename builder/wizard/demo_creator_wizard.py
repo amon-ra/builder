@@ -15,7 +15,7 @@ class DemoDataCreator(models.TransientModel):
     @api.one
     @api.depends('type')
     def _compute_target_fields_type(self):
-        self.target_fields_type = self.env[self.type]._model._target_type if self.type else False
+        self.target_fields_type = self.env[self.type]._target_type if self.type else False
 
     @api.model
     def _get_type_selection(self):
@@ -23,7 +23,7 @@ class DemoDataCreator(models.TransientModel):
 
     @api.multi
     def action_create(self):
-        model = self.env[self.type]._model
+        model = self.env[self.type]
         return {
             'name': model._description,
             'type': 'ir.actions.act_window',

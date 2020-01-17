@@ -96,15 +96,16 @@ This module aims to help in the development of new modules
 
         # 'security/ir.model.access.csv',
     ],
-    'test': [
-        # 'test/test_demo.yml',
-    ],
+    # 'test': [
+    #     'test/test_demo.yml',
+    # ],
     'images': [
         'static/description/module_info.png',
         'static/description/designer.png',
     ],
     #'qweb': [],
      # 'qweb': ['static/src/xml/templates.xml'],
+    'post_init_hook': 'post_init_hook',
     'installable': True,
     'application': True,
     'auto_install': False,

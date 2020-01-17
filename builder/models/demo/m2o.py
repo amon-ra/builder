@@ -26,9 +26,11 @@ class M2oGenerator(models.Model):
     specify_references = fields.Boolean('Specify References')
     reference_list = fields.Char('References')
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['subclass_model']= self._name
+        return res  
 
     @api.multi
     def get_generator(self, field):

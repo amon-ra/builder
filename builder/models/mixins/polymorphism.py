@@ -3,6 +3,9 @@ from odoo.api import Environment
 
 __author__ = 'deimos'
 
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class Superclass(models.AbstractModel):
     _name = 'ir.mixin.polymorphism.superclass'
@@ -10,17 +13,22 @@ class Superclass(models.AbstractModel):
     subclass_id = fields.Integer('Subclass ID', compute='_compute_res_id')
     subclass_model = fields.Char("Subclass Model", required=True)
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['subclass_model']= self._name
+        return res  
 
     @api.one
     def _compute_res_id(self):
-        if self.subclass_model == self._model._name:
+        _logger.debug(self.subclass_model)
+        _logger.debug(self._name)
+        _logger.debug(self.name)
+        if self.subclass_model == self._name:
             self.subclass_id = self.id
         else:
             subclass_model = self.env[self.subclass_model]
-            attr = subclass_model._inherits.get(self._model._name)
+            attr = subclass_model._inherits.get(self._name)
             if attr:
                 self.subclass_id = subclass_model.search([
                     (attr, '=', self.id)
@@ -36,16 +44,17 @@ class Superclass(models.AbstractModel):
     #         view = self.pool.get(record.subclass_model).fields_view_get(cr, uid, view_id, view_type, context=context, toolbar=toolbar, submenu=submenu)
     #     return view
 
-    def get_formview_action(self, id):
+    def get_formview_action(self, access_uid=None):
         """
         @return <ir.actions.act_window>
         """
-
-        record = self.browse(id)[0]
+        id = access_uid[0] if isinstance(access_uid, list) else access_uid
+        record = self.browse([id])[0]
         if not record.subclass_model:
             return super(Superclass, self).get_formview_action( id)
 
         create_instance = False
+        instance = False
         # try:
         if not record.subclass_id:
             create_instance = True
@@ -55,14 +64,19 @@ class Superclass(models.AbstractModel):
         if create_instance:
             # env = Environment(cr, uid, context)
             # env[record.subclass_model].create_instance(id[0] if isinstance(id, list) else id)
-            env = self.env[record.subclass_model].with_env()
-            env.create_instance(id[0] if isinstance(id, list) else id)
-
+            # env = self.env[record.subclass_model].with_env()
+            # env.create_instance(id[0] if isinstance(id, list) else id)
+            instance = self.env[record.subclass_model].create(record.copy_data()[0])
+            # instance.save()
 
         if self._name == record.subclass_model:
             view = super(Superclass, self).get_formview_action( id)
         else:
-            view = self.pool.get(record.subclass_model).get_formview_action( record.subclass_id)
+            if not instance:
+                instance = self.env[record.subclass_model].browse([record.subclass_id])
+            view = instance.get_formview_action(instance.id)
+            # view = instance.get_formview_action( record.subclass_id)
+
         return view
 
     @api.one
@@ -80,19 +94,19 @@ class Superclass(models.AbstractModel):
     @api.multi
     def action_edit(self):
         cr, uid, cxt = self.env.args
-        data = self._model.get_formview_action(self.id)
+        data = self.get_formview_action(self.id)
         return data
 
 
 class Subclass(models.AbstractModel):
     _name = 'ir.mixin.polymorphism.subclass'
 
-    def get_formview_id(self):
-        view = self.pool.get('ir.ui.view').search([
+    def get_formview_id(self,access_uid=None):
+        view = self.env.get('ir.ui.view').search([
             ('type', '=', 'form'),
             ('model', '=', self._name)
         ])
-        return view[0] if len(view) else False
+        return view[0].id if len(view) else False
 
     def unlink(self):
         records = self

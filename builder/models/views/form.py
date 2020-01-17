@@ -4,6 +4,8 @@ from odoo import models, fields, api, _
 from .base import FIELD_WIDGETS_ALL
 from collections import defaultdict
 
+import logging
+_logger = logging.getLogger(__name__)
 
 class FormView(models.Model):
     _name = 'builder.views.form'
@@ -14,6 +16,7 @@ class FormView(models.Model):
         'builder.ir.ui.view': 'view_id'
     }
 
+    wizard = fields.Boolean('Wizard',default=False)
     view_id = fields.Many2one('builder.ir.ui.view', string='View', required=True, ondelete='cascade')
     attr_create = fields.Boolean('Allow Create', default=True)
     attr_edit = fields.Boolean('Allow Edit', default=True)
@@ -29,6 +32,7 @@ class FormView(models.Model):
     @api.onchange('inherit_view_id')
     def onchange_inherit_view_id(self):
         self.inherit_view_ref = False
+        _logger.debug(self.inherit_view_id.id)
         if self.inherit_view_id:
             data = self.env['ir.model.data'].search([('model', '=', 'ir.ui.view'), ('res_id', '=', self.inherit_view_id.id)])
             self.inherit_view_ref = "{module}.{id}".format(module=data.module, id=data.name) if data else False
@@ -54,10 +58,13 @@ class FormView(models.Model):
             if not view.model == self.model_id.model:
                 raise ValidationError("View Ref is not a valid view reference")
 
-    _defaults = {
-        'type': 'form',
-        'subclass_model': lambda s, c, u, cxt=None: s._name,
-    }
+
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['type'] = 'form'
+        res['subclass_model']= self._name
+        return res
 
     @api.onchange('model_id')
     def _onchange_model_id(self):

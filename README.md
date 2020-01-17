@@ -44,3 +44,7 @@ TODO: Write credits
 ## License
 
 TODO: Write license
+
+## TODO
+
+- https://github.com/andrepurnomo/odoo-module-builder/blob/master/builder.py

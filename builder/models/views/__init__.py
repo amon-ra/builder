@@ -9,3 +9,4 @@ from . import graph
 from . import kanban
 from . import search
 from . import tree
+from . import pivot

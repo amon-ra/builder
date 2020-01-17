@@ -4,6 +4,8 @@ from psycopg2._psycopg import IntegrityError
 from odoo.exceptions import except_orm
 from odoo import models, api
 
+import logging
+_logger = logging.getLogger(__name__)
 
 class OdooBuilderTranslator(object):
     def __init__(self):
@@ -11,19 +13,19 @@ class OdooBuilderTranslator(object):
 
     def translate(self, obj):
         if isinstance(obj, models.Model):
-            instance = {'@model': obj._model._name, '@id': obj.id}
-            obj_id = obj._model._name, obj.id
-            if obj.id and obj_id not in self.seen_models and obj._model._name.startswith('builder.'):
+            instance = {'@model': obj._name, '@id': obj.id}
+            obj_id = obj._name, obj.id
+            if obj.id and obj_id not in self.seen_models and obj._name.startswith('builder.'):
                 self.seen_models.add(obj_id)
-                for name, column in list(obj._model._columns.items()):
+                for name, column in list(obj._fields.items()):
                     if name in ['id', 'write_uid', 'write_date', 'create_date', 'create_uid']:
                         continue
-                    if column._type in ['function'] or getattr(column, '_fnct', False) or not getattr(column, 'store', True):
+                    if column.type in ['function'] or getattr(column, '_fnct', False) or not getattr(column, 'store', True):
                         continue
-                    if column._type in ['char', 'boolean', 'integer', 'text', 'html', 'float', 'date', 'datetime', 'selection', 'binary']:
+                    if column.type in ['char', 'boolean', 'integer', 'text', 'html', 'float', 'date', 'datetime', 'selection', 'binary']:
                         instance[name] = getattr(obj, name)
                     else:
-                        instance[name] = getattr(self, 'handle_model_{type}'.format(type=column._type))(obj, name)
+                        instance[name] = getattr(self, 'handle_model_{type}'.format(type=column.type))(obj, name)
             return instance if obj.id else False
         return obj
 
@@ -47,12 +49,16 @@ class OdooBuilderTranslator(object):
 
 
 def model_required_attributes(model):
-    columns = model._columns
+    columns = model._fields
     return {
         name
         for name, column in list(columns.items())
-        if getattr(column, 'required', False) and getattr(column, 'store', True) and not getattr(column, '_fnct', False)
+        if getattr(column, 'required', False) and getattr(column, 'store', True) and not getattr(column, 'compute', False)
     }
+
+    # oondeo returns a set (FIX)
+    # _logger.debug(model.name)
+    # return { record.name for record in model if record and record.required and not record.allow_compute}
 
 
 class OdooBuilderLoader(object):
@@ -99,13 +105,25 @@ class OdooBuilderLoader(object):
                 ]
 
                 required_attributes = model_required_attributes(model)
-
+                _logger.debug(required_attributes)
                 if required_attributes.issubset(set(data.keys())) and not missing:
-                    obj = model.create({
-                        key: value if not isinstance(value, dict) else '{model},{id}'.format(model=value['@model'], id=self.seen_models.get((value['@model'], value['@id']))) if model._columns[key]._type == 'reference' else self.seen_models.get((value['@model'], value['@id']))
+                    d = {
+                        key: value if not isinstance(value, dict) else
+                        '{model},{id}'.format(model=value['@model'],
+                                              id=self.seen_models.get(
+                                                  (value['@model'],
+                                                   value['@id'])))
+                        if model._fields[key].related else
+                        self.seen_models.get((value['@model'], value['@id']))
                         for key, value in list(data.items())
                         if not isinstance(value, list)
-                    })
+                    }
+                    # d = {}
+                    # for key, value in list(data.items()):
+
+                    _logger.debug(d)
+                    if d:
+                        obj = model.create(d)
                     if obj:
                         self.seen_models[obj_key] = obj.id
                         changes = True
@@ -121,10 +139,11 @@ class OdooBuilderLoader(object):
                 id_str = data['@id']
                 model = self.env[model_str]
                 obj = self.seen_models[model_str, id_str]
-                columns = model._columns
+                columns = model._fields
                 for attr in list(data.keys()):
                     if attr in columns:
-                        if columns[attr]._type == 'many2many':
+                        _logger.debug(dir(columns[attr]))
+                        if columns[attr].type == 'many2many':
                             obj.write({
                                 attr: [[6, False, [self.get_object(item).id for item in data[attr]]]]
                             })
@@ -155,7 +174,10 @@ class JSONExchanger(models.Model):
 
     @api.model
     def load_module(self, module):
+        try:
+            module = str(module,'utf-8')
+        except:
+            pass
         data = json.loads(module)
         translator = OdooBuilderLoader(self.env)
         translator.load(data)
-

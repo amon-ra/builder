@@ -17,5 +17,6 @@ from . import (
     res_config_model,
     generators,
     exchangers,
-    demo
+    demo,
+    python_file
 )

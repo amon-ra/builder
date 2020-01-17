@@ -27,7 +27,7 @@ def get_field_types(model):
     # raise "dd"
     r =  sorted([
         (k.lower(), k.lower()) for k, v in fields_old.__dict__.items()
-        if k != "Field" and \
+        if k != "Field" and not k.startswith("_") and \
         inspect.isclass(v) and issubclass(v, fields_old.Field) \
         # and not v._deprecated 
         # and not issubclass(v, fields_old.function)])
@@ -35,5 +35,5 @@ def get_field_types(model):
         and (not context.get('from_diagram', False) or (
             context.get('from_diagram', False) and (k in ['One2many', 'Many2one', 'Many2many'])))
     ])
-    _logger.debug(r)
+    # _logger.debug(r)
     return r

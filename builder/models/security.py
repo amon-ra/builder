@@ -44,11 +44,14 @@ class Groups(models.Model):
             res[g.id] = list(map(int, computed_set(g)))
         return res
 
+    define = fields.Boolean('Defined',default=True)
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
     xml_id = fields.Char('XML ID', required=True)
     name = fields.Char('Name', required=True, translate=True)
     # 'users=fields.Many2many('res.users', 'res_groups_users_rel', 'gid', 'uid', 'Users'),
     inherited = fields.Boolean('Inherited', default=False)
+    is_portal = fields.Boolean('Portal',default=False)
+    share = fields.Boolean('Share',default=False)
     sequence = fields.Integer('Sequence')
     model_access = fields.One2many('builder.ir.model.access', 'group_id', 'Access Controls', copy=True)
     rule_groups = fields.Many2many('builder.ir.rule', 'builder_rule_group_rel', 'group_id', 'rule_group_id', 'Rules',
@@ -71,6 +74,32 @@ class Groups(models.Model):
         ('name_uniq', 'unique (module_id, category_type, category_id, category_ref, name)',
          'The name of the group must be unique within an application!')
     ]
+
+    @api.multi
+    def create(self,vals):
+        vals2= {}
+        try:
+            group = vals.pop('id',False)
+            if group and issubclass(type(group),models.Model):
+                group_obj = self.env['builder.res.groups']
+                # module = self.env[self.env.context.get('active_model')].search([('id', '=', self.env.context.get('active_id'))])
+                module = vals.get('module_id')
+                data = self.env['ir.model.data'].search([('model', '=', group._name), ('res_id', '=', group.id)])
+                xml_id = "{module}.{id}".format(module=data.module, id=data.name)
+                vals2 ={
+                        'xml_id': xml_id,
+                        'name': data.name,
+                        'category_id': group.category_id.id,
+                        # 'category_ref': m.category_id.id,
+                        'comment': group.comment,
+                        'is_portal': group.is_portal,
+                        'share': group.share,
+                        'sequence': group.sequence
+                }                
+        except:
+            pass
+        vals2.update(vals)
+        return super().create(vals2)
 
     def copy(self, default=None):
         # group_name = self.read(cr, uid, [id], ['name'])[0]['name']
@@ -105,12 +134,14 @@ class Groups(models.Model):
                                                                              xml_id=self.xml_id)
 
 
+
 class IrModelAccess(models.Model):
     _name = 'builder.ir.model.access'
 
+    define = fields.Boolean('Defined',default=True)
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
     name = fields.Char('Name', required=True, index=True)
-    model_id = fields.Many2one('builder.ir.model', 'Object', required=True, domain=[('osv_memory', '=', False)],
+    model_id = fields.Many2one('builder.ir.model', 'Object', required=True, domain=[('transient', '=', False)],
                                index=True, ondelete='cascade')
     group_id = fields.Many2one('builder.res.groups', 'Group', ondelete='cascade', index=True)
     perm_read = fields.Boolean('Read Access')
@@ -138,7 +169,7 @@ class IrRule(models.Model):
 
     @api.constrains('module_id')
     def _check_model_obj(self):
-        if any(rule.model_id.osv_memory for rule in self):
+        if any(rule.model_id.transient for rule in self):
             raise  ValidationError(_('Rules can not be applied on Transient models.'))
         if any(rule.model_id.model == 'ir.rule' for rule in self):
             raise ValidationError(_('Rules can not be applied on the Record Rules model.'))
@@ -147,6 +178,8 @@ class IrRule(models.Model):
         # Don't allow rules on rules records (this model).
         # return not 
 
+    define = fields.Boolean('Defined',default=True)
+    system_id = fields.Integer('System ID')
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
     name = fields.Char('Name', index=1)
     model_id = fields.Many2one('builder.ir.model', 'Object', index=1, required=True, ondelete="cascade")
@@ -154,18 +187,11 @@ class IrRule(models.Model):
                              help="If no group is specified the rule is global and applied to everyone")
     groups = fields.Many2many('builder.res.groups', 'builder_rule_group_rel', 'rule_group_id', 'group_id', 'Groups')
     domain = fields.Text('Domain')
-    perm_read = fields.Boolean('Apply for Read')
-    perm_write = fields.Boolean('Apply for Write')
-    perm_create = fields.Boolean('Apply for Create')
-    perm_unlink = fields.Boolean('Apply for Delete')
+    perm_read = fields.Boolean('Apply for Read',default=True)
+    perm_write = fields.Boolean('Apply for Write',default=True)
+    perm_create = fields.Boolean('Apply for Create',default=True)
+    perm_unlink = fields.Boolean('Apply for Delete',default=True)
 
-    _defaults = {
-        'perm_read': True,
-        'perm_write': True,
-        'perm_create': True,
-        'perm_unlink': True,
-        'global_': True,
-    }
     _sql_constraints = [
         (
             'no_access_rights',

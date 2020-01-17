@@ -26,10 +26,12 @@ class KanbanView(models.Model):
                                  'field_id', 'Items')
     # field_ids = fields.One2many('builder.views.kanban.field', 'view_id', 'Items')
 
-    _defaults = {
-        'type': 'kanban',
-        'subclass_model': lambda s, c, u, cxt=None: s._name,
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['type']='kanban'
+        res['subclass_model']=self._name
+        return res  
 
     @api.model
     def create_instance(self, id):
@@ -47,6 +49,34 @@ class KanbanView(models.Model):
         self.xml_id = "view_{snake}_kanban".format(snake=snake_case(self.model_id.model))
         self.model_inherit_type = self.model_id.inherit_type  # shouldn`t be doing that
         self.model_name = self.model_id.model  # shouldn`t be doing that
+
+    @api.onchange('inherit_view_id')
+    def onchange_inherit_view_id(self):
+        self.inherit_view_ref = False
+        if self.inherit_view_id:
+            data = self.env['ir.model.data'].search([('model', '=', 'ir.ui.view'), ('res_id', '=', self.inherit_view_id.id)])
+            self.inherit_view_ref = "{module}.{id}".format(module=data.module, id=data.name) if data else False
+
+    @api.onchange('type')
+    def onchange_type(self):
+        self.inherit_view_ref = False
+        self.inherit_view_id = False
+
+    @api.onchange('inherit_view')
+    def onchange_inherit_view(self):
+        if self.inherit_view and self.model_id:
+            views = self.env['ir.ui.view'].search([('type', '=', 'kanban'), ('model', '=', self.model_id.model)])
+            if views:
+                self.inherit_view_id = views[0].id
+
+    @api.one
+    @api.constrains('inherit_view_ref')
+    def _check_view_ref(self):
+        exists = self.env['ir.model.data'].xmlid_lookup(self.inherit_view_ref)
+        if exists:
+            view = self.env['ir.model.data'].get_object(*self.inherit_view_ref.split('.'))
+            if not view.model == self.model_id.model:
+                raise ValidationError("View Ref is not a valid view reference")
 
 
 class KanbanField(models.Model):

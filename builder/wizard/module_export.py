@@ -5,20 +5,19 @@ class ModuleImport(models.TransientModel):
     _name = 'builder.ir.module.export.wizard'
 
     @api.model
-    def _get_export_types(self):
-        return self.env['builder.exchanger.base'].get_exchangers()
-
-    export_type = fields.Selection(_get_export_types, 'Format', required=True)
-
-    @api.model
     def _get_default_exporter(self):
         exporters = self.env['builder.exchanger.base'].get_exchangers()
         if exporters:
             return exporters[0][0]
+            
+    @api.model
+    def _get_export_types(self):
+        return self.env['builder.exchanger.base'].get_exchangers()
 
-    _defaults = {
-        'export_type': _get_default_exporter
-    }
+    export_type = fields.Selection(_get_export_types, 'Format',default=_get_default_exporter, required=True)
+
+
+
 
     @api.multi
     def action_export(self):

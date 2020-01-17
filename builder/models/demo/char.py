@@ -38,9 +38,11 @@ class RandomStringGenerator(models.Model):
         if self.min_word_count > self.max_word_count:
             raise odoo.exceptions.Warning('Minimum Word Count can\'t be greater than Maximum Word Count')
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['subclass_model']= self._name
+        return res  
 
     @api.multi
     def get_generator(self, field):

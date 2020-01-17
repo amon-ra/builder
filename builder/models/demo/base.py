@@ -62,10 +62,19 @@ class Generator(models.Model):
     allow_nulls = fields.Boolean('Allow Null Values',
                                  help='If the field is not required allow to generate null values for them.')
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        # res['type'] = 'form'
+        res['subclass_model']=self._name
+        return res  
 
+    def create(self, vals):
+        if vals.get('module_id',True) == False:
+            model_id = self.env['builder.ir.model'].browse([vals['model_id']])
+            vals['module_id'] = model_id.module_id.id
+        return super().create(vals)
+        
     @api.multi
     def generate_null_values(self, field):
         if self.allow_nulls and not field.required:
@@ -86,7 +95,7 @@ class Generator(models.Model):
     @api.one
     @api.depends('subclass_model')
     def _compute_target_fields_type(self):
-        self.target_fields_type = self.env[self.subclass_model]._model._target_type
+        self.target_fields_type = self.env[self.subclass_model]._target_type
 
     @api.model
     def get_generators(self):
@@ -106,7 +115,7 @@ class Generator(models.Model):
 
     @api.multi
     def action_open_view(self):
-        model = self._model
+        model = self
         action = model.get_formview_action( self.ids)
         action.update({'target': 'new'})
         return action

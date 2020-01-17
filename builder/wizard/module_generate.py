@@ -8,17 +8,15 @@ class ModuleGenerate(models.TransientModel):
     def _get_generators(self):
         return self.env['builder.generator.base'].get_generators()
 
-    generator = fields.Selection(_get_generators, 'Version', required=True)
-
     @api.model
     def _get_default_exporter(self):
         generators = self.env['builder.generator.base'].get_generators()
         if generators:
             return generators[0][0]
+            
+    generator = fields.Selection(_get_generators, 'Version',default=_get_default_exporter, required=True)
 
-    _defaults = {
-        'generator': _get_default_exporter
-    }
+
 
     @api.multi
     def action_generate(self):

@@ -36,9 +36,11 @@ class NameGenerator(models.Model):
 
     name_type_schema = fields.Char(required=True, help=_("Valid placeholders are : Title, Name, MaleName, FemaleName, Surname, Initial"))
 
-    _defaults = {
-        'subclass_model': lambda s, c, u, cxt=None: s._name
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['subclass_model']= self._name
+        return res  
 
     @api.onchange('name_type')
     def onchange_name_type(self):

@@ -20,7 +20,7 @@ class JsonExport:
 
         auto_field = ['id', '_log_access', 'create_date', 'create_uid', 'write_date', 'write_uid']
 
-        columns = [column for column in module._columns
+        columns = [column for column in module._fields
                    if not column in auto_field and not column in inverse_field]
 
         object = module.read([column for column in columns])[0]
@@ -100,6 +100,10 @@ class JsonImport:
         self.env = enviroment
 
     def build(self, model_obj, file_data):
+        try:
+            file_data = str(file_data, 'utf-8')
+        except:
+            pass
         json_dump = json.loads(zlib.decompress(file_data))
         return self.build_model(model_obj, json_dump['data'])
 
@@ -127,7 +131,7 @@ class JsonImport:
             comodel = self.env[v['comodel_name']]
 
             for rec_ in v['recordset']:
-              self.build_model(comodel,rec_,{record._fields[k].inverse_name:record.id})
+                self.build_model(comodel,rec_,{record._fields[k].inverse_name:record.id})
 
 
         for k,v in relational.items():

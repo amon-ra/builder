@@ -17,10 +17,12 @@ class SearchView(models.Model):
     view_id = fields.Many2one('builder.ir.ui.view', string='View', required=True, ondelete='cascade')
     field_ids = fields.One2many('builder.views.search.field', 'view_id', 'Search Items', copy=True)
 
-    _defaults = {
-        'type': 'search',
-        'subclass_model': lambda s, c, u, cxt=None: s._name,
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['type']='search'
+        res['subclass_model']= self._name
+        return res  
 
     @api.model
     def create_instance(self, id):

@@ -94,7 +94,8 @@ class {{ class_name }}(models.TransientModel):
 {%- macro builder_ir_model(model) -%}
 {%- if model.define %}
 {%- set class_name = model.model | replace(".", " ") | replace("_", " ") | title | replace(" ","") -%}
-class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}models.Model{% endif %}):
+
+class {{ class_name }}({% if model.transient %}models.TransientModel{% else %}models.Model{% endif %}):
     _name = '{{ model.model }}'
     {% if model.rec_name_field_id -%}
     _rec_name='{{ model.rec_name_field_id.name }}'
@@ -132,20 +133,21 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
     {% for field in model.field_ids -%}
     {{ builder_ir_model_field(field) }}
     {%- endfor %}
+
     {% for method_name, fields in model.compute_field_methods.items() -%}
-    {{ builder_ir_model_field_compute(method_name, fields) }}
+    {{ builder_ir_model_field_compute(model,method_name, fields) }}
     {% endfor -%}
     {% for method_name, fields in model.inverse_field_methods.items() -%}
-    {{ builder_ir_model_field_inverse(method_name, fields) }}
+    {{ builder_ir_model_field_inverse(model,method_name, fields) }}
     {% endfor -%}
     {% for method_name, fields in model.search_field_methods.items() -%}
-    {{ builder_ir_model_field_search(method_name, fields) }}
+    {{ builder_ir_model_field_search(model,method_name, fields) }}
     {% endfor -%}
     {% for method_name, fields in model.default_field_methods.items() -%}
-    {{ builder_ir_model_field_default(method_name, fields) }}
+    {{ builder_ir_model_field_default(model,method_name, fields) }}
     {% endfor -%}
     {% for method in model.method_ids -%}
-    {{ builder_ir_model_method(method) }}
+    {{ builder_ir_model_method(model,method) }}
     {% endfor -%}
     {% if model.rewrite_create_method -%}
     @api.model
@@ -163,43 +165,51 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
         return super({{ class_name }}, self).unlink(self):
     {% endif -%}
     {% for button in model.status_bar_button_ids -%}
-    {{ builder_ir_model_status_bar_button(button) }}
+    {{ builder_ir_model_status_bar_button(model,button) }}
     {% endfor -%}
     {% for button in model.button_ids -%}
-    {{ builder_ir_model_button(button) }}
+    {{ builder_ir_model_button(model,button) }}
     {%- endfor %}
 
 {% endif -%}
 {%- endmacro -%}
 
 {# generate builder.ir.model.method #}
-{% macro builder_ir_model_status_bar_button(button) -%}
+{% macro builder_ir_model_status_bar_button(model,button) -%}
     @api.multi
     def {{ button.method_name }}(self):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         raise NotImplementedError
 {% endmacro -%}
 
 {# generate builder.ir.model.method #}
-{% macro builder_ir_model_button(button) -%}
+{% macro builder_ir_model_button(model,button) -%}
     @api.multi
     def {{ button.method_name }}(self):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         raise NotImplementedError
 {% endmacro -%}
 
 
 {# generate builder.ir.model.method #}
-{% macro builder_ir_model_field_compute(method_name, fields) -%}
+{% macro builder_ir_model_field_compute(model,method_name, fields) -%}
     @api.one
     def {{ method_name }}(self):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}        
         {% for field in fields -%}
         self.{{ field }} = False
         {% endfor -%}
 {% endmacro -%}
 
 {# generate builder.ir.model.method #}
-{% macro builder_ir_model_field_inverse(method_name, fields) -%}
+{% macro builder_ir_model_field_inverse(model,method_name, fields) -%}
     @api.one
     def {{ method_name }}(self):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         {% for field in fields -%}
         # self. = self.{{ field }}
         {% endfor -%}
@@ -207,8 +217,10 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {% endmacro -%}
 
 {# generate builder.ir.model.method #}
-{% macro builder_ir_model_field_search(method_name, fields) -%}
+{% macro builder_ir_model_field_search(model,method_name, fields) -%}
     def {{ method_name }}(self, operator, value):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         return [
         {% for field in fields -%}
             ('{{ field }}', operator, value)
@@ -217,30 +229,39 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {% endmacro -%}
 
 {# generate builder.ir.model.method #}
-{% macro builder_ir_model_field_default(method_name, fields) -%}
+{% macro builder_ir_model_field_default(model,method_name, fields) -%}
     @api.model
     def {{ method_name }}(self):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         return False
 {% endmacro -%}
 
 {# generate builder.ir.model.method #}
-{% macro builder_ir_model_method(method) -%}
+{% macro builder_ir_model_method(model,method) -%}
     {% if method.type == 'simple_model' %}
-    @api.model
     def {{ method.name }}(self{% if method.arguments %}, {{ method.arguments }}{% endif %}):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         raise NotImplementedError
     {% elif method.type == 'simple_instance' %}
     @api.one
     {% if method.use_cache %}@api.depends({{ ','.join(method.field_names) }}){% endif -%}
     def {{ method.name }}(self{% if method.arguments %}, {{ method.arguments }}{% endif %}):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         raise NotImplementedError
     {% elif method.type == 'onchange' %}
     @api.onchange({{ ','.join(method.field_names) }})
     def {{ method.name }}(self):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         raise NotImplementedError
     {% elif method.type == 'constraint' %}
     @api.constraints({{ ','.join(method.field_names) }})
     def {{ method.name }}(self):
+{{ model.module_id.buildertag_start('.py',model.name ~ method_name) }}
+{{ model.module_id.buildertag_end('.py') }}    
         raise NotImplementedError
     {% endif %}
 {% endmacro -%}
@@ -266,17 +287,17 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
         {%- if field.groups %} groups='{{ field.groups }}',{%- endif -%}
         {%- if field.selection %} selection={{ field.selection }},{%- endif -%}
         {%- if field.option_ids %} selection={{ field.option_ids|field_options }},{%- endif -%}
-        {%- if field.allow_compute -%} compute='{{ field.compute_method_name }}',{%- endif -%}
-        {%- if field.allow_inverse -%} inverse='{{ field.inverse_method_name }}',{%- endif -%}
-        {%- if field.allow_search -%} search='{{ field.search_method_name }}',{%- endif -%}
-        {%- if field.allow_default -%} default='{{ field.default_method_name }}',{%- endif -%})
+        {%- if field.allow_compute -%} compute=lambda self: self.{{ field.compute_method_name }}(),{%- endif -%}
+        {%- if field.allow_inverse -%} inverse=lambda self: self.{{ field.inverse_method_name }}(),{%- endif -%}
+        {%- if field.allow_search -%} search=lambda self: self.{{ field.search_method_name }}(),{%- endif -%}
+        {%- if field.allow_default -%} default=lambda self: self.{{ field.default_method_name }}(),{%- endif -%})
     {% endif -%}
 {%- endmacro %}
 
 
 {# generate builder.ir.cron #}
 {% macro builder_ir_cron(cron) %}
-        <record id="{{ cron.module_id.name }}_ir_cron_{{ cron.id }}_action" model="ir.cron">
+        <record id="ir_cron_{{ cron.id }}_action" model="ir.cron">
             <field name="name">{{ cron.name }}</field>
             <field name="interval_number">{{ cron.interval_number }}</field>
             <field name="interval_type">{{ cron.interval_type }}</field>
@@ -314,7 +335,8 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 
 {# generate builder.ir.ui.view #}
 {% macro builder_ir_ui_view(view) %}
-    <record model="ir.ui.view" id="{{ view.real_xml_id }}">
+    {% set xml_id = view.real_xml_id | replace(".", "_") %}
+    <record model="ir.ui.view" id="{{ xml_id }}">
         <field name="name">{{ view.name }}</field>
         <field name="model">{{ view.model_id.model }}</field>
         {% if view.type == 'tree' and view.field_parent_id %}
@@ -327,7 +349,7 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
         <field name="arch" type="xml">
             {%- if view.inherit_view -%}
                 {% for change in view.inherit_change_ids %}
-                {{ builder_ir_ui_view_inherit_change(change) }}
+                {{ builder_ir_ui_view_inherit_change(view.module_id,change) }}
                 {% endfor %}
             {%- else -%}
                 {% set view_gen = view.subclass_model|dot2dashed %}
@@ -355,9 +377,13 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {# generate builder.views.calendar #}
 {% macro builder_views_calendar(instance) %}
     <calendar string="{{ instance.name }}"{% if instance.attr_date_start_field_id.id %} date_start="{{ instance.attr_date_start_field_id.name }}" {% endif %}{% if instance.attr_date_stop_field_id.id %} date_stop="{{ instance.attr_date_stop_field_id.name }}" {% endif %}{% if instance.attr_day_length_field_id.id %} day_length="{{ instance.attr_day_length_field_id.name }}" {% endif %}{% if instance.attr_date_delay_field_id.id %} date_delay="{{ instance.attr_date_delay_field_id.name }}" {% endif %}{% if instance.attr_all_day %} all_day="true" {% endif %}{% if instance.attr_use_contacts %} use_contacts="true" {% endif %}{% if instance.attr_color_field_id.id %} color="{{ instance.attr_color_field_id.name }}" {% endif %}{% if instance.attr_color_is_attendee %} color_is_attendee="true" {% endif %}{% if instance.attr_event_open_popup %} event_open_popup="{{ instance.attr_event_open_popup }}" {% endif %}{% if instance.attr_avatar_filter %} avatar_filter="{{ instance.attr_avatar_filter }}" {% endif %}{% if instance.attr_avatar_model %} avatar_model="{{ instance.attr_avatar_model }}" {% endif %}{% if instance.attr_avatar_title %} avatar_title="{{ instance.attr_avatar_title }}" {% endif %}{% if not instance.attr_quick_add %} quick_add="false" {% endif %}{% if instance.attr_display %} display="{{ instance.attr_display }}" {% endif %}>
+    {% if instance.view_id.arch %}
+    {{ instance.view_id.arch }}
+    {% else %}
     {% for field in instance.field_ids %}
         <field name="{{ field.field_id.name }}"{% if field.invisible %} invisible="True" {% endif %} />
     {%- endfor %}
+    {% endif %}
     </calendar>
 {% endmacro %}
 
@@ -369,9 +395,13 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {# generate builder.views.tree #}
 {% macro builder_views_tree(instance) %}
     <tree string="{{ instance.name }}"{% if not instance.attr_create %} create="false" {% endif %}{% if not instance.attr_edit %} edit="false" {% endif %}{% if not instance.attr_delete %} delete="false" {% endif %}{% if instance.toolbar %} toolbar="True" {% endif %}{% if instance.fonts %} fonts="{{ instance.fonts }}" {% endif %}{% if instance.colors %} colors="{{ instance.colors }}" {% endif %}>
+    {% if instance.view_id.arch %}
+    {{ instance.view_id.arch }}
+    {% else %}    
     {%- for field in instance.field_ids %}
         <field name="{{ field.field_id.name }}"{% if field.string %} string="{{ field.string }}" {% endif %}{% if field.invisible %} invisible="True" {% endif %}{% if field.widget %} widget="{{ field.widget }}" {% endif %}{% if field.widget_options %} widget_options="{{ field.widget_options }}" {% endif %}{% if field.readonly %} readonly="{{ field.readonly }}" {% endif %}{% if field.domain %} domain="{{ field.domain }}" {% endif %} />
     {%- endfor %}
+    {% endif %}
     </tree>
 {% endmacro %}
 
@@ -383,6 +413,9 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {# generate builder.views.search #}
 {% macro builder_views_search(instance) %}
     <search string="{{ instance.name}}">
+    {% if instance.view_id.arch %}
+    {{ instance.view_id.arch }}
+    {% else %}    
     {% for field in instance.ungrouped_fields %}
         {% if field.type == 'filter' -%}
             <filter {% if field.attr_name %}name="{{ field.attr_name }}" {% endif %}{% if field.attr_string %} string="{{field.attr_string}}" {% endif %}{% if field.attr_domain %} domain="{{field.attr_domain}}" {% endif %}{% if field.attr_filter_domain %} filter_domain="{{field.attr_filter_domain}}" {% endif %}{% if field.attr_operator %} operator="{{field.attr_operator}}" {% endif %}{% if field.attr_help %} help="{{field.attr_help}}" {% endif %}{% if field.group_field_id %} context="{'group_by':'{{field.group_field_id.name}}'}" {% endif %} />
@@ -405,6 +438,7 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
             {%- endfor %}
         </group>
     {% endfor %}
+    {% endif %}
     </search>
 {% endmacro %}
 
@@ -424,6 +458,9 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {# generate builder.views.kanban #}
 {% macro builder_views_kanban(instance) %}
     <kanban string="{{ instance.name }}"{% if not instance.attr_create %} create="false" {% endif %}{% if not instance.attr_edit %} edit="false" {% endif %}{% if not instance.attr_delete %} delete="false" {% endif %}{% if instance.attr_default_group_by_field_id.id %} default_group_by="{{ instance.attr_default_group_by_field_id.name }}" {% endif %}{% if not instance.attr_quick_create %} quick_create="false" {% endif %}>
+    {% if instance.view_id.arch %}
+    {{ instance.view_id.arch }}
+    {% else %}
     {% for field in instance.field_ids %}
         {{ builder_views_kanban_field(field) }}
     {%- endfor %}
@@ -433,6 +470,7 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
                 {{ instance.attr_template }}
             </t>
         </templates>
+    {% endif %}
     {% endif %}
     </kanban>
 {% endmacro %}
@@ -446,9 +484,13 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {# generate builder.views.graph #}
 {% macro builder_views_graph(instance) %}
     <graph string="{{ instance.name }}"{% if instance.attr_type %} type="{{ instance.attr_type }}" {% endif %}{% if instance.attr_stacked %} stacked="true" {% endif %}{% if instance.attr_orientation %} orientation="{{ instance.attr_orientation }}" {% endif %}>
+    {% if instance.view_id.arch %}
+    {{ instance.view_id.arch }}
+    {% else %}
     {% for field in instance.field_ids %}
         {{ builder_views_graph_field(field) }}
     {%- endfor %}
+    {% endif %}
     </graph>
 {% endmacro %}
 
@@ -462,9 +504,13 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {# generate builder.views.gantt #}
 {% macro builder_views_gantt(instance) %}
     <gantt string="{{ instance.name }}"{% if not instance.attr_create %} create="false" {% endif %}{% if not instance.attr_edit %} edit="false" {% endif %}{% if not instance.attr_delete %} delete="false" {% endif %}{% if instance.attr_date_start_field_id.id %} date_start="{{ instance.attr_date_start_field_id.name }}" {% endif %}{% if instance.attr_date_stop_field_id.id %} date_stop="{{ instance.attr_date_stop_field_id.name }}" {% endif %}{% if instance.attr_date_delay_field_id.id %} date_delay="{{ instance.attr_date_delay_field_id.name }}" {% endif %}{% if instance.attr_progress_field_id.id %} progress="{{ instance.attr_progress_field_id.name }}" {% endif %}{% if instance.attr_color_field_id.id %} color="{{ instance.attr_color_field_id.name }}" {% endif %}{% if instance.attr_mode %} mode="{{ instance.attr_mode}}" {% endif %}{% if instance.attr_default_group_by_field_id.id %} default_group_by="{{ instance.attr_default_group_by_field_id.name }}" {% endif %}>
+    {% if instance.view_id.arch %}
+    {{ instance.view_id.arch }}
+    {% else %}
     {% for field in instance.field_ids %}
         {{ builder_views_gantt_field(field) }}
     {% endfor %}
+    {% endif %}
     </gantt>
 {% endmacro %}
 
@@ -478,6 +524,55 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 
 {# generate builder.views.form #}
 {% macro builder_views_form(instance) %}
+    {% if instance.wizard %}
+    <form string="{{ instance.name }}">
+    {% if instance.pages %}
+        <sheet>
+        {% if instance.button_ids %}
+        <div class="oe_right oe_button_box" name="buttons">
+            {% for button in instance.button_ids %}
+            {{ builder_views_form_button(button) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+        <group col="4">
+        {% for field in instance.flat_fields %}
+            {{ builder_views_form_field(field) }}
+        {%- endfor %}
+        </group>    
+        <notebook>
+        {%- for page, pfields in instance.pages.items() %}
+            <page string="{{ page }}">
+                {%- for field in pfields %}
+                {{ builder_views_form_field(field) }}
+                {%- endfor %}
+            </page>
+        {%- endfor %}
+        </notebook>
+        </sheet> 
+    {% else %}
+        <group col="4">
+        {% for field in instance.flat_fields %}
+            {{ builder_views_form_field(field) }}
+        {%- endfor %}
+        </group>       
+    {% endif  %}
+
+    <footer>
+        {% if instance.button_ids %}
+            {% for button in instance.button_ids %}
+            {{ builder_views_form_button(button) }}
+            {% endfor %}
+            or 
+        {% endif %}
+            <button string="Cancel" class="oe_link" special="cancel" />
+    </footer>
+    </form>
+    {% elif instance.view_id.arch %}
+    <form string="{{ instance.name }}" {% if not instance.attr_create %} create="false" {% endif %}{% if not instance.attr_edit %} edit="false" {% endif %}{% if not instance.attr_delete %} delete="false" {% endif %}>
+    {{ instance.view_id.arch }}
+    </form>
+    {% else %}
     <form string="{{ instance.name }}" {% if not instance.attr_create %} create="false" {% endif %}{% if not instance.attr_edit %} edit="false" {% endif %}{% if not instance.attr_delete %} delete="false" {% endif %}>
     {% if instance.show_status_bar %}
         <header>
@@ -512,10 +607,12 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
                 {%- endfor %}
             </page>
         {%- endfor %}
+
         </notebook>
     {%- endif  %}
         </sheet>
     </form>
+    {% endif %}
 {% endmacro %}
 
 
@@ -597,12 +694,14 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {% endmacro %}
 
 {# generate builder.ir.ui.view.inherit.change #}
-{% macro builder_ir_ui_view_inherit_change(change) %}
+{% macro builder_ir_ui_view_inherit_change(module_id,change) %}
     {% if change.inherit_view_type == 'xpath' %}
         <xpath expr="{{ change.inherit_view_target }}" position="{{ change.inherit_view_position }}">
             {% if change.inherit_view_position == 'attribute' %}
                 <attribute name="{{ change.inherit_view_attribute }}">{{ change.inherit_view_attribute_value }}</attribute>
-            {% else %}
+            {% elif change.inherit_view_field %}
+                {{ change.inherit_view_arch }}
+            {% elif change.inherit_view_field %}
                 <field name="{{ change.inherit_view_field }}" />
             {% endif %}
         </xpath>
@@ -612,7 +711,8 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 
 {# generate builder.ir.actions.act_window #}
 {% macro builder_ir_actions_act_window(action) -%}
-        <record model="ir.actions.act_window" id="{{ action.real_xml_id }}">
+        {% set xml_id = action.real_xml_id | replace(".", "_") %}
+        <record model="ir.actions.act_window" id="{{ xml_id }}">
             {% if action.name -%}
             <field name="name">{{ action.name }}</field>
             {% endif -%}
@@ -629,17 +729,14 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
             <field name="context">{{ action.context }}</field>
             {% endif -%}
             {% if action.view_id -%}
-            <field name="view_ids" ref="{{ action.view_id.real_xml_id }}"/>
+            <field name="view_id" ref="{{ action.view_id.real_xml_id }}"/>
             {% endif -%}
             {% if action.view_mode -%}
             <field name="view_mode">{{ action.view_mode }}</field>
             {% endif -%}
-            {% if action.view_type -%}
-            <field name="view_type">{{ action.view_type }}</field>
-            {% endif -%}
-            {% if action.usage -%}
+            <!-- {% if action.usage -%}
             <field name="usage">{{ action.usage }}</field>
-            {% endif -%}
+            {% endif -%} -->
             {% if action.target and (target != 'current') -%}
             <field name="target">{{ action.target }}</field>
             {% endif -%}
@@ -697,7 +794,8 @@ class {{ class_name }}({% if model.osv_memory %}models.TransientModel{% else %}m
 {# generate builder.res.groups #}
 {% macro builder_res_groups(group) %}
     {% if not group.inherited -%}
-    <record id="{{ group.real_xml_id }}" model="res.groups">
+    {% set xml_id = action.real_xml_id | replace(".", "_") %}
+    <record id="{{ xml_id }}" model="res.groups">
         <field name="name">{{ group.name }}</field>
         <field name="category_id" ref="module_category_{{ group.module_id.name }}"/>
         {% if group.category_type == 'custom' -%}

@@ -26,10 +26,12 @@ class TreeView(models.Model):
                               help='Color definition. Ex: "gray:probability == 100;'
                                    'red:date_deadline and (date_deadline &lt; current_date)"')
 
-    _defaults = {
-        'type': 'tree',
-        'subclass_model': lambda s, c, u, cxt=None: s._name,
-    }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['type']='tree'
+        res['subclass_model']= self._name
+        return res  
 
     @api.model
     def create_instance(self, id):

@@ -32,7 +32,7 @@ class ModuleImport(models.TransientModel):
                 raise ValueError(self.file)
             zf = zipfile.ZipFile(file_like_object)
             metadata = zf.open('metadata')
-            data = json.loads(metadata.read())
+            data = json.loads(str(metadata.read(),'utf-8'))
             metadata.close()
             return data.get('version')
         else:

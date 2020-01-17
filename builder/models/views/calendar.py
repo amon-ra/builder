@@ -37,10 +37,13 @@ class CalendarView(models.Model):
 
     field_ids = fields.One2many('builder.views.calendar.field', 'view_id', 'Items', copy=True)
 
-    _defaults = {
-        'type': 'calendar',
-        'subclass_model': lambda s, c, u, cxt=None: s._name,
-    }
+
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        res['type']='calendar'
+        res['subclass_model']= self._name
+        return res  
 
     @api.onchange('attr_date_start_field_id')
     def _compute_calendar_attr_date_start_ttype(self):

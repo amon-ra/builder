@@ -5,4 +5,17 @@
     {% for view in views %}
             {{ macros.builder_ir_ui_view(view) }}
     {% endfor %}
+    {%- for action in module.action_window_ids %}
+        {{ macros.builder_ir_actions_act_window(action) }}
+    {% endfor -%}
+    {% if module.post_install_action -%}
+    <record id="{{ module.name }}.do_action" model="ir.actions.todo">
+        <field name="action_id" ref="{{ module.post_install_action.xml_id }}"/>
+        <field name="state">open</field>
+    </record>
+    {% endif -%}  
+    {%- for menu in module.menu_ids %}
+        {{ macros.builder_ir_ui_menu(menu) }}
+    {% endfor -%}    
+   
 {% endblock %}

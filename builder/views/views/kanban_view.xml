@@ -37,6 +37,9 @@
                             </group>
 
                         </page>
+                        <page string="XML" attrs="{'invisible': [('inherit_view', '=', True)]}">
+                            <field name="arch" nolabel="1" widget="ace" theme="tomorrow" mode="xml" style="min-height:200px"/>
+                        </page>                            
                         <page string="Fields" attrs="{'invisible': [('inherit_view', '=', True)]}">
                             <field name="field_ids" domain="[('model_id', '=', model_id)]"/>
                         </page>
@@ -47,7 +50,7 @@
                         <page string="Inherit" attrs="{'invisible': [('inherit_view', '=', False)]}">
                             <group>
                                 <group>
-                                    <field name="inherit_view_id" options="{'no_create': True, 'no_open': True}"
+                                    <field name="inherit_view_id" options="{'no_create': True, 'no_open': False}"
                                            attrs="{'invisible': ['|', ('inherit_view', '=', False), ('model_inherit_type', '=', False)], 'readonly': ['|', ('inherit_view', '=', False), ('model_inherit_type', '=', False)]}"
                                            domain="[('model', '=', model_name), ('type', '=', type)]"/>
                                     <field name="inherit_view_ref"

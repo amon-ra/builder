@@ -2,9 +2,10 @@ from collections import defaultdict
 import base64,os
 
 from odoo import models, api
+import logging
+_logger = logging.getLogger(__name__)
 
-
-class GeneratorV8(models.TransientModel):
+class GeneratorV11(models.TransientModel):
     """
     Their job is to generate code.
     """
@@ -21,10 +22,12 @@ class GeneratorV8(models.TransientModel):
 
         has_models = any(model.define for model in module.model_ids)
         module_data = []
-        py_packages = []
+        py_packages = {}
         demo_data = []
-        model_packages = []
-
+        # model_packages = []
+        _logger.debug(has_models)
+        for model in module.model_ids:
+            _logger.debug(model)
         if len(module.rule_ids) or len(module.group_ids):
             module_data.append('security/security.xml')
             zip_file.write_template(
@@ -45,38 +48,81 @@ class GeneratorV8(models.TransientModel):
                 })
 
         if module.view_ids:
-            module_data.append('views/views.xml')
+            for model in module.model_ids:
+                filename = 'views/{model}_views.xml'.format(
+                        model=model.model.lower().replace('.', '_'))
+                module_data.append(filename)
+                zip_file.write_template(
+                    filename,
+                    'views/views.xml.jinja2',
+                    {
+                        'module': model.module_id,
+                        'views': model.view_ids,
+                        'actions': model.action_ids,
+                        'menus': model.menu_ids
+                    }
+                )
+
+        actions = module.action_window_ids.filtered(lambda r: not r.model_id)
+        menus = module.action_window_ids.filtered(lambda r: not r.model_id)
+        filename = 'views/{model}_views.xml'.format(
+                        model=module.name.lower().replace('.', '_'))
+
+        if actions or menus:       
+            module_data.append(filename)
             zip_file.write_template(
-                'views/views.xml',
+                filename,
                 'views/views.xml.jinja2',
-                {'views': module.view_ids}
-            )
+                {
+                    'module': module.id,
+                    'views': [],
+                    'actions': actions,
+                    'menus': menus
+                }
+            )            
+        #     zip_file.write_template(
+        #         'views/actions.xml',
+        #         'views/actions.xml.jinja2',
+        #         {'module': module}
+        #     )
+        # if module.action_window_ids:
+        #     module_data.append('views/actions.xml')
+        #     zip_file.write_template(
+        #         'views/actions.xml',
+        #         'views/actions.xml.jinja2',
+        #         {'module': module}
+        #     )
 
-        if module.action_window_ids:
-            module_data.append('views/actions.xml')
-            zip_file.write_template(
-                'views/actions.xml',
-                'views/actions.xml.jinja2',
-                {'module': module}
-            )
-
-        if module.menu_ids:
-            module_data.append('views/menu.xml')
-            zip_file.write_template(
-                'views/menu.xml',
-                'views/menus.xml.jinja2',
-                {'module': module, 'menus': module.menu_ids}
-            )
+        # if module.menu_ids:
+        #     module_data.append('views/menu.xml')
+        #     zip_file.write_template(
+        #         'views/menu.xml',
+        #         'views/menus.xml.jinja2',
+        #         {'module': module, 'menus': module.menu_ids}
+        #     )
 
         if has_models:
-            py_packages.append('models')
-            model_packages.append('models')
+            # py_packages.append('models')
+            # model_packages.append('models')
 
-            zip_file.write_template(
-                'models/models.py',
-                'models/models.py.jinja2',
-                {'models': [model for model in module.model_ids if model.define]}
-            )
+            # zip_file.write_template(
+            #     'models/models.py',
+            #     'models/models.py.jinja2',
+            #     {'module': module,  'models': [
+            #         model for model in module.model_ids if model.define]}
+            # )
+
+            for model in module.model_ids:
+                if model.define:
+                    m = model.model.lower().replace('.', '_')
+                    py_packages['models']=py_packages.get('models',[]).append(m)
+                    filename = 'models/{model}.py'.format(model=m)
+                    zip_file.write_template(
+                        filename,
+                        'models/models.py.jinja2',
+                        {'module': module,  'models': [model]}
+                    )
+
 
         for model in module.model_ids:
             if not model.demo_records:
@@ -88,6 +134,7 @@ class GeneratorV8(models.TransientModel):
                 filename,
                 'demo/model_demo.xml.jinja2',
                 {
+                    'module': module,
                     'model': model,
                     'records': model.demo_records
                 }
@@ -129,7 +176,8 @@ class GeneratorV8(models.TransientModel):
                     'settings': module.setting_ids,
                 })
 
-            model_packages.append('settings')
+            # model_packages.append('settings')
+            py_packages['models']=py_packages.get('models',[]).append('settings')
             zip_file.write_template(
                 'models/settings.py',
                 'models/settings.py.jinja2', {
@@ -182,19 +230,39 @@ class GeneratorV8(models.TransientModel):
             controller_pages = [p for p in module.website_page_ids if not p.attr_page and p.gen_controller]
 
             if controller_pages:
-                py_packages.append('controllers')
+                py_packages['controllers']=['main']
 
-                zip_file.write_template(
-                    'controllers/__init__.py',
-                    '__init__.py.jinja2',
-                    {'packages': ['main']}
-                )
+                # zip_file.write_template(
+                #     'controllers/__init__.py',
+                #     '__init__.py.jinja2',
+                #     {'packages': ['main'],'module': module}
+                # ) 
 
                 zip_file.write_template(
                     'controllers/main.py',
                     'controllers/main.py.jinja2',
                     {'module': module, 'pages': controller_pages},
-                )
+                )            
+
+        for f in module.python_file_ids:
+            py_packages[f.parent]=py_packages.get(f.parent,
+                []).append(f.name)
+            filename = '{}/{}.py'.format(f.parent,f.name)
+            zip_file.write_template(
+                filename,
+                'python_file.py.jinja2',
+                {'module': module, 'code': f},
+            )              
+
+        for key, value in py_packages:
+            zip_file.write_template(
+                key+'/__init__.py',
+                '__init__.py.jinja2',
+                {'packages': value,'module': module}
+            )                
+
+
+
 
         if module.website_theme_ids:
             module_data.append('views/website_themes.xml')
@@ -223,17 +291,17 @@ class GeneratorV8(models.TransientModel):
                 {'module': module, 'snippet_type': snippet_type},
             )
 
-        if model_packages:
-            zip_file.write_template(
-                'models/__init__.py',
-                '__init__.py.jinja2',
-                {'packages': model_packages}
-            )
+        # if model_packages:
+        #     zip_file.write_template(
+        #         'models/__init__.py',
+        #         '__init__.py.jinja2',
+        #         {'module': module,'packages': model_packages}
+        #     )
 
         zip_file.write_template(
             '__init__.py',
             '__init__.py.jinja2',
-            {'packages': py_packages}
+            {'module': module,'packages': list(py_packages.keys())}
         )
 
         # end website stuff

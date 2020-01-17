@@ -1,0 +1,7 @@
+{% include 'python_file_header.py.jinja2' ignore missing %}
+{% for import in code.import_ids %}
+{{ 'from '+import.parent+' ' if import.parent }}import {{ import.name }}
+{% endfor -%}
+{% for code in code.custom_code_line_ids %}
+{{ code.custom_code if not code.class_code }}
+{% endfor -%}

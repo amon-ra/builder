@@ -1,11 +1,13 @@
 from ..fields import snake_case
 from odoo import models, fields, api
+from .base import FIELD_WIDGETS_ALL
 
 __author__ = 'one'
 
 
-class GraphView(models.Model):
-    _name = 'builder.views.graph'
+
+class PivotView(models.Model):
+    _name = 'builder.views.pivot'
 
     _inherit = ['ir.mixin.polymorphism.subclass']
 
@@ -14,17 +16,18 @@ class GraphView(models.Model):
     }
 
     view_id = fields.Many2one('builder.ir.ui.view', string='View', required=True, ondelete='cascade')
-    attr_type = fields.Selection([('bar', 'Bar'), ('pie', 'Pie'), ('line', 'Line'), ('pivot', 'Pivot')], 'Type')
-    attr_stacked = fields.Boolean('Stacked')
-    attr_orientation = fields.Selection([('horizontal', 'Horizontal'), ('vertical', 'Vertical')], 'Orientation')
-    field_ids = fields.One2many('builder.views.graph.field', 'view_id', 'Items', copy=True)
+    # attr_type = fields.Selection([('bar', 'Bar'), ('pie', 'Pie'), ('line', 'Line'), ('pivot', 'Pivot')], 'Type')
+    attr_display_linking = fields.Boolean('Remove Links')
+    attr_display_quantity = fields.Boolean('Display Quantity')
+    # attr_orientation = fields.Selection([('horizontal', 'Horizontal'), ('vertical', 'Vertical')], 'Orientation')
+    field_ids = fields.One2many('builder.views.pivot.field', 'view_id', 'Items', copy=True)
 
     @api.model
     def default_get(self, fields):
         res = super().default_get(fields)
         res['type']='graph'
         res['subclass_model']= self._name
-        return res  
+        return res
 
     @api.model
     def create_instance(self, id):
@@ -39,16 +42,18 @@ class GraphView(models.Model):
     @api.onchange('model_id')
     def _onchange_model_id(self):
         self.name = self.model_id.name
-        self.xml_id = "view_{snake}_graph".format(snake=snake_case(self.model_id.model))
+        self.xml_id = "view_{snake}_pivot".format(snake=snake_case(self.model_id.model))
         self.model_inherit_type = self.model_id.inherit_type  # shouldn`t be doing that
         self.model_name = self.model_id.model  # shouldn`t be doing that
 
 
 class GraphField(models.Model):
-    _name = 'builder.views.graph.field'
+    _name = 'builder.views.pivot.field'
     _inherit = 'builder.views.abstract.field'
 
     view_id = fields.Many2one('builder.views.graph', string='View', ondelete='cascade')
     operator = fields.Selection([('+', '+')], 'Operator')
     type = fields.Selection([('row', 'row'), ('col', 'col'), ('measure', 'measure')], 'Type')
     interval = fields.Selection([('month', 'month'), ('year', 'year'), ('day', 'day')], 'Interval')
+    widget = fields.Selection(FIELD_WIDGETS_ALL, 'Widget')
+    widget_options = fields.Char('Widget Options')
