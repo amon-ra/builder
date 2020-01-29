@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+import base64
 from psycopg2._psycopg import IntegrityError
 from odoo.exceptions import except_orm
 from odoo import models, api
@@ -18,12 +19,21 @@ class OdooBuilderTranslator(object):
             if obj.id and obj_id not in self.seen_models and obj._name.startswith('builder.'):
                 self.seen_models.add(obj_id)
                 for name, column in list(obj._fields.items()):
+                    _logger.debug(name)
+                    _logger.debug(column)
+                    _logger.debug(column.type)
                     if name in ['id', 'write_uid', 'write_date', 'create_date', 'create_uid']:
                         continue
                     if column.type in ['function'] or getattr(column, '_fnct', False) or not getattr(column, 'store', True):
                         continue
-                    if column.type in ['char', 'boolean', 'integer', 'text', 'html', 'float', 'date', 'datetime', 'selection', 'binary']:
+                    if column.type in ['char', 'boolean', 'integer', 'text', 'html', 'float', 'date', 'datetime', 'selection' ]:
                         instance[name] = getattr(obj, name)
+                    elif column.type in ['binary']:
+                        value = getattr(obj, name)
+                        if value:
+                            value = '#__BINARY__'+base64.encodebytes(value).decode('ascii')
+                            #base64.decodebytes(data2['body'].encode('ascii'))                     
+                            instance[name] = value
                     else:
                         instance[name] = getattr(self, 'handle_model_{type}'.format(type=column.type))(obj, name)
             return instance if obj.id else False
@@ -107,21 +117,23 @@ class OdooBuilderLoader(object):
                 required_attributes = model_required_attributes(model)
                 #_logger.debug(required_attributes)
                 if required_attributes.issubset(set(data.keys())) and not missing:
-                    d = {
-                        key: value if not isinstance(value, dict) else
-                        '{model},{id}'.format(model=value['@model'],
-                                              id=self.seen_models.get(
-                                                  (value['@model'],
-                                                   value['@id'])))
-                        if model._fields[key].related else
-                        self.seen_models.get((value['@model'], value['@id']))
-                        for key, value in list(data.items())
-                        if not isinstance(value, list)
-                    }
-                    # d = {}
-                    # for key, value in list(data.items()):
+                    d= {}
+                    for key, value in list(data.items()):
+                        if isinstance(value, list):
+                            continue
+                        if isinstance(value, dict):
+                            # if model._fields[key].related:
+                            #     value = '{model},{id}'.format(model=value['@model'],
+                            #                     id=self.seen_models.get(
+                            #                         (value['@model'],
+                            #                         value['@id'])))
+                            # else:
+                            value = self.seen_models.get((value['@model'], value['@id']))
+                        if isinstance(value,str) and value.startswith('#__BINARY__'):
+                            value=base64.decodebytes(value[11:].encode('ascii'))
+                        d[key]=value
 
-                    #_logger.debug(d)
+                    _logger.debug(d)
                     if d:
                         obj = model.create(d)
                     if obj:
@@ -170,7 +182,9 @@ class JSONExchanger(models.Model):
     @api.model
     def export_module(self, module):
         translator = OdooBuilderTranslator()
-        return json.dumps(translator.translate(module), sort_keys=True, indent=4)
+        ret = translator.translate(module)
+        _logger.debug(ret)
+        return json.dumps(ret, sort_keys=True, indent=4)
 
     @api.model
     def load_module(self, module):
