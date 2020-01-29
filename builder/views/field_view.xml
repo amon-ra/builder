@@ -187,10 +187,15 @@
                                 <field name="redefine" attrs="{'invisible': [['is_inherited', '=', False]], }"/>
                             </group>
                             <group>
-                                <field name="is_rec_name"/>
-                                <field name="use_to_order"/>
-                                <field name="order"
+                                <!-- <group> -->
+                                    <field name="is_rec_name"/>
+                                    <!-- <field name="redefine" /> -->
+                                <!-- </group> -->
+                                <!-- <group> -->
+                                    <field name="use_to_order"/>
+                                    <field name="order"
                                        attrs="{'invisible': [['use_to_order', '=', False]], 'required': [['use_to_order', '=', True]]}"/>
+                                <!-- </group> -->
                             </group>
                         </group>
                         <group>

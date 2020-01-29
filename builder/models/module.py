@@ -533,8 +533,8 @@ javascript:(function(){
             'view_type': 'form',
             'view_mode': 'diagram',
             'res_model': 'builder.ir.module.module',
-            'views': [(diagram_view and diagram_view.id or False, 'diagram'), ],
-            'view_id': diagram_view and diagram_view.id,
+            'views': [(diagram_view.id , 'diagram'), ],
+            'view_id': diagram_view.id,
             'res_id': self.id,
             'target': 'new',
             # 'flags': {'form': {'action_buttons': True, 'options': {'mode': 'edit'}}},
@@ -545,6 +545,7 @@ javascript:(function(){
         }
 
     def action_edit_description_html(self):
+        ids = self
         if not len(ids) == 1:
             raise ValueError('One and only one ID allowed for this action')
         url = '/builder/page/designer?model={model}&res_id={id}&enable_editor=1'.format(id=ids[0], model=self._name)

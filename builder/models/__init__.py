@@ -3,6 +3,7 @@ __author__ = 'one'
 from . import (
     mixins,
     base,
+    python_file,
     module,
     models,
     fields,
@@ -18,5 +19,4 @@ from . import (
     generators,
     exchangers,
     demo,
-    python_file
 )

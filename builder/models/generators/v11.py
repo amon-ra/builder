@@ -115,7 +115,8 @@ class GeneratorV11(models.TransientModel):
             for model in module.model_ids:
                 if model.define:
                     m = model.model.lower().replace('.', '_')
-                    py_packages['models']=py_packages.get('models',[]).append(m)
+                    _logger.debug(m)
+                    py_packages['models']=py_packages.get('models',[])+[m]
                     filename = 'models/{model}.py'.format(model=m)
                     zip_file.write_template(
                         filename,
@@ -123,7 +124,7 @@ class GeneratorV11(models.TransientModel):
                         {'module': module,  'models': [model]}
                     )
 
-
+        _logger.debug(py_packages)
         for model in module.model_ids:
             if not model.demo_records:
                 continue
@@ -177,7 +178,7 @@ class GeneratorV11(models.TransientModel):
                 })
 
             # model_packages.append('settings')
-            py_packages['models']=py_packages.get('models',[]).append('settings')
+            py_packages['models']=py_packages.get('models',[])+['settings']
             zip_file.write_template(
                 'models/settings.py',
                 'models/settings.py.jinja2', {
@@ -231,22 +232,36 @@ class GeneratorV11(models.TransientModel):
 
             if controller_pages:
                 py_packages['controllers']=['main']
-
                 # zip_file.write_template(
                 #     'controllers/__init__.py',
                 #     '__init__.py.jinja2',
                 #     {'packages': ['main'],'module': module}
                 # ) 
-
+                routes = {}
+                parameters = {}
+                for page in controller_pages:
+                    for route in page.controller_route:
+                        routes[page.attr_id]=routes.get(
+                            page.attr_id,'')+route.name+','
+                        parameters[page.attr_id]=parameters.get(
+                                page.attr_id,'self')                            
+                        for p in route.parameter_ids:
+                            if p.name == '**kwargs':
+                                parameters[page.attr_id]='self, '+p.name
+                                break
+                            else:
+                                parameters[page.attr_id]+=', '+p.name+'='+p.default
                 zip_file.write_template(
                     'controllers/main.py',
                     'controllers/main.py.jinja2',
-                    {'module': module, 'pages': controller_pages},
+                    {'module': module, 'pages': controller_pages,
+                     'controller_routes': routes, 'route_parameters': parameters,
+                    },
                 )            
 
         for f in module.python_file_ids:
             py_packages[f.parent]=py_packages.get(f.parent,
-                []).append(f.name)
+                [])+[f.name]
             filename = '{}/{}.py'.format(f.parent,f.name)
             zip_file.write_template(
                 filename,
@@ -254,12 +269,16 @@ class GeneratorV11(models.TransientModel):
                 {'module': module, 'code': f},
             )              
 
-        for key, value in py_packages:
-            zip_file.write_template(
-                key+'/__init__.py',
-                '__init__.py.jinja2',
-                {'packages': value,'module': module}
-            )                
+        _logger.debug(py_packages)
+        for key, value in py_packages.items():
+            _logger.debug(key)
+            _logger.debug(value)
+            if value:
+                zip_file.write_template(
+                    key+'/__init__.py',
+                    '__init__.py.jinja2',
+                    {'packages': value,'module': module}
+                )                
 
 
 

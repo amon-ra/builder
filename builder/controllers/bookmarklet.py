@@ -11,7 +11,7 @@ class BookmarkController(http.Controller):
     # def snippet_form(self, module, **kwargs):
     #
     #
-    #     return request.website.render("builder.snippet.index", {
+    #     return request.render("builder.snippet.index", {
     #         'me': request.env.user,
     #         'users': users
     #     })
@@ -25,7 +25,7 @@ class BookmarkController(http.Controller):
         if not module:
             return request.not_found()
 
-        return request.website.render("builder.snippet_form")
+        return request.render("builder.snippet_form")
 
     @http.route('/builder/<string:module>/snippet/save', type='http', auth='user', website=True, methods=['POST'])
     def snippet_save(self, module, **kwargs):

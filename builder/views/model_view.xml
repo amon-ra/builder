@@ -359,11 +359,12 @@
                                     </field>                                
                                 </group>
                                 <group colspan="4" string="Custom Code">
-                                <!-- <field name="custom_code" nolabel="1" context="{'default_module_id': module_id, 'default_model_id': id}" >
+                                <field name="custom_code_line_ids" nolabel="1" context="{'default_module_id': module_id, 'default_model_id': id}" >
                                     <tree string="Custom Code" create="1" edit="1" delete="1">
+                                        <field name="name"/>
                                         <field name="custom_code"/>
                                     </tree>
-                                </field> -->
+                                </field> 
                                 </group>
                             </page>                                                        
                             <page string="Demo Data">

@@ -81,6 +81,20 @@ class MediaItem(models.Model):
         if not self.attr_id and self.attr_name:
             self.attr_id = re.sub('[^a-zA-Z_]', '_', self.attr_name) + str(1 + len(self.search([])))
 
+class ControllerRouterParameter(models.Model):
+    _name = 'builder.website.route.parameter'
+
+    name = fields.Char('Argument name',required=True)
+    default = fields.Char('Default Value',default='',required=True)
+    route_id = fields.Char('builder.website.route')
+
+class ControllerRoute(models.Model):
+    _name = 'builder.website.route'
+
+    website_id = fields.Many2one('builder.website.page')
+    name = fields.Char('Route',required=True)
+    parameter_ids = fields.One2many('builder.website.route.parameter',
+        'route_id',string='Parameters')
 
 class Pages(models.Model):
     _name = 'builder.website.page'
@@ -93,13 +107,19 @@ class Pages(models.Model):
     attr_inherit_id = fields.Char('Inherit Asset')
     attr_priority = fields.Integer('Priority', default=10)
     attr_page = fields.Boolean('Page', default=True)
+    visibility = fields.Selection([
+        ('public','Public'),('user','Private')
+        ],string="Visibility", default='public')
     gen_controller = fields.Boolean('Generate Controller', default=False)
-    controller_route = fields.Char('Route')
+    # controller_route = fields.Char('Route')
+    controller_route = fields.One2many('builder.website.route','website_id',
+        string='Route')
     content = fields.Html('Body', sanitize=False)
 
     def action_edit_html(self):
-        if not len(ids) == 1:
-            raise ValueError('One and only one ID allowed for this action')
+        # if not len(ids) == 1:
+        #     raise ValueError('One and only one ID allowed for this action')
+        self.ensure_one()
         url = '/builder/page/designer?model={model}&res_id={id}&enable_editor=1'.format (id = self.id, model=self._name)
         return {
             'name': _('Edit Template'),
@@ -157,10 +177,11 @@ class Menu(models.Model):
             if self.page_id.attr_page:
                 self.url = '/page/website.' + self.page_id.attr_id
             else:
-                self.url = self.page_id.controller_route
+                if self.page_id.controller_route:
+                    self.url = self.page_id.controller_route[0].name
 
 SNIPPET_TEMPLATE = Template("""
-    <xpath expr="//div[@id='snippet_{{ category }}']" position="inside">
+    <xpath expr="//div[@id='snippet_{{ category }}']/div[@class='o_panel_body']" position="inside">
         <!-- begin snippet declaration -->
         <div>
 
@@ -201,8 +222,8 @@ class WebsiteSnippet(models.Model):
         selection=[
             ('structure', 'Structure'),
             ('content', 'Content'),
-            ('features', 'Features'),
-            ('effects', 'Effects'),
+            ('feature', 'Features'),
+            ('effect', 'Effects'),
             ('custom', 'Custom'),
         ],
         string='Category',
@@ -237,8 +258,9 @@ class WebsiteSnippet(models.Model):
         self.is_custom_category = self.category == 'custom'
 
     def action_edit_html(self):
-        if not len(ids) == 1:
-            raise ValueError('One and only one ID allowed for this action')
+        # if not len(ids) == 1:
+        #     raise ValueError('One and only one ID allowed for this action')
+        self.ensure_one()
         url = '/builder/page/designer?model={model}&res_id={id}&enable_editor=1'.format (id = self.id, model=self._name)
         return {
             'name': _('Edit Snippet'),
@@ -247,6 +269,26 @@ class WebsiteSnippet(models.Model):
             'target': 'self',
         }
 
+class WebsiteControllerMethod(models.Model):
+    _name = 'builder.website.method'
+
+    _order = 'sequence, id'
+
+    module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
+    sequence = fields.Integer('Sequence', default=60)
+
+    name = fields.Char(string='Name', required=True)
+    visibility = fields.Selection([
+        ('public','Public'),('user','Private')
+        ],string="Visibility", default='public')
+    route_type = fields.Selection([
+        ('html','html'),('json','json'),('xml','xml')],string='Type',default='json')
+    route_method = fields.Selection([
+        ('POST','POST'),('GET','GET'),('PUT','PUT')],string='Method')
+    controller_route = fields.One2many('builder.website.route','website_id',
+        string='Route')
+    custom_code_line_ids = fields.One2many('builder.python.file.line','website_method_id', 'Custom Code', copy=True)
+   
 
 class Module(models.Model):
     _inherit = 'builder.ir.module.module'
@@ -258,8 +300,26 @@ class Module(models.Model):
     website_theme_ids = fields.One2many('builder.website.theme', 'module_id', 'Themes', copy=True)
     website_page_ids = fields.One2many('builder.website.page', 'module_id', 'Pages', copy=True)
     website_snippet_ids = fields.One2many('builder.website.snippet', 'module_id', 'Snippets', copy=True)
+    website_method_ids = fields.One2many('builder.website.method','module_id','Custom Methods', copy=True)
 
 
+class PythonFileLine(models.Model):
+    _inherit = 'builder.python.file.line'
 
+    website_method_id = fields.Many2one('builder.website.method', 'Website Method', ondelete='cascade')
 
-
+    @api.model
+    def create(self,vals):
+        # PythonFile
+        name = vals.get('name')
+        field = 'website_method_id'
+        model = vals.get(field)
+        if name and model:
+            record_id = self.search([
+                    (field,'=',model),
+                    ('name','=',name),
+                ])
+            if record_id:
+                record_id.write(vals)
+                return record_id
+        return super(PythonFileLine,self).create(vals)

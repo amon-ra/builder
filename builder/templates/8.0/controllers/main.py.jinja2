@@ -9,5 +9,5 @@ class MainController(http.Controller):
     def page{{ loop.index }}(self, **kwargs):
         cr, uid, context = request.cr, request.uid, request.context
 
-        return request.website.render('{{ page.module_id.name }}.{{ page.attr_id }}', {})
+        return request.render('{{ page.module_id.name }}.{{ page.attr_id }}', {})
     {% endfor %}

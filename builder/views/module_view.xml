@@ -454,6 +454,17 @@
                                             </tree>                                               
                                         </field>
                                     </page>
+                                    <page string="Custom Methods">
+                                        <field nolabel="1" name="website_method_ids" context="{'default_module_id': active_id}">
+                                            <tree string="Menu" create="true" editable="top">
+                                                <field name="sequence" widget="handle"/>
+                                                <field name="name"/>
+                                                <field name="route_type"/>
+                                                <field name="route_method"/>
+                                                <field name="controller_route" placeholder="/myroute/mypage" widget="many2many_tags" />
+                                            </tree>
+                                        </field>
+                                    </page>                                    
                                 </notebook>
                             </page>
 

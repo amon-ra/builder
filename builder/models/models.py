@@ -7,13 +7,14 @@ import logging
 _logger = logging.getLogger(__name__)
 
 OVERRIDE_METHODS = {
-    'create': ('api.model','vals'),
-    'write': ('','vals'),
-    'default_get': ('api.model','fields'),
-    'fields_view_get': ('api.model',"view_id=None, view_type='form', toolbar=False, submenu=False"),
-    'unlink': ('',''),
-    'read': ('',"fields=None, load='_classic_read"),
-    '_search': ('api.model','args, offset=0, limit=None, order=None, count=False, access_rights_uid=None')
+    'create': (['api.model'],'vals','',''),
+    'write': ([''],'vals','',''),
+    'default_get': (['api.model'],'fields','',''),
+    'view_header_get': (['api.model'],"view_id=None, view_type='form'",'',''),
+    'fields_view_get': (['api.model'],"view_id=None, view_type='form', toolbar=False, submenu=False",'',''),
+    'unlink': ([''],'','',''),
+    'read': ([''],"fields=None, load='_classic_read",'',''),
+    '_search': (['api.model'],'args, offset=0, limit=None, order=None, count=False, access_rights_uid=None','','')
 }
 BASE_METHODS = ['env','id','ids']
 
@@ -78,6 +79,7 @@ def get_source_code(model_id,method_name):
 
 def get_parent_source(model,name):
     src = ''
+    doc = ''
     for c in inspect.getmro(model.__class__):
         try:
             _logger.debug(c)
@@ -88,9 +90,12 @@ def get_parent_source(model,name):
             if module.__name__ == method_module.__name__ and module.__name__.startswith('odoo.addons'):
                 src += module.__name__ + '\n' +inspect.getsource(
                     method) + '\n'
+                d = inspect.getdoc(method)
+                if d:
+                    doc += d + '\n'
         except Exception as e:
             pass
-    return src 
+    return src,doc
 
 class IrModel(models.Model):
     _name = 'builder.ir.model'
@@ -240,15 +245,19 @@ class IrModel(models.Model):
     diagram_position_x = fields.Integer('X')
     diagram_position_y = fields.Integer('Y')
 
-    define = fields.Boolean('Defined',readonly=True,store=True,compute=lambda self: self._define)
+    define = fields.Boolean('Defined',readonly=True,store=True,compute='_define')
     
     @api.depends('inherit_model_ids','method_ids','status_bar_button_ids','field_ids','model')
     def _define(self):
-        return len(self.inherit_model_ids) > 1 or len(self.method_ids) or len(
+        _logger.debug("----251-----")
+        _logger.debug(len(self.method_ids))
+        ret = len(self.inherit_model_ids) or len(self.method_ids) or len(
             self.status_bar_button_ids) or len(self.button_ids) or any(
                 not field.is_inherited or field.redefine
                 for field in self.field_ids) or (
                 self.inherit_model_ids and self.model != self.inherit_model_ids[0].model_id.name)
+        _logger.debug(ret)
+        self.define = ret
 
     @api.one
     def _compute_rec_name_field_id(self):
@@ -387,18 +396,18 @@ class IrModel(models.Model):
     def init_imports(self):
         for record in self:
             if not record.import_ids:
-                record.import_ids.create({
+                self.import_ids.create({
                     'module_id': record.module_id.id,
                     'model_id': record.id,
                     'parent': 'odoo',
                     'name': 'api,models,fields,tools,_'
                 })
-                record.import_ids.create({
+                self.import_ids.create({
                     'module_id': record.module_id.id,
                     'model_id': record.id,
                     'name': 'logging'
                 })    
-                record.custom_code_line_ids.create({
+                self.custom_code_line_ids.create({
                     'module_id': record.module_id.id,
                     'model_id': record.id,
                     'class_code': False,
@@ -678,8 +687,8 @@ class ModelMethod(models.Model):
     # define = fields.Boolean("Redefined",default=True)
     # inherit_model_mame = fields.Char('Parent Model')
     model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
-    module_id = fields.Many2one('builder.ir.module.module', string='Module', related='model_id.module_id',
-                                ondelete='cascade')
+    module_id = fields.Many2one(related='model_id.module_id', string='Module', 
+                                store=True,ondelete='cascade')
     decorator_ids = fields.One2many('builder.ir.model.decorator','method_id',string='Decorators')
     name = fields.Char(string='Name', required=True)
     arguments = fields.Char(string='Arguments', default='')
@@ -725,13 +734,18 @@ class ModelMethod(models.Model):
     def create(self, vals):
         #Return record if exists
         name = vals.get('name')
-        module = vals.get('module_id')
-        import_ref = 'method_id'
-        model = vals.get(import_ref)                
+        module = vals.get('module_id',False)
+        model = vals.get('model_id')
+        _logger.debug(vals)
+        if not module:
+            model_id = self.env['builder.ir.model'].browse([model])
+            module = model_id.module_id.id
+            vals['module_id'] = module  
+        _logger.debug(vals)                     
         if module and model and name:
             record_id = self.search([
                 ('module_id','=', module),
-                (import_ref,'=', model),
+                ('model_id','=', model),
                 ('name','=', name)
             ])
             if record_id:
@@ -795,10 +809,13 @@ class ModelMethod(models.Model):
     @api.depends('name','model_id')
     def _get_parent_code(self):
         for record in self:
-            record.parent_code = get_parent_source(
-                self.env[record.model_id.model],
-                record.name
-            )
+            if record.model_id and record.name:
+                obj = self.env.get(record.model_id.model)
+                if obj:
+                    record.parent_code,_ = get_parent_source(
+                        self.env[record.model_id.model],
+                        record.name
+                    )
 
     @api.depends('name','model_id')
     def get_source_code(self):
@@ -933,6 +950,7 @@ class InheritMethod(models.TransientModel):
     #                             readonly=True,
     #                             states={'custom': [('invisible', False)]}
     #                             )
+    method_doc = fields.Text(string="Doc",readonly=True)
     method_source = fields.Text(string="Source",readonly=True)
     method_source_map = {}
     # method_source_file = fields.Char(string="Source File",
@@ -949,12 +967,13 @@ class InheritMethod(models.TransientModel):
     #     string="Custom Method")
 
     def _get_selection_state(self):
-        data = set([
-            'create',
-            'write',
-            'unlink',
-            'search',
-        ])   
+        # data = set([
+        #     'create',
+        #     'write',
+        #     'unlink',
+        #     'search',
+        # ])   
+        self.method_source_map = {key:value for key,value in OVERRIDE_METHODS.items()}
         # if not self: return []
         # for record in self: 
         # record = self       
@@ -985,14 +1004,21 @@ class InheritMethod(models.TransientModel):
                     # _logger.debug(callable(value))
                     if  m.__name__.startswith('odoo.addons.'
                         ) and callable(value):
-                        src = get_parent_source(
+                        src,doc = get_parent_source(
                             self.env[model], n)
+                        decorators = []
+                        for line in inspect.getsourcelines(value)[0]:
+                            if line.startswith('@'):
+                                decorators.append(line[1:])
+                            elif line.startswith('def'):
+                                break
+                        arg = str(inspect.signature(value))[1:-1]                       
                         if src:
-                            self.method_source_map[n]=src
-                            data.add(n)
+                            self.method_source_map[n]=(decorators,arg,doc,src)
+                            # data.add(n)
                 except Exception as e :
                     pass
-        ret =  [(x,x) for x in sorted(list(data))]
+        ret =  [(x,x) for x in sorted(list(self.method_source_map.keys()))]
         _logger.debug(ret)
         return ret
 
@@ -1038,7 +1064,10 @@ class InheritMethod(models.TransientModel):
         
         # self.method_source = get_parent_source(
         #     self.env[builder_model_id.model], self.state)
-        self.method_source = self.method_source_map.get(self.state,'')
+        src = self.method_source_map.get(
+            self.state,['','','',''])
+        self.method_source = src[3]
+        self.method_doc = src[2]
 
 
     # @api.onchange('rewrite_custom_method')
@@ -1076,16 +1105,22 @@ class InheritMethod(models.TransientModel):
         # if self.state == 'custom':
         # model, method = self.rewrite_custom_method.split('/')
         m = self.env[model_id.model]
-        args = str(inspect.signature(getattr(m,self.state)))[1:-1]
+        value = getattr(m,self.state)
+        args = str(inspect.signature(value))[1:-1]
         inherit_model_name = model_id.model
-
+        decorators = []
+        for line in inspect.getsourcelines(value)[0]:
+            if line.startswith('@'):
+                decorators.append(line[1:])
+            elif line.startswith('def'):
+                break
         # if self.state == 'create':
         #     args = 'vals'
         # if self.state == 'write':
         #     args = 'vals'
         # if self.state == 'search':
         #     args = 'vals'
-        self.env['builder.ir.model.method'].create({
+        m = self.env['builder.ir.model.method'].create({
             'module_id': model_id.module_id.id,
             'model_id': model_id.id,
             'name': method,
@@ -1094,5 +1129,30 @@ class InheritMethod(models.TransientModel):
             'type': 'simple_model',
             'inherit_model_name': inherit_model_name
         })
+        for d in decorators:
+            m.decorator_ids.create({
+                'method_id': m.id,
+                'name': d,
+            })        
 
 
+class PythonFileLine(models.Model):
+    _inherit = 'builder.python.file.line'
+
+    model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
+
+    @api.model
+    def create(self,vals):
+        # PythonFile
+        name = vals.get('name')
+        field = 'model_id'
+        model = vals.get(field)
+        if name and model:
+            record_id = self.search([
+                    (field,'=',model),
+                    ('name','=',name),
+                ])
+            if record_id:
+                record_id.write(vals)
+                return record_id
+        return super(PythonFileLine,self).create(vals)

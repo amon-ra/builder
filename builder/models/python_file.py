@@ -65,7 +65,7 @@ class PythonFileLine(models.Model):
     python_file_id = fields.Many2one('builder.python.file', 
                                 string="Custom Code",ondelete='cascade')    
 
-    model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
+    
     class_code = fields.Boolean('Inside Class',default=False)
 
     @api.model
@@ -74,9 +74,6 @@ class PythonFileLine(models.Model):
         name = vals.get('name')
         field = 'python_file_id'
         model = vals.get(field)
-        if not model:
-            field = 'model_id'
-            model = vals.get(field)
         if name and model:
             record_id = self.search([
                     (field,'=',model),
@@ -85,4 +82,4 @@ class PythonFileLine(models.Model):
             if record_id:
                 record_id.write(vals)
                 return record_id
-        return super().create(self,vals)
+        return super(PythonFileLine,self).create(vals)
