@@ -239,35 +239,36 @@ class GeneratorV11(models.TransientModel):
                 # ) 
                 # routes = {}
                 # parameters = {}
-                for page in controller_pages:
-                    routes = ''
-                    parameters = ''
-                    for route in page.controller_route:
-                        # routes[page.attr_id]=routes.get(
-                        #     page.attr_id,'')+route.name+','
-                        # parameters[page.attr_id]=parameters.get(
-                        #         page.attr_id,'self')                            
+            for controller in module.website_controller_ids:
+                routes = {}
+                parameters = {}
+                for method in controller.controller_method_ids:
+                    parameters[method.name]=parameters.get(method.name,'')
+                    parameters[method.name]+=','+'auth='+method.visibility
+                    parameters[method.name]+=','+'type='+method.route_type
+                    if method.route_method_ids:
+                        parameters[method.name]+=','+'methods=['+','.join(
+                            [m.name for m in method.route_method_ids])
+                    if not method.csrf:
+                        parameters[method.name]+=','+'csrf=False'
+                    for route in method.controller_route:
+                        routes[method.name]=route.get(
+                            method.name,'')+route.name+route.parameters+','                        
+                        # parameters[method.name]=parameters.get(
+                        #     method.name,'self')
                         # for p in route.parameter_ids:
                         #     if p.name == '**kwargs':
-                        #         parameters[page.attr_id]='self'
+                        #         # parameters='self'
                         #         break
                         #     else:
-                        #         parameters[page.attr_id]+=', '+p.name+'='+p.default
-                        routes+=route.name+','
-                        parameters='self'
-                        for p in route.parameter_ids:
-                            if p.name == '**kwargs':
-                                parameters='self'
-                                break
-                            else:
-                                parameters+=', '+p.name+'='+p.default                        
-                    zip_file.write_template(
-                        'controllers/main.py',
-                        'controllers/main.py.jinja2',
-                        {'module': module, 'page': page,
-                        'controller_routes': routes, 'route_parameters': parameters,
-                        },
-                    )            
+                        #         parameters+=', '+p.name+'='+p.default                        
+                zip_file.write_template(
+                    'controllers/main.py',
+                    'controllers/main.py.jinja2',
+                    {'module': module, 'controller': controller,
+                    'controller_routes': routes, 'route_parameters': parameters,
+                    },
+                )            
 
         for f in module.python_file_ids:
             py_packages[f.parent]=py_packages.get(f.parent,

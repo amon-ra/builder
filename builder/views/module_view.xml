@@ -363,6 +363,14 @@
                                                         </tree>
                                         </field>
                                     </page>
+                                    <page string="Controllers">
+                                        <field name="website_controller_ids" context="{'default_module_id': active_id}">
+                                            <tree string="Controller" create="true">
+                                                <field name="name"/>
+                                                <field name="parent"/>
+                                            </tree>
+                                        </field>
+                                    </page>                                    
                                     <page string="Themes">
                                         <field nolabel="1" name="website_theme_ids"
                                                context="{'default_module_id': active_id}">

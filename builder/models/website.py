@@ -81,17 +81,42 @@ class MediaItem(models.Model):
         if not self.attr_id and self.attr_name:
             self.attr_id = re.sub('[^a-zA-Z_]', '_', self.attr_name) + str(1 + len(self.search([])))
 
-class ControllerRouterParameter(models.Model):
-    _name = 'builder.website.route.parameter'
+class WebsiteRouteMethod(models.Model):
+    _name = 'builder.website.route.method'
 
-    name = fields.Char('Argument name',required=True)
-    default = fields.Char('Default Value',default='')
-    route_id = fields.Char('builder.website.route',required=True)
+    name = fields.Selection([
+        ('POST','POST'),('GET','GET'),('PUT','PUT')],string='Method')
+    method_id = fields.Many2one('builder.website.method',required=True)
+
+class WebsiteControllerMethod(models.Model):
+    _name = 'builder.website.method'
+    _inherit = 'builder.python.file.method'
+
+    controller_id = fields.Many2one('builder.website.controller', 'Controller', ondelete='cascade')
+    csrf = fields.Boolean('CSRF',default=True)    
+    visibility = fields.Selection([
+        ('public','Public'),('user','Private')
+        ],string="Visibility", default='public')
+    route_type = fields.Selection([
+        ('html','html'),('json','json'),('xml','xml')],string='Type',default='json')
+    route_method_ids = fields.One2many('builder.website.route.method','method_id',
+        string='Method')
+    controller_route = fields.One2many('builder.website.route','method_id',
+        string='Route')
+
+
+
+# class ControllerRouterParameter(models.Model):
+#     _name = 'builder.website.route.parameter'
+
+#     name = fields.Char('Argument name',required=True)
+#     default = fields.Char('Default Value',default='')
+#     route_id = fields.Char('builder.website.route',required=True)
 
 class ControllerRoute(models.Model):
     _name = 'builder.website.route'
 
-    website_id = fields.Many2one('builder.website.page',required=True)
+    method_id = fields.Many2one('builder.website.method',required=True)
     name = fields.Char('Route',required=True,help="""Examples: 
     /blog/<model("blog.blog", "[('website_id', 'in', (False, current_website_id))]"):blog_argument>,
     /blog/<model("blog.blog"):blog_argument>/page/<int:blog_page>,
@@ -100,8 +125,9 @@ class ControllerRoute(models.Model):
     /blog/search_content,
 Where blog_argument,blog_page,blog_tag must be created as arguments above    
         """)
-    parameter_ids = fields.One2many('builder.website.route.parameter',
-        'route_id',string='Parameters')
+    parameters = fields.Char('Add to Route',default='')
+    # parameter_ids = fields.One2many('builder.website.route.parameter',
+    #     'route_id',string='Parameters')
 
     @api.model
     def create(self,vals):
@@ -109,19 +135,32 @@ Where blog_argument,blog_page,blog_tag must be created as arguments above
         website = vals.get('website')
         if name and website:
             record_id = self.search([
-                ('website_id','=',website),
+                ('controller_id','=',website),
                 ('name','=',name)
             ])
             if record_id:
                 return record_id
         super().create(vals)
 
+class Controllers(models.Model):
+    _name = 'builder.website.controller'
+
+    model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
+    module_id = fields.Many2one('builder.ir.module.module', 'Module',
+                                ondelete='cascade', required=True)
+    name = fields.Char('Name',required=True)
+    parent = fields.Char('Parent')                                  
+    controller_method_ids = fields.One2many('builder.website.method','controller_id','Custom Methods', copy=True)
+    import_ids = fields.One2many('builder.python.file.import', 'controller_id', 'Imports', copy=True)
+    custom_code_line_ids = fields.One2many('builder.python.file.line','controller_id', 'Custom Code', copy=True)
+
+
 class Pages(models.Model):
     _name = 'builder.website.page'
 
     _rec_name = 'attr_name'
 
-    model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
+
     module_id = fields.Many2one('builder.ir.module.module', 'Module',
                                 ondelete='cascade', required=True)
     attr_name = fields.Char(string='Name', required=True)
@@ -129,18 +168,10 @@ class Pages(models.Model):
     attr_inherit_id = fields.Char('Inherit Asset')
     attr_priority = fields.Integer('Priority', default=10)
     attr_page = fields.Boolean('Page', default=True)
-    visibility = fields.Selection([
-        ('public','Public'),('user','Private')
-        ],string="Visibility", default='public')
-    csrf = fields.Boolean('CSRF',default=True)
-    gen_controller = fields.Boolean('Generate Controller', default=False)
+    # gen_controller = fields.Boolean('Generate Controller', default=False)
     # controller_route = fields.Char('Route')
-    controller_route = fields.One2many('builder.website.route','website_id',
-        string='Route')
+
     content = fields.Html('Body', sanitize=False)
-    website_method_ids = fields.One2many('builder.website.method','module_id','Custom Methods', copy=True)
-    import_ids = fields.One2many('builder.python.file.import', 'website_id', 'Imports', copy=True)
-    custom_code_line_ids = fields.One2many('builder.python.file.line','website_id', 'Custom Code', copy=True)
 
     def action_edit_html(self):
         # if not len(ids) == 1:
@@ -154,9 +185,9 @@ class Pages(models.Model):
             'target': 'self',
         }
 
-    @api.onchange('attr_page')
-    def _onchange_page(self):
-        self.gen_controller = not self.attr_page
+    # @api.onchange('attr_page')
+    # def _onchange_page(self):
+    #     self.gen_controller = not self.attr_page
 
 
 class Theme(models.Model):
@@ -294,27 +325,7 @@ class WebsiteSnippet(models.Model):
             'url': url,
             'target': 'self',
         }
-
-class WebsiteControllerMethod(models.Model):
-    _name = 'builder.website.method'
-
-    _order = 'sequence, id'
-
-    module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
-    sequence = fields.Integer('Sequence', default=60)
-
-    name = fields.Char(string='Name', required=True)
-    visibility = fields.Selection([
-        ('public','Public'),('user','Private')
-        ],string="Visibility", default='public')
-    route_type = fields.Selection([
-        ('html','html'),('json','json'),('xml','xml')],string='Type',default='json')
-    route_method = fields.Selection([
-        ('POST','POST'),('GET','GET'),('PUT','PUT')],string='Method')
-    controller_route = fields.One2many('builder.website.route','website_id',
-        string='Route')
-    custom_code_line_ids = fields.One2many('builder.python.file.line','website_method_id', 'Custom Code', copy=True)
-   
+  
 
 class Module(models.Model):
     _inherit = 'builder.ir.module.module'
@@ -326,19 +337,20 @@ class Module(models.Model):
     website_theme_ids = fields.One2many('builder.website.theme', 'module_id', 'Themes', copy=True)
     website_page_ids = fields.One2many('builder.website.page', 'module_id', 'Pages', copy=True)
     website_snippet_ids = fields.One2many('builder.website.snippet', 'module_id', 'Snippets', copy=True)
+    website_controller_ids = fields.One2many('builder.website.controller', 'module_id', 'Controllers', copy=True)
 
 
 
 class PythonFileLine(models.Model):
     _inherit = 'builder.python.file.line'
 
-    website_method_id = fields.Many2one('builder.website.method', 'Website Method', ondelete='cascade')
+    page_method_id = fields.Many2one('builder.website.method', 'Website Method', ondelete='cascade')
 
     @api.model
     def create(self,vals):
         # PythonFile
         name = vals.get('name')
-        field = 'website_method_id'
+        field = 'page_method_id'
         model = vals.get(field)
         if name and model:
             record_id = self.search([
@@ -354,7 +366,7 @@ class PythonFileLine(models.Model):
 class WebsiteFileImports(models.Model):
     _inherit = 'builder.python.file.import'
 
-    website_id = fields.Many2one('builder.website.page', 'Page', ondelete='cascade')
+    controller_id = fields.Many2one('builder.website.page', 'Page', ondelete='cascade')
     # module_id = fields.Many2one('builder.ir.module.module', string='Module', related='model_id.module_id',
     #                             ondelete='cascade')
 
@@ -363,7 +375,7 @@ class WebsiteFileImports(models.Model):
         #Return record if exists
         name = vals.get('name')
         # module = vals.get('module_id')
-        import_ref = 'website_id'
+        import_ref = 'controller_id'
         model = vals.get(import_ref)              
         if model and name:
             record_id = self.search([
@@ -378,13 +390,13 @@ class WebsiteFileImports(models.Model):
 class WebsitePythonFileLine(models.Model):
     _inherit = 'builder.python.file.line'
 
-    website_id = fields.Many2one('builder.website.page', 'Page', ondelete='cascade')
+    controller_id = fields.Many2one('builder.website.page', 'Page', ondelete='cascade')
 
     @api.model
     def create(self,vals):
         # PythonFile
         name = vals.get('name')
-        field = 'website_id'
+        field = 'controller_id'
         model = vals.get(field)
         if name and model:
             record_id = self.search([
@@ -394,4 +406,4 @@ class WebsitePythonFileLine(models.Model):
             if record_id:
                 record_id.write(vals)
                 return record_id
-        return super(PythonFileLine,self).create(vals)
+        return super().create(vals)

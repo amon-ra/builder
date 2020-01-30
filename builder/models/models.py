@@ -649,77 +649,16 @@ class ModelFileImports(models.Model):
         return super().create(vals)
 
 
-class ModelMethodDecorator(models.Model):
-    _name = 'builder.ir.model.decorator'
-
-    name = fields.Char(string='Name', required=True)
-    # arguments = fields.Char(string='Arguments', default='')
-    method_id = fields.Many2one('builder.ir.model.method',ondelete='cascade')
-
-    @api.model
-    def create(self, vals):
-        #Return record if exists
-        name = vals.get('name')
-        import_ref = 'method_id'
-        model = vals.get(import_ref)                
-        if model and name:
-            record_id = self.search([
-                (import_ref,'=', model),
-                ('name','=', name)
-            ])
-            if record_id:
-                record_id.write(vals)
-                return record_id
-        return super().create(vals)
-
 class ModelMethod(models.Model):
     _name = 'builder.ir.model.method'
+    _inherit = 'builder.python.file.method'
 
-    # define = fields.Boolean("Redefined",default=True)
-    # inherit_model_mame = fields.Char('Parent Model')
     model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
     module_id = fields.Many2one(related='model_id.module_id', string='Module', 
                                 store=True,ondelete='cascade')
-    decorator_ids = fields.One2many('builder.ir.model.decorator','method_id',string='Decorators')
-    name = fields.Char(string='Name', required=True)
-    arguments = fields.Char(string='Arguments', default='')
-
-    use_cache = fields.Boolean('Use Cache', default=False)
     field_ids = fields.Many2many('builder.ir.model.fields',
                                  'builder_ir_model_method_fields_rel', 'model_method_id',
                                  'field_id', string='Fields')
-
-    custom_code = fields.Text('Custom Code')
-
-    parent_code = fields.Text('Parent Code',compute='_get_parent_code')
-
-    type = fields.Selection(
-        [
-            ('simple_model', 'Model Method'),
-            ('simple_instance', 'Instance Method'),
-            ('onchange', 'On Change'),
-            ('constraint', 'Constraint'),
-        ], 'Method Type', required=True)
-
-    @property
-    def field_names(self):
-        return [field.name for field in self.field_ids]
-
-    def count_defined(self):
-        n = 0
-        for record in self:
-            if record.define:
-                n+=1
-        return n
-    # @api.model
-    # def default_get(self, fields):
-    #     res = super().default_get(fields)
-    #     if not res.get('module_id',False):
-    #         _logger.debug(res)
-    #         _logger.debug(self.model_id)
-    #         model_id = self.env['builder.ir.model'].browse(res['model_id'])
-    #         res['module_id']=model_id.module_id
-    #     return res
 
     @api.model
     def create(self, vals):
@@ -727,12 +666,10 @@ class ModelMethod(models.Model):
         name = vals.get('name')
         module = vals.get('module_id',False)
         model = vals.get('model_id')
-        _logger.debug(vals)
         if not module:
             model_id = self.env['builder.ir.model'].browse([model])
             module = model_id.module_id.id
-            vals['module_id'] = module  
-        _logger.debug(vals)                     
+            vals['module_id'] = module                     
         if module and model and name:
             record_id = self.search([
                 ('module_id','=', module),
@@ -820,7 +757,7 @@ class ModelMethod(models.Model):
                         model_id, self.name))
         #tag = src.split('\n',1)[0]
         return src
-
+        
 class InheritModelTemplate(models.AbstractModel):
     _name = 'builder.ir.model.inherit.template'
     _order = 'sequence, id'

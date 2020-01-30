@@ -84,9 +84,7 @@
                                 <field name="attr_id"/>
                             </group>
                             <group>
-                                <field name="visibility" />
                                 <field name="attr_page"/>
-                                <field name="gen_controller" attrs="{'invisible': [('attr_page', '=', True)]}"/>                                
                             </group>
                         </group>
                         <notebook>
@@ -97,43 +95,7 @@
                         <field name="content" nolabel="1" widget="ace" theme="tomorrow" mode="html"
                                style="min-height:200px;width:90%"/>
                         </page>
-                        <page string="Code">
-                        <group colspan="4" string="Routes">
-                            <field name="controller_route" placeholder="/myroute/mypage" context="{'default_website_id':id}" attrs="{'invisible': [('gen_controller', '=', False)], 'required': [('gen_controller', '=', True)]}">
-                                <tree string="Routes">
-                                    <field name="name" />
-                                    <field name="parameter_ids" widget="many2many_tags" />
-                                </tree>
-                            </field>
-                        </group>
-                        <group colspan="4" string="Methods">
-                            <field nolabel="1" name="website_method_ids" context="{'default_module_id': active_id}">
-                                <tree string="Menu" create="true" editable="top">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="name"/>
-                                    <field name="route_type"/>
-                                    <field name="route_method"/>
-                                    <field name="controller_route" placeholder="/myroute/mypage" widget="many2many_tags" />
-                                </tree>
-                            </field>
-                        </group>
-                        <group colspan="4" string="Imports">
-                            <field name="import_ids" nolabel="1" context="{'default_website_id': id}">
-                                <tree string="Imports" create="1" edit="1" delete="1">
-                                    <field name="parent"/>
-                                    <field name="name"/>
-                                </tree>
-                            </field>  
-                        </group>
-                        <group colspan="4" string="Custom Code">
-                            <field name="custom_code_line_ids" nolabel="1" context="{'default_module_id': module_id, 'default_website_id': id}">
-                                <tree string="Custom Code" create="1" edit="1" delete="1">
-                                    <field name="name"/>
-                                    <field name="custom_code"/>
-                                </tree>
-                            </field>
-                        </group>                        
-                        </page>   
+
                         </notebook>                               
                     </sheet>
                 </form>
@@ -438,18 +400,111 @@
                     <sheet>
                         <group>
                                 <field name="name"/>
-                                <field name="parameter_ids" context="{'default_route_id': id}" mode="tree">
+                                <field name="method_id" invisible="1" />
+                                <field name="parameters" />
+                                <!-- <field name="parameter_ids" context="{'default_route_id': id}" mode="tree">
                                     <tree editable="bottom">
                                         <field name="name" />
                                         <field name="default" />
                                     </tree>
-                                </field>
+                                </field> -->
                         </group>
                     </sheet>
                 </form>
             </field>
         </record>
-        <!-- Route -->
+        <!-- /Route -->
+<!-- Method -->
+<record model="ir.ui.view" id="builder_website_method_form_view">
+    <field name="name">builder.website.method.form</field>
+    <field name="model">builder.website.method</field>
+    <field name="arch" type="xml">
+        <form string="Controller" version="7.0">
+            <sheet>
+            <group>
+                <group>
+                    <field name="name"/>
+                    <field name="route_type"/>
+                    <field name="route_method_ids" widget="many2many_tags" />
+                    <field name="controller_id" invisible="1" />
+                </group>
+                <group>
+                    <field name="visibility"/>
+                    <field name="csrf"/>
+                </group>
+            </group>
+                <notebook>
+                <page string="Routes">
+                        <field name="controller_route" nolabel="1" placeholder="/myroute/mypage" context="{'default_method_id':id}">
+                            <tree string="Routes">
+                                <field name="name" />
+                                <field name="parameters" />
+                                <!-- <field name="parameter_ids" widget="many2many_tags" /> -->
+                            </tree>
+                        </field>
+                </page>
+                <page string="Code">
+                    <field name="custom_code" nolabel="1" widget="ace" theme="tomorrow" mode="html" style="min-height:200px;width:90%"/>
 
+                </page>
+                </notebook>
+            </sheet>
+        </form>
+    </field>
+</record>
+<!-- /Method -->
+        <!-- Controller -->
+        <record model="ir.ui.view" id="builder_website_controller_form_view">
+            <field name="name">builder.website.controller.form</field>
+            <field name="model">builder.website.controller</field>
+            <field name="arch" type="xml">
+                <form string="Controller" version="7.0">
+                    <sheet>
+                    <group>
+                    <group>
+                        <field name="name"/>
+                        <field name="parent"/>
+                    </group>
+                    <group>
+                        <field name="model_id"/>
+                        <field name="module_id" invisible="1" />
+                    </group>
+                    </group>
+                    <notebook>
+                    <page string="Methods">
+                            <field nolabel="1" name="controller_method_ids" context="{'default_module_id': active_id}">
+                                <tree string="Method" create="true" editable="top">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="route_type"/>
+                                    <field name="route_method_ids" widget="many2many_tags" />
+                                    <field name="controller_route" placeholder="/myroute/mypage" widget="many2many_tags" />
+                                </tree>
+                            </field>
+                    </page>
+                    <page string="Code">                        
+                        <group colspan="4" string="Imports">
+                            <field name="import_ids" nolabel="1" context="{'default_page_id': id}">
+                                <tree string="Imports" create="1" edit="1" delete="1">
+                                    <field name="parent"/>
+                                    <field name="name"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group colspan="4" string="Custom Code">
+                            <field name="custom_code_line_ids" nolabel="1" context="{'default_module_id': module_id, 'default_page_id': id}">
+                                <tree string="Custom Code" create="1" edit="1" delete="1">
+                                    <field name="name"/>
+                                    <field name="custom_code"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page> 
+                    </notebook>  
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!-- /Controller -->
     </data>
 </odoo>
