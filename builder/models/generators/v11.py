@@ -237,27 +237,37 @@ class GeneratorV11(models.TransientModel):
                 #     '__init__.py.jinja2',
                 #     {'packages': ['main'],'module': module}
                 # ) 
-                routes = {}
-                parameters = {}
+                # routes = {}
+                # parameters = {}
                 for page in controller_pages:
+                    routes = ''
+                    parameters = ''
                     for route in page.controller_route:
-                        routes[page.attr_id]=routes.get(
-                            page.attr_id,'')+route.name+','
-                        parameters[page.attr_id]=parameters.get(
-                                page.attr_id,'self')                            
+                        # routes[page.attr_id]=routes.get(
+                        #     page.attr_id,'')+route.name+','
+                        # parameters[page.attr_id]=parameters.get(
+                        #         page.attr_id,'self')                            
+                        # for p in route.parameter_ids:
+                        #     if p.name == '**kwargs':
+                        #         parameters[page.attr_id]='self'
+                        #         break
+                        #     else:
+                        #         parameters[page.attr_id]+=', '+p.name+'='+p.default
+                        routes+=route.name+','
+                        parameters='self'
                         for p in route.parameter_ids:
                             if p.name == '**kwargs':
-                                parameters[page.attr_id]='self, '+p.name
+                                parameters='self'
                                 break
                             else:
-                                parameters[page.attr_id]+=', '+p.name+'='+p.default
-                zip_file.write_template(
-                    'controllers/main.py',
-                    'controllers/main.py.jinja2',
-                    {'module': module, 'pages': controller_pages,
-                     'controller_routes': routes, 'route_parameters': parameters,
-                    },
-                )            
+                                parameters+=', '+p.name+'='+p.default                        
+                    zip_file.write_template(
+                        'controllers/main.py',
+                        'controllers/main.py.jinja2',
+                        {'module': module, 'page': page,
+                        'controller_routes': routes, 'route_parameters': parameters,
+                        },
+                    )            
 
         for f in module.python_file_ids:
             py_packages[f.parent]=py_packages.get(f.parent,

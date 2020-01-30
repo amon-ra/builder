@@ -85,23 +85,45 @@ class ControllerRouterParameter(models.Model):
     _name = 'builder.website.route.parameter'
 
     name = fields.Char('Argument name',required=True)
-    default = fields.Char('Default Value',default='',required=True)
-    route_id = fields.Char('builder.website.route')
+    default = fields.Char('Default Value',default='')
+    route_id = fields.Char('builder.website.route',required=True)
 
 class ControllerRoute(models.Model):
     _name = 'builder.website.route'
 
-    website_id = fields.Many2one('builder.website.page')
-    name = fields.Char('Route',required=True)
+    website_id = fields.Many2one('builder.website.page',required=True)
+    name = fields.Char('Route',required=True,help="""Examples: 
+    /blog/<model("blog.blog", "[('website_id', 'in', (False, current_website_id))]"):blog_argument>,
+    /blog/<model("blog.blog"):blog_argument>/page/<int:blog_page>,
+    /blog/<model("blog.blog"):blog_argument>/tag/<string:blog_tag>,
+    /blog/<model("blog.blog"):blog_argument>/tag/<string:tag>/page/<int:blog_page>,
+    /blog/search_content,
+Where blog_argument,blog_page,blog_tag must be created as arguments above    
+        """)
     parameter_ids = fields.One2many('builder.website.route.parameter',
         'route_id',string='Parameters')
+
+    @api.model
+    def create(self,vals):
+        name = vals.get('name')
+        website = vals.get('website')
+        if name and website:
+            record_id = self.search([
+                ('website_id','=',website),
+                ('name','=',name)
+            ])
+            if record_id:
+                return record_id
+        super().create(vals)
 
 class Pages(models.Model):
     _name = 'builder.website.page'
 
     _rec_name = 'attr_name'
 
-    module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
+    model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
+    module_id = fields.Many2one('builder.ir.module.module', 'Module',
+                                ondelete='cascade', required=True)
     attr_name = fields.Char(string='Name', required=True)
     attr_id = fields.Char('XML ID', required=True)
     attr_inherit_id = fields.Char('Inherit Asset')
@@ -110,11 +132,14 @@ class Pages(models.Model):
     visibility = fields.Selection([
         ('public','Public'),('user','Private')
         ],string="Visibility", default='public')
+    csrf = fields.Boolean('CSRF',default=True)
     gen_controller = fields.Boolean('Generate Controller', default=False)
     # controller_route = fields.Char('Route')
     controller_route = fields.One2many('builder.website.route','website_id',
         string='Route')
     content = fields.Html('Body', sanitize=False)
+    website_method_ids = fields.One2many('builder.website.method','module_id','Custom Methods', copy=True)
+    import_ids = fields.One2many('builder.python.file.import', 'website_id', 'Imports', copy=True)
 
     def action_edit_html(self):
         # if not len(ids) == 1:
@@ -300,7 +325,7 @@ class Module(models.Model):
     website_theme_ids = fields.One2many('builder.website.theme', 'module_id', 'Themes', copy=True)
     website_page_ids = fields.One2many('builder.website.page', 'module_id', 'Pages', copy=True)
     website_snippet_ids = fields.One2many('builder.website.snippet', 'module_id', 'Snippets', copy=True)
-    website_method_ids = fields.One2many('builder.website.method','module_id','Custom Methods', copy=True)
+
 
 
 class PythonFileLine(models.Model):
@@ -323,3 +348,28 @@ class PythonFileLine(models.Model):
                 record_id.write(vals)
                 return record_id
         return super(PythonFileLine,self).create(vals)
+
+
+class ModelImports(models.Model):
+    _inherit = 'builder.python.file.import'
+
+    website_id = fields.Many2one('builder.website.page', 'Page', ondelete='cascade')
+    # module_id = fields.Many2one('builder.ir.module.module', string='Module', related='model_id.module_id',
+    #                             ondelete='cascade')
+
+    @api.model
+    def create(self, vals):
+        #Return record if exists
+        name = vals.get('name')
+        # module = vals.get('module_id')
+        import_ref = 'website_id'
+        model = vals.get(import_ref)              
+        if model and name:
+            record_id = self.search([
+                (import_ref,'=', model),
+                ('name','=', name)
+            ])
+            if record_id:
+                record_id.write(vals)
+                return record_id
+        return super().create(vals)

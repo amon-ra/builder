@@ -54,10 +54,10 @@ def get_source_code(model_id,method_name):
 
 class IrModel(models.Model):
     _name = 'builder.report'
-    _description = "Models"
+    _description = "Report"
     _order = 'sequence, model'
 
-    _rec_name = 'model'
+    # _rec_name = 'model'
 
     sequence = fields.Integer('Sequence')
     module_id = fields.Many2one('builder.ir.module.module', 'Module', required=True, index=True, ondelete='cascade')
@@ -90,7 +90,7 @@ class IrModel(models.Model):
     action_ids = fields.One2many('builder.ir.actions.actions', 'model_id', 'Actions', copy=True)
     menu_ids = fields.One2many('builder.ir.ui.menu', 'model_id', 'Menus', copy=True)
     method_ids = fields.One2many('builder.ir.model.method', 'model_id', 'Models', copy=True)
-    import_ids = fields.One2many('builder.ir.model.import', 'model_id', 'Imports', copy=True)
+    import_ids = fields.One2many('builder.python.file.import', 'model_id', 'Imports', copy=True)
 
     to_ids = fields.One2many('builder.ir.model.fields', 'relation_model_id', 'Forward Models',
                              domain=[('ttype', 'in', ['many2one', 'one2many', 'many2many']),
@@ -396,7 +396,7 @@ class IrModel(models.Model):
 
 
 class ModelImports(models.Model):
-    _name = 'builder.ir.model.import'
+    _name = 'builder.python.file.import'
 
     model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
     module_id = fields.Many2one('builder.ir.module.module', string='Module', related='model_id.module_id',
@@ -719,3 +719,7 @@ class InheritMethod(models.TransientModel):
             'type': 'simple_model',
             'inherit_model_name': inherit_model_name
         })
+
+
+class ReportPythonImports(models.Model):
+    _inherit = 'builder.python.file.import'

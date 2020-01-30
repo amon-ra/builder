@@ -34,7 +34,7 @@ class PythonFile(models.Model):
     name = fields.Char('Name', required=True)
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
     custom_code_line_ids = fields.One2many('builder.python.file.line','python_file_id', 'Code', copy=True)
-    import_ids = fields.One2many('builder.ir.model.import', 'python_file_id', 'Imports', copy=True)
+    import_ids = fields.One2many('builder.python.file.import', 'python_file_id', 'Imports', copy=True)
 
     @api.model
     def create(self,vals):
@@ -83,3 +83,29 @@ class PythonFileLine(models.Model):
                 record_id.write(vals)
                 return record_id
         return super(PythonFileLine,self).create(vals)
+
+
+class PythonImports(models.Model):
+    _name = 'builder.python.file.import'
+
+    parent = fields.Char(string='Parent')
+    name = fields.Char(string='Name', required=True)
+    python_file_id = fields.Many2one('builder.python.file', 
+                                string="Custom Code",ondelete='cascade')
+
+    @api.model
+    def create(self, vals):
+        #Return record if exists: Singleton
+        name = vals.get('name')
+        # module = vals.get('module_id')
+        import_ref = 'python_file_id'
+        model = vals.get(import_ref)                
+        if model and name:
+            record_id = self.search([
+                (import_ref,'=', model),
+                ('name','=', name)
+            ])
+            if record_id:
+                record_id.write(vals)
+                return record_id
+        return super().create(vals)

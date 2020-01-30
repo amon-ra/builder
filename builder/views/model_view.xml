@@ -531,43 +531,6 @@
 
         <!-- Model Method -->
 
-        <!-- Model Import -->
-        <record model="ir.ui.view" id="builder_ir_model_import_tree_view">
-            <field name="name">builder.ir.model.import.tree</field>
-            <field name="model">builder.ir.model.import</field>
-            <field name="arch" type="xml">
-                <tree string="Model Import">
-                    <field name="name"/>
-                </tree>
-            </field>
-        </record>
-
-        <record model="ir.ui.view" id="builder_ir_model_import_form_view">
-            <field name="name">builder.ir.model.import.form</field>
-            <field name="model">builder.ir.model.import</field>
-            <field name="arch" type="xml">
-                <form string="Model Import">
-                    <sheet>
-                        <group>
-                            <group>
-                                <field name="model_id" invisible="1"/>
-                                <field name="module_id" invisible="1"/>
-                                <field name="name"/>
-                            </group>
-                        </group>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-
-        <record model="ir.actions.act_window" id="act_builder_ir_model_import">
-            <field name="name">Model Import</field>
-            <field name="res_model">builder.ir.model.import</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
-        </record>
-
-        <!-- Model Import -->
         
 
     </data>

@@ -11,31 +11,38 @@ _logger = logging.getLogger(__name__)
 class OdooBuilderTranslator(object):
     def __init__(self):
         self.seen_models = set()
+        self.data_files = set()
+
+    def get_files(self):
+        return self.data_files
 
     def translate(self, obj):
         if isinstance(obj, models.Model):
             instance = {'@model': obj._name, '@id': obj.id}
             obj_id = obj._name, obj.id
-            if obj.id and obj_id not in self.seen_models and obj._name.startswith('builder.'):
-                self.seen_models.add(obj_id)
-                for name, column in list(obj._fields.items()):
-                    _logger.debug(name)
-                    _logger.debug(column)
-                    _logger.debug(column.type)
-                    if name in ['id', 'write_uid', 'write_date', 'create_date', 'create_uid']:
-                        continue
-                    if column.type in ['function'] or getattr(column, '_fnct', False) or not getattr(column, 'store', True):
-                        continue
-                    if column.type in ['char', 'boolean', 'integer', 'text', 'html', 'float', 'date', 'datetime', 'selection' ]:
-                        instance[name] = getattr(obj, name)
-                    elif column.type in ['binary']:
-                        value = getattr(obj, name)
-                        if value:
-                            value = '#__BINARY__'+base64.encodebytes(value).decode('ascii')
-                            #base64.decodebytes(data2['body'].encode('ascii'))                     
-                            instance[name] = value
-                    else:
-                        instance[name] = getattr(self, 'handle_model_{type}'.format(type=column.type))(obj, name)
+            if obj.id and obj_id not in self.seen_models:
+                # if obj._name.startswith('builder.data.file'):
+                #     self.data_files.add(obj)
+                if obj._name.startswith('builder.'):
+                    self.seen_models.add(obj_id)
+                    for name, column in list(obj._fields.items()):
+                        _logger.debug(name)
+                        _logger.debug(column)
+                        _logger.debug(column.type)
+                        if name in ['id', 'write_uid', 'write_date', 'create_date', 'create_uid']:
+                            continue
+                        if column.type in ['function'] or getattr(column, '_fnct', False) or not getattr(column, 'store', True):
+                            continue
+                        if column.type in ['char', 'boolean', 'integer', 'text', 'html', 'float', 'date', 'datetime', 'selection' ]:
+                            instance[name] = getattr(obj, name)
+                        elif column.type in ['binary']:
+                            value = getattr(obj, name)
+                            if value:
+                                value = '#__BINARY__'+base64.encodebytes(value).decode('ascii')
+                                #base64.decodebytes(data2['body'].encode('ascii'))                     
+                                instance[name] = value
+                        else:
+                            instance[name] = getattr(self, 'handle_model_{type}'.format(type=column.type))(obj, name)
             return instance if obj.id else False
         return obj
 

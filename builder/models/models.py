@@ -138,7 +138,7 @@ class IrModel(models.Model):
     action_ids = fields.One2many('builder.ir.actions.actions', 'model_id', 'Actions', copy=True)
     menu_ids = fields.One2many('builder.ir.ui.menu', 'model_id', 'Menus', copy=True)
     method_ids = fields.One2many('builder.ir.model.method', 'model_id', 'Models', copy=True)
-    import_ids = fields.One2many('builder.ir.model.import', 'model_id', 'Imports', copy=True)
+    import_ids = fields.One2many('builder.python.file.import', 'model_id', 'Imports', copy=True)
     custom_code_line_ids = fields.One2many('builder.python.file.line','model_id', 'Custom Code', copy=True)
 
     to_ids = fields.One2many('builder.ir.model.fields', 'relation_model_id', 'Forward Models',
@@ -625,30 +625,21 @@ class IrModel(models.Model):
 
 
 class ModelImports(models.Model):
-    _name = 'builder.ir.model.import'
+    _inherit = 'builder.python.file.import'
 
     model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
-    module_id = fields.Many2one('builder.ir.module.module', string='Module', related='model_id.module_id',
-                                ondelete='cascade')
-
-    parent = fields.Char(string='Parent')
-    name = fields.Char(string='Name', required=True)
-    python_file_id = fields.Many2one('builder.python.file', 
-                                string="Custom Code",ondelete='cascade')
+    # module_id = fields.Many2one('builder.ir.module.module', string='Module', related='model_id.module_id',
+    #                             ondelete='cascade')
 
     @api.model
     def create(self, vals):
         #Return record if exists
         name = vals.get('name')
-        module = vals.get('module_id')
+        # module = vals.get('module_id')
         import_ref = 'model_id'
-        model = vals.get(import_ref)
-        if not model:  
-            import_ref = 'model_id'
-            model = vals.get(import_ref)                  
-        if module and model and name:
+        model = vals.get(import_ref)              
+        if model and name:
             record_id = self.search([
-                ('module_id','=', module),
                 (import_ref,'=', model),
                 ('name','=', name)
             ])
