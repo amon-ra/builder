@@ -140,6 +140,7 @@ class Pages(models.Model):
     content = fields.Html('Body', sanitize=False)
     website_method_ids = fields.One2many('builder.website.method','module_id','Custom Methods', copy=True)
     import_ids = fields.One2many('builder.python.file.import', 'website_id', 'Imports', copy=True)
+    custom_code_line_ids = fields.One2many('builder.python.file.line','website_id', 'Custom Code', copy=True)
 
     def action_edit_html(self):
         # if not len(ids) == 1:
@@ -350,7 +351,7 @@ class PythonFileLine(models.Model):
         return super(PythonFileLine,self).create(vals)
 
 
-class ModelImports(models.Model):
+class WebsiteFileImports(models.Model):
     _inherit = 'builder.python.file.import'
 
     website_id = fields.Many2one('builder.website.page', 'Page', ondelete='cascade')
@@ -373,3 +374,24 @@ class ModelImports(models.Model):
                 record_id.write(vals)
                 return record_id
         return super().create(vals)
+
+class WebsitePythonFileLine(models.Model):
+    _inherit = 'builder.python.file.line'
+
+    website_id = fields.Many2one('builder.website.page', 'Page', ondelete='cascade')
+
+    @api.model
+    def create(self,vals):
+        # PythonFile
+        name = vals.get('name')
+        field = 'website_id'
+        model = vals.get(field)
+        if name and model:
+            record_id = self.search([
+                    (field,'=',model),
+                    ('name','=',name),
+                ])
+            if record_id:
+                record_id.write(vals)
+                return record_id
+        return super(PythonFileLine,self).create(vals)

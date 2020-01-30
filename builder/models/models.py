@@ -624,7 +624,7 @@ class IrModel(models.Model):
 
 
 
-class ModelImports(models.Model):
+class ModelFileImports(models.Model):
     _inherit = 'builder.python.file.import'
 
     model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
@@ -1127,7 +1127,7 @@ class InheritMethod(models.TransientModel):
             })        
 
 
-class PythonFileLine(models.Model):
+class ModelPythonFileLine(models.Model):
     _inherit = 'builder.python.file.line'
 
     model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
