@@ -108,14 +108,14 @@ class ViewSelector(models.TransientModel):
             if views:
                 self.inherit_view_id = views[0].id
 
-    @api.one
     @api.constrains('inherit_view_ref')
     def _check_view_ref(self):
-        if self.inherit_view_ref:
-            exists = self.env['ir.model.data'].xmlid_lookup(self.inherit_view_ref)
+      for record_id in self:
+        if record_id.inherit_view_ref:
+            exists = self.env['ir.model.data'].xmlid_lookup(record_id.inherit_view_ref)
             if exists:
-                view = self.env['ir.model.data'].get_object(*self.inherit_view_ref.split('.'))
-                if not view.model == self.model_id.model:
+                view = self.env['ir.model.data'].get_object(*record_id.inherit_view_ref.split('.'))
+                if not view.model == record_id.model_id.model:
                     raise ValidationError("View Ref is not a valid view reference")
 
     @api.multi
@@ -220,6 +220,69 @@ class View(models.Model):
     def real_xml_id(self):
         return self.xml_id if '.' in self.xml_id else '{module}.{xml_id}'.format(module=self.module_id.name, xml_id=self.xml_id)
 
+class InheritView(models.AbstractModel):
+    _name = 'builder.ir.ui.view.inherit'
+    _order = 'sequence, id'
+    _rec_name = 'xml_id'
+
+    sequence = fields.Integer('Sequence')
+    # module_id = fields.Many2one('builder.ir.module.module','Module')
+    view_source = fields.Selection([('module', 'Module'), ('system', 'System')], 'Source', required=True)
+    module_view_id = fields.Many2one('builder.ir.ui.view', 'Model', ondelete='cascade')
+    system_view_id = fields.Many2one('ir.ui.view', 'View', ondelete='set null')
+    system_view_name = fields.Char('View Name')
+    xml_id = fields.Char('Model', compute='_compute_xml_id')
+
+    # def create(self, vals):
+    #     module = vals.get('module_id')
+    #     model = vals.get('model')
+    #     field = 'system_view_name'
+    #     name = vals.get(field)
+    #     if not name:
+    #         field = 'module_view_id'
+    #         name = vals.get(field)
+    #     if module == False:
+    #         model_id = self.env['builder.ir.model'].browse([vals['model_id']])
+    #         module = model_id.module_id.id
+    #         vals['module_id'] = module
+    #     if name and model and module:
+    #         record_id = self.search([
+    #             ('module_id','=',module),
+    #             ('model_id','=',model),
+    #             (field,'=',name)
+    #         ])
+    #         if record_id:
+    #             record_id.write(vals)
+    #             return record_id
+    #     return super().create(vals)
+
+    # @api.multi
+    # def write(self, vals):
+    #     if not vals.get('module_id',False):
+    #         model = vals.get('model_id',self.model_id.id)
+    #         model_id = self.env['builder.ir.model'].browse([model])
+    #         vals['module_id'] = model_id.module_id.id
+    #     return  super().write(vals)
+
+    @api.depends('model_source', 'module_view_id', 'system_view_id', 'system_view_name')
+    def _compute_xml_id(self):
+      for record_id in self:
+        record_id.xml_id = record_id.system_view_name if record_id.model_source == 'system' else record_id.module_view_id.name
+
+    @api.onchange('model_source', 'module_view_id', 'system_view_id', 'system_view_name')
+    def onchange_system_view_id(self):
+        self.system_view_name = self.system_view_id.name if self.model_source == 'system' else False
+        self.xml_id = self.system_view_name if self.model_source == 'system' else self.module_view_id.name
+
+    def get_model_name(self):
+        if self.module_view_id:
+            return self.module_view_id.model
+        if self.system_view_id:
+            return self.system_view_id.model
+
+
+
+
 
 class InheritViewChange(models.Model):
     _name = 'builder.ir.ui.view.inherit.change'
@@ -265,7 +328,7 @@ class AbstractViewField(models.AbstractModel):
             vals['module_id'] = model_id.module_id.id
         return super().create(vals)
 
-    @api.one
     @api.depends('field_id.ttype')
     def _compute_field_ttype(self):
-        self.field_ttype = self.field_id.ttype
+      for record_id in self:
+        record_id.field_ttype = record_id.field_id.ttype

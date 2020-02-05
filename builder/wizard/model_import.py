@@ -24,15 +24,15 @@ class ModelImport(models.TransientModel):
     set_inherited = fields.Boolean('Set as Inherit', default=True)
     exclude_auto_fields = fields.Boolean('Exclude Auto Fields', default=True)
 
-    @api.one
     def _create_model_fields(self, module, model_items, model_map, relations_only=True):
-        return self.create_model_fields(
+      for record_id in self:
+        return record_id.create_model_fields(
             module, model_items, model_map, 
-            relations_only,self.set_inherited,self.exclude_auto_fields
+            relations_only,record_id.set_inherited,record_id.exclude_auto_fields
             )
-    @api.one
-    def create_model_fields(self,  module, model_items, model_map, field_list=None, relations_only=True, set_inherited=False, exclude_auto_fields=True):
 
+    def create_model_fields(self,  module, model_items, model_map, field_list=None, relations_only=True, set_inherited=False, exclude_auto_fields=True):
+      for record_id in self:
         _review_models = []
 
         for model in model_items:
@@ -69,10 +69,10 @@ class ModelImport(models.TransientModel):
                         if not field.relation in model_map:
                             m = self.env['ir.model'].search(
                                 [('model','=',field.relation)])[0] 
-                            new_model = self.create_model(
+                            new_model = record_id.create_model(
                                 model_map[model.model].module_id.id,m,False)
                             model_map[field.relation] = new_model
-                            self.create_model_fields(
+                            record_id.create_model_fields(
                                 module, [m], model_map, None, 
                                 False,False,exclude_auto_fields)                            
                         values.update({
@@ -90,7 +90,7 @@ class ModelImport(models.TransientModel):
                         #     model_map[model.model].update({'field_ids': [(0,0,values)]})
 
         if len(_review_models):
-            self.create_model_fields(module, _review_models, model_map, field_list, relations_only,set_inherited,exclude_auto_fields)
+            record_id.create_model_fields(module, _review_models, model_map, field_list, relations_only,set_inherited,exclude_auto_fields)
 
     def create_model(self,module_id,model,set_inherited):
         model_obj = self.env['builder.ir.model']
@@ -107,10 +107,9 @@ class ModelImport(models.TransientModel):
             new_model['inherit_model_ids'] = [{'model_source': 'system', 'system_model_id': model.id, 'system_model_name': model.model}]
         return new_model
 
-    @api.one
     def action_import(self):
         # model_obj = self.env['builder.ir.model']
-
+      for record_id in self:
         model_map = {}
 
         module = self.env[self.env.context.get('active_model')].search([('id', '=', self.env.context.get('active_id'))])
@@ -118,22 +117,22 @@ class ModelImport(models.TransientModel):
         for model in module.model_ids:
             model_map[model.model] = model
 
-        for model in self.model_ids:
+        for model in record_id.model_ids:
             module_model = self.env['builder.ir.model'].search([('module_id', '=', module.id), ('model', '=', model.model)])
 
             if model.modules:
                 module.add_dependency(model.modules.split(', ')[0])
             if not module_model.id:
-                new_model = self.create_model(
+                new_model = record_id.create_model(
                     self.env.context.get('active_id'),
-                    model, self.set_inherited)
+                    model, record_id.set_inherited)
                 model_map[model.model] = new_model
 
-        if (self.set_inherited and not self.exclude_fields) or (not self.set_inherited and (self.create_fields or self.relations_only) ):
-            # self._create_model_fields(module, self.model_ids, model_map, self.relations_only)
-            for record in self.model_ids:
+        if (record_id.set_inherited and not record_id.exclude_fields) or (not record_id.set_inherited and (record_id.create_fields or record_id.relations_only) ):
+            # record_id._create_model_fields(module, record_id.model_ids, model_map, record_id.relations_only)
+            for record in record_id.model_ids:
                 model_map = model_map[record.model].model_fields_import(
-                    record, model_map, relations_only=self.relations_only)
+                    record, model_map, relations_only=record_id.relations_only)
         model_src_map = {}
         for model_model,record in model_map.items():
             model_id = self.env['ir.model'].search([

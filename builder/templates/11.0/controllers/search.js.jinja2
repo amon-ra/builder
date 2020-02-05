@@ -1,0 +1,33 @@
+odoo.define('{{module}}.{{model}}', function (require) {
+"use strict";
+var ajax = require('web.ajax');
+$(function() {
+    $(".{model}_search_query").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+            url: "{route}",
+            method: "POST",
+            dataType: "json",
+            data: { name: request.term},
+            success: function( data ) {
+                response( $.map( data, function( item ) {
+                    return {
+                        label: item.name,
+                        value: item.name,
+                        id: item.res_id,
+                    }
+                }));
+            },
+            error: function (error) {
+               alert('error: ' + error);
+            }
+            });
+        },
+        select:function(suggestion,term,item){
+            window.location.href= "{{dest_route.name}}/"+term.item.id
+        },
+        minLength: 1
+    });
+
+});
+});

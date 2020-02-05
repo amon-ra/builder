@@ -83,8 +83,8 @@ class SearchField(models.Model):
     attr_operator = fields.Char('Operator')
     attr_help = fields.Char('Help')
 
-    @api.one
     @api.depends('field_id.ttype', 'view_id')
     def _compute_field_type(self):
-        if self.field_id:
-            self.field_ttype = self.field_id.ttype
+      for record_id in self:
+        if record_id.field_id:
+            record_id.field_ttype = record_id.field_id.ttype

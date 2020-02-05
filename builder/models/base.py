@@ -22,10 +22,11 @@ class ModelDependency(models.Model):
     dependency_project_id = fields.Many2one('builder.ir.module.module', 'Dependency', store=False, search=True)
     dependency_module_name = fields.Char('Dependency', index=True)
 
-    @api.one
+
     @api.depends('dependency_module_id', 'dependency_project_id', 'dependency_module_name')
     def _compute_name(self):
-        self.dependency_module_name = self.name = self.dependency_module_id.name or self.dependency_project_id.name or self.dependency_module_name
+        for record_id in self:
+            record_id.dependency_module_name = record_id.name = record_id.dependency_module_id.name or record_id.dependency_project_id.name or record_id.dependency_module_name
 
 
 class OeCssClass(models.Model):

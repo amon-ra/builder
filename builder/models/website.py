@@ -5,6 +5,156 @@ __author__ = 'one'
 
 from odoo import models, fields, api, _
 
+CONTROLLER_MODEL_SEARCH_METHOD=""" 
+        \"""get search result for auto suggestions\"""
+        strings = '%' + kw.get('name') + '%'
+        try:
+            domain = [('website_published', '=', True)]
+            blog = request.env['blog.post'].with_user(SUPERUSER_ID).search(domain)
+            sql = \"""select id as res_id, name as name, name as value from blog_post where name ILIKE '{}'\"""
+            extra_query = ''
+            limit = " limit 15"
+            qry = sql + extra_query + limit
+            request.cr.execute(qry.format(strings, tuple(blog and blog.ids)))
+            name = request.cr.dictfetchall()
+        except:
+            name = {'name': 'None', 'value': 'None'}
+        return json.dumps(name)
+"""
+CONTROLLER_MODEL_METHOD=""" 
+        \"""function related to blog display\"""
+        date_begin, date_end, state = opt.get('date_begin'), opt.get('date_end'), opt.get('state')
+        published_count, unpublished_count = 0, 0
+
+        domain = request.website.website_domain()
+        blog_post = request.env['blog.post']
+        blogs = request.env['blog.blog'].search(domain, order="create_date asc", limit=2)
+        # retrocompatibility to accept tag as slug
+        active_tag_ids = tag and [int(unslug(t)[1]) for t in tag.split(',')] if tag else []
+        if active_tag_ids:
+            fixed_tag_slug = ",".join(slug(t) for t in request.env['blog.tag'].browse(active_tag_ids))
+            if fixed_tag_slug != tag:
+                return request.redirect(
+                    request.httprequest.full_path.replace("/tag/%s/" % tag, "/tag/%s/" % fixed_tag_slug, 1), 301)
+            domain += [('tag_ids', 'in', active_tag_ids)]
+        if blog:
+            domain += [('blog_id', '=', blog.id)]
+        if date_begin and date_end:
+            domain += [("post_date", ">=", date_begin), ("post_date", "<=", date_end)]
+
+        if request.env.user.has_group('website.group_website_designer'):
+            count_domain = domain + [("website_published", "=", True), ("post_date", "<=", fields.Datetime.now())]
+            published_count = blog_post.search_count(count_domain)
+            unpublished_count = blog_post.search_count(domain) - published_count
+
+            if state == "published":
+                domain += [("website_published", "=", True), ("post_date", "<=", fields.Datetime.now())]
+            elif state == "unpublished":
+                domain += ['|', ("website_published", "=", False), ("post_date", ">", fields.Datetime.now())]
+        else:
+            domain += [("post_date", "<=", fields.Datetime.now())]
+
+        blog_url = QueryURL('', ['blog', 'tag'], blog=blog, tag=tag, date_begin=date_begin, date_end=date_end)
+
+        search_string = opt.get('search', None)
+
+        blog_posts = blog_post.search([('name', 'ilike', search_string)],
+                                      offset=(page - 1) * self._blog_post_per_page,
+                                      limit=self._blog_post_per_page) if search_string \
+            else blog_post.search(domain,
+                                  order="post_date desc")
+
+        pager = request.website.pager(
+            url=request.httprequest.path.partition('/page/')[0],
+            total=len(blog_posts),
+            page=page,
+            step=self._blog_post_per_page,
+            url_args=opt,
+        )
+        pager_begin = (page - 1) * self._blog_post_per_page
+        pager_end = page * self._blog_post_per_page
+        blog_posts = blog_posts[pager_begin:pager_end]
+
+        all_tags = request.env['blog.tag'].search([])
+        use_cover = request.website.viewref('website_blog.opt_blog_cover_post').active
+        fullwidth_cover = request.website.viewref('website_blog.opt_blog_cover_post_fullwidth_design').active
+        offset = (page - 1) * self._blog_post_per_page
+        first_post = blog_posts
+        if not blog:
+            first_post = blog_posts.search(domain + [('website_published', '=', True)], order="post_date desc, id asc",
+                                           limit=1)
+            if use_cover and not fullwidth_cover:
+                offset += 1
+
+        # function to create the string list of tag ids, and toggle a given one.
+        # used in the 'Tags Cloud' template.
+
+        def tags_list(tag_ids, current_tag):
+            tag_ids = list(tag_ids)  # required to avoid using the same list
+            if current_tag in tag_ids:
+                tag_ids.remove(current_tag)
+            else:
+                tag_ids.append(current_tag)
+            tag_ids = request.env['blog.tag'].browse(tag_ids).exists()
+            return ','.join(slug(tags) for tags in tag_ids)
+
+        tag_category = sorted(all_tags.mapped('category_id'), key=lambda category: category.name.upper())
+        other_tags = sorted(all_tags.filtered(lambda x: not x.category_id), key=lambda tags: tags.name.upper())
+        values = {
+            'blog': blog,
+            'blogs': blogs,
+            'first_post': first_post.with_prefetch(blog_posts.ids) if not search_string else None,
+            'other_tags': other_tags,
+            'state_info': {"state": state, "published": published_count, "unpublished": unpublished_count},
+            'active_tag_ids': active_tag_ids,
+            'tags_list': tags_list,
+            'posts': blog_posts,
+            'blog_posts_cover_properties': [json.loads(b.cover_properties) for b in blog_posts],
+            'pager': pager,
+            'nav_list': self.nav_list(blog),
+            'blog_url': blog_url,
+            'date': date_begin,
+            'tag_category': tag_category,
+        }
+        response = request.render("website_blog.blog_post_short", values)
+        return response
+"""
+
+CONTROLLER_SEARCH_AUTOCOMPLETE_JS="""
+odoo.define('{module}.{model}', function (require) {
+"use strict";
+var ajax = require('web.ajax');
+$(function() {
+    $(".{model}_search_query").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+            url: "{route}",
+            method: "POST",
+            dataType: "json",
+            data: { name: request.term},
+            success: function( data ) {
+                response( $.map( data, function( item ) {
+                    return {
+                        label: item.name,
+                        value: item.name,
+                        id: item.res_id,
+                    }
+                }));
+            },
+            error: function (error) {
+               alert('error: ' + error);
+            }
+            });
+        },
+        select:function(suggestion,term,item){
+            window.location.href= "{dest_route.name}/"+term.item.id
+        },
+        minLength: 1
+    });
+
+});
+});
+"""
 
 class BackendAssets(models.Model):
     _name = 'builder.web.asset'
@@ -70,11 +220,11 @@ class MediaItem(models.Model):
 
         return True
 
-    @api.one
     @api.depends('attr_name')
     def _compute_attr_id(self):
-        if not self.attr_id and self.attr_name:
-            self.attr_id = re.sub('[^a-zA-Z_]', '_', self.attr_name) + str(1 + len(self.search([])))
+      for record_id in self:
+        if not record_id.attr_id and record_id.attr_name:
+            record_id.attr_id = re.sub('[^a-zA-Z_]', '_', record_id.attr_name) + str(1 + len(record_id.search([])))
 
     @api.onchange('attr_name')
     def _onchange_attr_id(self):
@@ -103,7 +253,7 @@ class WebsiteControllerMethod(models.Model):
         string='Method')
     controller_route = fields.One2many('builder.website.route','method_id',
         string='Route')
-
+    page_id = fields.Many2one('builder.website.page',string='Page')
 
 
 # class ControllerRouterParameter(models.Model):
@@ -132,7 +282,7 @@ Where blog_argument,blog_page,blog_tag must be created as arguments above
     @api.model
     def create(self,vals):
         name = vals.get('name')
-        website = vals.get('website')
+        website = vals.get('method_id')
         if name and website:
             record_id = self.search([
                 ('controller_id','=',website),
@@ -145,6 +295,8 @@ Where blog_argument,blog_page,blog_tag must be created as arguments above
 class Controllers(models.Model):
     _name = 'builder.website.controller'
 
+    index_page_id = fields.Many2one('builder.website.page','Page')
+    page_id = fields.Many2one('builder.website.page','Page')
     model_id = fields.Many2one('builder.ir.model', 'Model', ondelete='cascade')
     module_id = fields.Many2one('builder.ir.module.module', 'Module',
                                 ondelete='cascade', required=True)
@@ -153,6 +305,104 @@ class Controllers(models.Model):
     controller_method_ids = fields.One2many('builder.website.method','controller_id','Custom Methods', copy=True)
     import_ids = fields.One2many('builder.python.file.import', 'controller_id', 'Imports', copy=True)
     custom_code_line_ids = fields.One2many('builder.python.file.line','controller_id', 'Custom Code', copy=True)
+    asset_ids = fields.Many2many('builder.website.asset','Assets', copy=False)
+
+    def create_model_search(self):
+        Assets = self.env['builder.website.asset']
+        Methods = self.env['builder.website.method']
+        Routes = self.env['builder.website.route']
+        DataFile = self.env['builder.data.file']
+        for record_id in self:
+            v = record_id.get_version()
+            Generator = self.env['builder.generator.v'+v]
+            if not (record_id.model_id and record_id.page_id): continue
+            method_name = record_id.model_id.model.replace('.','_'
+                )
+            route_name = '/'+record_id.model_id.name.replace(' ','')
+            for m in record_id.controller_method_ids:
+                if m.name == method_name:
+                    continue
+            d = {
+                'controller_id': record_id.id,
+                'csrf': False,
+                'visibility': 'public',
+                'route_type': 'html',
+                'name': method_name,
+                'custom_code': Generator.code('controllers/model_method.py.jinja2',{
+                    'module': record_id.module_id.name,
+                    'model': record_id.model_id.model,
+                    'page_id': record_id.page_id.attr_id,
+                })
+            }
+            method_id = record_id.controller_method_ids.create(d)
+            method_id.controller_route.create({
+                'name': route_name,
+                # 'parameters': '/'
+            })            
+            method_id.controller_route.create({
+                'name': route_name,
+                'parameters': '/search_content'
+            })
+            d.update({
+                'custom_code': Generator.code('controllers/index_model_method.py.jinja2',{
+                    'module': record_id.module_id.name,
+                    'model': record_id.model_id.model,
+                    'page_id': record_id.index_page_id.attr_id,
+                    'route': route_name,
+                })                
+            })
+            method_id = record_id.controller_method_ids.create(d)   
+            method_id.controller_route.create({
+                'name': route_name,
+                'parameters': '/<model("{}"):post>'.format(record_id.model_id.model)
+            })                
+            d.update({
+                'name':method_name+'_search_autocomplete',
+                'route_type':'json',
+                'custom_code': Generator.code('controllers/model_method.py.jinja2',{
+                    'module': record_id.module_id.name,
+                    'model': record_id.model_id.model,
+                    'page_id': record_id.index_page_id.attr_id,
+                    'route': route_name,
+                }) 
+            })
+            method_id = record_id.controller_method_ids.create(d) 
+            method_id.route_method_ids.create({'name':'POST'})
+            method_id.controller_route.create({
+                'name': '/'+method_name,
+            })
+            d = {
+                'module_id': record_id.module_id.id,
+                'path': method_name+'.js',
+                'content': Generator.code('controllers/search.js.jinja2',{
+                    'module': record_id.module_id.name,
+                    'model': record_id.model_id.model,
+                    'route': route_name,
+                })
+            }
+            file_id = DataFile.create(d)
+            d = {
+                'module_id': record_id.module_id.id,
+                'attr_id': method_name,
+                'attr_name': method_name,
+            }
+            asset_id = Assets.create(d)
+            asset_id.item_ids.create({
+                'file_id': file_id.id,
+            })
+# class JavascriptDep(models.Model):
+#     _name = 'builder.website.controller.javascript.deps'
+
+#     name = fields.Char('Depend')
+#     javascript_id = fields.Many2one('builder.website.controller', 'Controller', ondelete='cascade')
+
+# class Javascript(models.Model):
+#     _name = 'builder.website.controller.javascript'
+
+#     controller_id = fields.Many2one('builder.website.controller', 'Controller', ondelete='cascade')
+#     dependencies = fields.One2many('builder.website.controller.javascript.deps',
+#         'javascript_id',string='Dependencies')
+#     code
 
 
 class Pages(models.Model):
@@ -168,6 +418,13 @@ class Pages(models.Model):
     attr_inherit_id = fields.Char('Inherit Asset')
     attr_priority = fields.Integer('Priority', default=10)
     attr_page = fields.Boolean('Page', default=True)
+    # inherit_id = fields.Many2one('builder.ir.ui.view.inherit','Inherit View')
+    # domain="[('module_id','=',module_id)]")
+    website_published = fields.Boolean('Published')
+    website_indexed = fields.Boolean('Indexed')
+    website_url = fields.Char('URL')
+    asset_ids = fields.Many2many('builder.website.asset','Assets', copy=False)
+
     # gen_controller = fields.Boolean('Generate Controller', default=False)
     # controller_route = fields.Char('Route')
 
@@ -304,15 +561,15 @@ class WebsiteSnippet(models.Model):
     siblings = fields.Char('Allowed Siblings')
     children = fields.Char('Allowed Children')
 
-    @api.one
     @api.depends('name')
     def _compute_snippet_id(self):
-        self.snippet_id = self.name.lower().replace(' ', '_').replace('.', '_') if self.name else ''
+      for record_id in self:
+        record_id.snippet_id = record_id.name.lower().replace(' ', '_').replace('.', '_') if record_id.name else ''
 
-    @api.one
     @api.depends('category')
     def _compute_is_custom_category(self):
-        self.is_custom_category = self.category == 'custom'
+      for record_id in self:
+        record_id.is_custom_category = record_id.category == 'custom'
 
     def action_edit_html(self):
         # if not len(ids) == 1:

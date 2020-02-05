@@ -1,0 +1,48 @@
+        """function related to model display"""
+        BlogPost = request.env[{{ model }}]
+        date_begin, date_end, state = kwargs.get('date_begin'), kwargs.get('date_end'), kwargs.get('state')
+        pager_url = "{{ route }}/%s" % blog_post.id
+
+        pager = request.website.pager(
+            url=pager_url,
+            total=len(blog_post.website_message_ids),
+            page=page,
+            step=self._post_comment_per_page,
+            scope=7
+        )
+        pager_begin = (page - 1) * self._post_comment_per_page
+        pager_end = page * self._post_comment_per_page
+
+
+        if not blog_post.blog_id.id == blog.id:
+            return request.redirect("/blog/%s/post/%s" % (slug(blog_post.blog_id), slug(blog_post)), code=301)
+
+        # Find next Post
+        blog_post_domain = [('blog_id', '=', blog.id)]
+        if not request.env.user.has_group('website.group_website_designer'):
+            blog_post_domain += [('post_date', '<=', fields.Datetime.now())]
+
+        all_post = BlogPost.search(blog_post_domain)
+
+        if blog_post not in all_post:
+            return request.redirect("/blog/%s" % (slug(blog_post.blog_id)))
+
+        # should always return at least the current post
+        all_post_ids = all_post.ids
+        current_blog_post_index = all_post_ids.index(blog_post.id)
+        nb_posts = len(all_post_ids)
+        next_post_id = all_post_ids[(current_blog_post_index + 1) % nb_posts] if nb_posts > 1 else None
+        next_post = next_post_id and BlogPost.browse(next_post_id) or False
+
+        values = {
+            'index': blog,
+            'main_object': blog_post,
+            {# 'nav_list': self.nav_list(blog), #}
+            {# 'enable_editor': enable_editor, #}
+            'next_post': next_post,
+            'date': date_begin,
+            'blog_url': blog_url,
+            'pager': pager,
+        }
+        response = request.render({{ page_id }}, values)
+        return response

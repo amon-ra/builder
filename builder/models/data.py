@@ -1,11 +1,14 @@
-
+from base64 import decodestring
 import base64
 import csv
+import os
+import mimetypes
+import string
 from random import randrange
 import re
 import types
 from jinja2 import Template
-from odoo import models, fields, api, _
+from odoo import models, fields, api, _, tools
 
 __author__ = 'deimos'
 
@@ -24,13 +27,13 @@ class Lambda(models.Model):
     name = fields.Char(string='Name', required=True)
     code = fields.Text(string='Code', required=True)
 
-    @api.one
     @api.constrains('code')
     def _check_code(self):
         try:
-            l = eval(self.code)
-            if not isinstance(l, types.LambdaType):
-                raise ValueError(_("The python code must be a lambda."))
+            for record_id in self:
+                l = eval(record_id.code)
+                if not isinstance(l, types.LambdaType):
+                    raise ValueError(_("The python code must be a lambda."))
         except (SyntaxError, NameError, ):
             raise ValueError(_("The python code must be a lambda."))
 
@@ -150,25 +153,25 @@ class ModelData(models.Model):
     result_text = fields.Text('XML', compute='_compute_result', store=True)
     result_file = fields.Binary('Result', compute='_compute_result', store=True)
 
-    @api.one
     @api.depends('attribute_ids.xml_id')
     def _compute_key_id(self):
-        # cr, uid, context = self.env.args
-        attrs = self.resolve_2many_commands('attribute_ids', self.attribute_ids)
-        keys = [value.id for key, value in list(attrs.items()) if value.get('id') and value.get('xml_id')]
-        if any(keys):
-            self.key_id = keys[0]
+        for record_id in self:
+            # cr, uid, context = record_id.env.args
+            attrs = record_id.resolve_2many_commands('attribute_ids', record_id.attribute_ids)
+            keys = [value.id for key, value in list(attrs.items()) if value.get('id') and value.get('xml_id')]
+            if any(keys):
+                record_id.key_id = keys[0]
 
-    @api.one
     @api.depends('input_file')
     def _compute_input_text(self):
-        self.input_text = base64.decodestring(self.input_file) if self.input_file else ''
+        for record_id in self:
+        record_id.input_text = base64.decodestring(record_id.input_file) if record_id.input_file else ''
 
-    @api.one
     @api.depends('input_text', 'importer', 'model', 'attribute_ids.xml_id', 'key_id')
     def _compute_result(self):
-        self.result_text = getattr(self, '_import_{type}'.format(type=self.importer))() if self.importer else ''
-        self.result_file = base64.encodestring(self.result_text.encode('utf-8'))
+        for record_id in self:
+            record_id.result_text = getattr(record_id, '_import_{type}'.format(type=record_id.importer))() if record_id.importer else ''
+            record_id.result_file = base64.encodestring(record_id.result_text.encode('utf-8'))
 
     @api.model
     def _get_importer_selection(self):
@@ -197,6 +200,7 @@ class ModelData(models.Model):
 
     # @api.one  # this means that is used in a @api.one function, so self is a record
     def _import_csv(self):
+        self.ensure_one()
         if not self.input_text:
             return ''
         data = csv.DictReader(utf_8_encoder(self.input_text))
@@ -234,3 +238,52 @@ class Module(models.Model):
     _inherit = ['builder.ir.module.module']
 
     data_ids = fields.One2many('builder.model.data', 'module_id', 'Data', copy=True)
+
+class DataFile(models.Model):
+    _name = 'builder.data.file'
+
+    _rec_name = 'path'
+
+    module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
+    path = fields.Char(string='Path', required=True)
+    filename = fields.Char('Filename', compute='_compute_stats', store=True)
+    file_type_icon = fields.Char('Icon File', store=True)
+    content_type = fields.Char('Content Type', compute='_compute_stats', store=True)
+    is_image = fields.Boolean('Is Image', compute='_compute_stats', store=True)
+    image_small = fields.Binary('Image Thumb', compute='_compute_stats', store=True)
+    in_media = fields.Boolean('In Media', compute='_compute_is_in_media', store=False, search=True)
+    extension = fields.Char('Extension', compute='_compute_stats', store=True)
+    size = fields.Integer('Size', compute='_compute_stats', store=True)
+    content = fields.Binary('Content')
+    media_item_ids = fields.One2many('builder.website.media.item', 'file_id', 'Media Files', copy=True)
+
+    @api.depends('media_item_ids.file_id')
+    def _compute_is_in_media(self):
+        for record_id in self:
+            record_id.in_media = len(record_id.media_item_ids) > 0
+
+    @api.multi
+    def action_add_as_media_item(self):
+        self.env['builder.website.media.item'].create({
+            'module_id': self.module_id.id,
+            'file_id': self.id,
+        })
+
+    @api.depends('content', 'path')
+    def _compute_stats(self):
+        for record_id in self:
+            if record_id.content:
+                record_id.size = len(decodestring(record_id.content))
+                record_id.filename = os.path.basename(record_id.path)
+                record_id.extension = os.path.splitext(record_id.path)[1]
+                record_id.content_type = mimetypes.guess_type(record_id.filename)[0] if mimetypes.guess_type(record_id.filename) else False
+                record_id.is_image = record_id.content_type in ['image/png', 'image/jpeg', 'image/gif', 'image/bmp']
+
+                record_id.image_small = tools.image_resize_image_small(record_id.content, size=(100, 100)) if record_id.is_image else False
+            else:
+                record_id.size = False
+                record_id.filename = False
+                record_id.extension = False
+                record_id.content_type = False
+                record_id.image_small = False
+                record_id.is_image = False

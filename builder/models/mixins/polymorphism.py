@@ -19,22 +19,22 @@ class Superclass(models.AbstractModel):
         res['subclass_model']= self._name
         return res  
 
-    @api.one
     def _compute_res_id(self):
-        _logger.debug(self.subclass_model)
-        _logger.debug(self._name)
-        _logger.debug(self.name)
-        if self.subclass_model == self._name:
-            self.subclass_id = self.id
+      for record_id in self:
+        _logger.debug(record_id.subclass_model)
+        _logger.debug(record_id._name)
+        _logger.debug(record_id.name)
+        if record_id.subclass_model == record_id._name:
+            record_id.subclass_id = record_id.id
         else:
-            subclass_model = self.env[self.subclass_model]
-            attr = subclass_model._inherits.get(self._name)
+            subclass_model = record_id.env[record_id.subclass_model]
+            attr = subclass_model._inherits.get(record_id._name)
             if attr:
-                self.subclass_id = subclass_model.search([
-                    (attr, '=', self.id)
+                record_id.subclass_id = subclass_model.search([
+                    (attr, '=', record_id.id)
                 ]).id
             else:
-                self.subclass_id = self.id
+                record_id.subclass_id = record_id.id
 
     # def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
     #     record = self.browse(cr, uid, 2, context=context)
@@ -79,9 +79,9 @@ class Superclass(models.AbstractModel):
 
         return view
 
-    @api.one
     def get_instance(self):
-        return self.env[self.subclass_model].browse(self.subclass_id)
+      for record_id in self:
+        return self.env[record_id.subclass_model].browse(record_id.subclass_id)
 
     @property
     def instance(self):

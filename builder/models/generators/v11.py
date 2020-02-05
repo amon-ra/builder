@@ -228,47 +228,36 @@ class GeneratorV11(models.TransientModel):
                 {'module': module, 'pages': module.website_page_ids, 'menus': module.website_menu_ids},
             )
 
-            controller_pages = [p for p in module.website_page_ids if not p.attr_page and p.gen_controller]
-
-            if controller_pages:
-                py_packages['controllers']=['main']
-                # zip_file.write_template(
-                #     'controllers/__init__.py',
-                #     '__init__.py.jinja2',
-                #     {'packages': ['main'],'module': module}
-                # ) 
-                # routes = {}
-                # parameters = {}
-            for controller in module.website_controller_ids:
-                routes = {}
-                parameters = {}
-                for method in controller.controller_method_ids:
-                    parameters[method.name]=parameters.get(method.name,'')
-                    parameters[method.name]+=','+'auth='+method.visibility
-                    parameters[method.name]+=','+'type='+method.route_type
-                    if method.route_method_ids:
-                        parameters[method.name]+=','+'methods=['+','.join(
-                            [m.name for m in method.route_method_ids])
-                    if not method.csrf:
-                        parameters[method.name]+=','+'csrf=False'
-                    for route in method.controller_route:
-                        routes[method.name]=route.get(
-                            method.name,'')+route.name+route.parameters+','                        
-                        # parameters[method.name]=parameters.get(
-                        #     method.name,'self')
-                        # for p in route.parameter_ids:
-                        #     if p.name == '**kwargs':
-                        #         # parameters='self'
-                        #         break
-                        #     else:
-                        #         parameters+=', '+p.name+'='+p.default                        
-                zip_file.write_template(
-                    'controllers/main.py',
-                    'controllers/main.py.jinja2',
-                    {'module': module, 'controller': controller,
-                    'controller_routes': routes, 'route_parameters': parameters,
-                    },
-                )            
+        for controller in module.website_controller_ids:
+            routes = {}
+            parameters = {}
+            for method in controller.controller_method_ids:
+                parameters[method.name]=parameters.get(method.name,'')
+                parameters[method.name]+=','+'auth='+method.visibility
+                parameters[method.name]+=','+'type='+method.route_type
+                if method.route_method_ids:
+                    parameters[method.name]+=','+'methods=['+','.join(
+                        [m.name for m in method.route_method_ids])
+                if not method.csrf:
+                    parameters[method.name]+=','+'csrf=False'
+                for route in method.controller_route:
+                    routes[method.name]=route.get(
+                        method.name,'')+route.name+route.parameters+','                        
+                    # parameters[method.name]=parameters.get(
+                    #     method.name,'self')
+                    # for p in route.parameter_ids:
+                    #     if p.name == '**kwargs':
+                    #         # parameters='self'
+                    #         break
+                    #     else:
+                    #         parameters+=', '+p.name+'='+p.default                        
+            zip_file.write_template(
+                'controllers/main.py',
+                'controllers/main.py.jinja2',
+                {'module': module, 'controller': controller,
+                'controller_routes': routes, 'route_parameters': parameters,
+                },
+            )            
 
         for f in module.python_file_ids:
             py_packages[f.parent]=py_packages.get(f.parent,

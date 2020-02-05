@@ -5,6 +5,8 @@ from odoo import models, api, fields
 
 __author__ = 'one'
 
+import logging
+_logger = logging.getLogger(__name__)
 
 def process_order(self):
     """Finds actual-order of the nodes with respect to maximum number of nodes in a rank in component
@@ -147,7 +149,9 @@ def tree_order(self, node, last=0):
         l = list(set(self.transitions.get(node, [])) - {node})
         l.reverse()
         no = len(l)
-
+        if no == 0:
+            return None
+        _logger.debug(no)
         rest = no%2
         first_half = l[no/2+rest:]
         last_half = l[:no/2]
@@ -193,87 +197,92 @@ def tree_order(self, node, last=0):
         return last
 
 
-class view(models.Model):
-    _inherit = 'ir.ui.view'
+# class view(models.Model):
+#     _inherit = 'ir.ui.view'
 
-    @api.model
-    def graph_get(self, id, model, node_obj, conn_obj, src_node, des_node, label, scale):
-        nodes=[]
-        nodes_name=[]
-        transitions=[]
-        start=[]
-        tres={}
-        labels={}
-        no_ancester=[]
-        blank_nodes = []
+#     @api.model
+#     def graph_get(self, id, model, node_obj, conn_obj, src_node, des_node, label, scale):
+#         def rec_name(rec):
+#             return (rec.name if 'name' in rec else
+#                     rec.x_name if 'x_name' in rec else
+#                     None)
+#         nodes=[]
+#         nodes_name=[]
+#         transitions=[]
+#         start=[]
+#         tres={}
+#         labels={}
+#         no_ancester=[]
+#         blank_nodes = []
 
-        _Model_Obj = self.pool[model]
-        _Node_Obj = self.pool[node_obj]
-        _Arrow_Obj = self.pool[conn_obj]
+#         _Model_Obj = self.env[model]
+#         _Node_Obj = self.env[node_obj]
+#         _Arrow_Obj = self.env[conn_obj]
 
-        for model_key,model_value in list(_Model_Obj._fields.items()):
-                if model_value.type=='one2many':
-                    if model_value._obj==node_obj:
-                        _Node_Field=model_key
-                        _Model_Field=model_value._fields_id
-                    flag=False
-                    for node_key,node_value in list(_Node_Obj._fields.items()):
-                        if node_value.type=='one2many':
-                             if node_value._obj==conn_obj:
-                                 if src_node in _Arrow_Obj._fields and flag:
-                                    _Source_Field=node_key
-                                 if des_node in _Arrow_Obj._fields and not flag:
-                                    _Destination_Field=node_key
-                                    flag = True
+#         for model_key,model_value in _Model_Obj._fields.items():
+#                 if model_value.type=='one2many':
+#                     if model_value.comodel_name==node_obj:
+#                         _Node_Field=model_key
+#                         _Model_Field=model_value.inverse_name
+#                     flag=False
+#                     for node_key,node_value in _Node_Obj._fields.items():
+#                         if node_value.type=='one2many':
+#                              if node_value.comodel_name==conn_obj:
+#                                  if src_node in _Arrow_Obj._fields and flag:
+#                                     _Source_Field=node_key
+#                                  if des_node in _Arrow_Obj._fields and not flag:
+#                                     _Destination_Field=node_key
+#                                     flag = True
 
-        # _Destination_Field = 'from_ids'
-        # _Source_Field = 'to_ids'
-        # datas = _Model_Obj.read(cr, uid, id, [],context)
-        datas = _Model_Obj
-        # for a in _Node_Obj.read(cr,uid,datas[_Node_Field],[]):
-        for a in _Node_Obj:        
-            if a[_Source_Field] or a[_Destination_Field]:
-                nodes_name.append((a['id'],a['name']))
-                nodes.append(a['id'])
-            else:
-                blank_nodes.append({'id': a['id'],'name':a['name']})
+#         # _Destination_Field = 'from_ids'
+#         # _Source_Field = 'to_ids'
+#         # datas = _Model_Obj.read(cr, uid, id, [],context)
+#         datas = _Model_Obj.browse([id])
+#         # for a in _Node_Obj.read(cr,uid,datas[_Node_Field],[]):
+#         for a in _Node_Obj.browse([datas]):        
+#             if a[_Source_Field] or a[_Destination_Field]:
+#                 nodes_name.append((a['id'],a['name']))
+#                 nodes.append(a['id'])
+#             else:
+#                 blank_nodes.append({'id': a['id'],'name':a['name']})
 
-            if 'flow_start' in a and a['flow_start']:
-                start.append(a['id'])
-            else:
-                if not a[_Source_Field]:
-                    no_ancester.append(a['id'])
-            for t in _Arrow_Obj.browse([a[_Destination_Field]]):
-                if des_node not in t or not t[des_node] or len(t[des_node]) == 0:
-                    continue
+#             if 'flow_start' in a and a['flow_start']:
+#                 start.append(a['id'])
+#             else:
+#                 if not a[_Source_Field]:
+#                     no_ancester.append(a['id'])
+#             for t in _Arrow_Obj.browse([a[_Destination_Field]]):
+#                 if des_node not in t or not t[des_node] or len(t[des_node]) == 0:
+#                     continue
 
-                transitions.append((a['id'], t[des_node][0]))
-                tres[str(t['id'])] = (a['id'],t[des_node][0])
-                label_string = ""
-                if label:
-                    for lbl in eval(label):
-                        if tools.ustr(lbl) in t and tools.ustr(t[lbl])=='False':
-                            label_string += ' '
-                        else:
-                            label_string = label_string + " " + tools.ustr(t[lbl])
-                labels[str(t['id'])] = (a['id'],label_string)
-        g  = graph(nodes, transitions, no_ancester)
-        g.process(start)
-        g.scale(*scale)
-        result = g.result_get()
-        results = {}
-        for node in nodes_name:
-            results[str(node[0])] = result[node[0]]
-            results[str(node[0])]['name'] = node[1]
-        return {'nodes': results,
-                'transitions': tres,
-                'label' : labels,
-                'blank_nodes': blank_nodes,
-                'node_parent_field': _Model_Field,}
+#                 transitions.append((a['id'], t[des_node][0]))
+#                 tres[str(t['id'])] = (a['id'],t[des_node][0])
+#                 label_string = ""
+#                 if label:
+#                     for lbl in eval(label):
+#                         if tools.ustr(lbl) in t and tools.ustr(t[lbl])=='False':
+#                             label_string += ' '
+#                         else:
+#                             label_string = label_string + " " + tools.ustr(t[lbl])
+#                 labels[str(t['id'])] = (a['id'],label_string)
+#         g  = graph(nodes, transitions, no_ancester)
+#         g.process(start)
+#         g.scale(*scale)
+#         result = g.result_get()
+#         results = {}
+#         for node in nodes_name:
+#             results[str(node[0])] = result[node[0]]
+#             results[str(node[0])]['name'] = node[1]
+#         return {'nodes': results,
+#                 'transitions': tres,
+#                 'label' : labels,
+#                 'blank_nodes': blank_nodes,
+#                 'node_parent_field': _Model_Field,}
 
 
 def monkey_patch():
-    graph.process_order = process_order
-    graph.tree_order = tree_order
-    graph.init_order = init_order
-    graph._init_order = _init_order
+    pass
+    # graph.process_order = process_order
+    # graph.tree_order = tree_order
+    # graph.init_order = init_order
+    # graph._init_order = _init_order

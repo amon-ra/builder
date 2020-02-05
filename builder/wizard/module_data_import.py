@@ -13,19 +13,19 @@ class ModuleImport(models.TransientModel):
     path_prefix = fields.Char('Path Prefix')
     file = fields.Binary('File', required=True)
 
-    @api.one
     def action_import(self):
+      for record_id in self:
         f = io.BytesIO()
-        f.write(decodestring(self.file))
+        f.write(decodestring(record_id.file))
         zfile = zipfile.ZipFile(f)
-        print(self.env.context)
+        # print(record_id.env.context)
 
         module = self.env[self.env.context.get('active_model')].search([('id', '=', self.env.context.get('active_id'))])
 
         for zitem in zfile.filelist:
             if not zitem.orig_filename.endswith('/'):
                 result = module.data_file_ids.create({
-                    'path': posixpath.join('/', self.path_prefix or '', zitem.orig_filename),
+                    'path': posixpath.join('/', record_id.path_prefix or '', zitem.orig_filename),
                     'content': encodestring(zfile.read(zitem)),
                     'module_id': self.env.context.get('active_id')
                 })

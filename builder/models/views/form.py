@@ -49,13 +49,13 @@ class FormView(models.Model):
             if views:
                 self.inherit_view_id = views[0].id
 
-    @api.one
     @api.constrains('inherit_view_ref')
     def _check_view_ref(self):
-        exists = self.env['ir.model.data'].xmlid_lookup(self.inherit_view_ref)
+      for record_id in self:
+        exists = self.env['ir.model.data'].xmlid_lookup(record_id.inherit_view_ref)
         if exists:
-            view = self.env['ir.model.data'].get_object(*self.inherit_view_ref.split('.'))
-            if not view.model == self.model_id.model:
+            view = self.env['ir.model.data'].get_object(*record_id.inherit_view_ref.split('.'))
+            if not view.model == record_id.model_id.model:
                 raise ValidationError("View Ref is not a valid view reference")
 
 
@@ -179,10 +179,10 @@ class FormField(models.Model):
 
     states = fields.Char('States')
 
-    @api.one
     @api.depends('field_id.ttype')
     def _compute_field_type(self):
-        self.field_ttype = self.field_id.ttype
+      for record_id in self:
+        record_id.field_ttype = record_id.field_id.ttype
 
     @property
     def has_attrs(self):

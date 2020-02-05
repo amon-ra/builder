@@ -137,6 +137,15 @@ class Module(models.Model):
     snippet_bookmarklet_url = fields.Char('Link', compute='_compute_snippet_bookmarklet_url')
 
 
+    def get_version(self):
+        ret =[]
+        for record_id in self:
+            v = record_id.version.split('.')[0]
+            ret.append(v)
+        if len(ret) == 1:
+            return ret[0]
+        else:
+            return ret
 
     def copy(self, default=None):
         default = dict(default or {})
@@ -148,9 +157,9 @@ class Module(models.Model):
         if not self.name and self.shortdesc:
             self.name = self.shortdesc.lower().replace(' ', '_').replace('.', '_')
 
-    @api.one
     @api.depends('name')
     def _compute_snippet_bookmarklet_url(self):
+      for record_id in self:
         base_url = self.env['ir.config_parameter'].get_param('web.base.url')
         link = """
 javascript:(function(){
@@ -166,14 +175,14 @@ javascript:(function(){
     script('$base_url/builder/static/src/js/snippet_loader.js');
 })();
         """
-        self.snippet_bookmarklet_url = Template(link).substitute(base_url=base_url, module=self.name)
+        record_id.snippet_bookmarklet_url = Template(link).substitute(base_url=base_url, module=record_id.name)
 
     @api.multi
     def dependencies_as_list(self):
         return [str(dep.name) for dep in self.dependency_ids]
 
-    @api.one
     def add_dependency(self, names):
+      for record_id in self:
         if not names:
             return
 
@@ -182,17 +191,17 @@ javascript:(function(){
             names = [names]
 
         for name in names:
-            if not dependency_obj.search([('module_id', '=', self.id), ('dependency_module_name', '=', name)]).id:
+            if not dependency_obj.search([('module_id', '=', record_id.id), ('dependency_module_name', '=', name)]).id:
                 dependency_obj.create({
-                    'module_id': self.id,
+                    'module_id': record_id.id,
                     'type': 'manual',
                     'dependency_module_name': name
                 })
 
-    @api.one
     @api.depends('model_ids')
     def _compute_models_count(self):
-        self.models_count = len(self.model_ids)
+      for record_id in self:
+        record_id.models_count = len(record_id.model_ids)
 
     @api.multi
     def compute_methods(self, name):
@@ -572,51 +581,3 @@ javascript:(function(){
         return json.JsonImport(self.env).build(self, decodestring(importer.file))
 
 
-class DataFile(models.Model):
-    _name = 'builder.data.file'
-
-    _rec_name = 'path'
-
-    module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
-    path = fields.Char(string='Path', required=True)
-    filename = fields.Char('Filename', compute='_compute_stats', store=True)
-    file_type_icon = fields.Char('Icon File', store=True)
-    content_type = fields.Char('Content Type', compute='_compute_stats', store=True)
-    is_image = fields.Boolean('Is Image', compute='_compute_stats', store=True)
-    image_small = fields.Binary('Image Thumb', compute='_compute_stats', store=True)
-    in_media = fields.Boolean('In Media', compute='_compute_is_in_media', store=False, search=True)
-    extension = fields.Char('Extension', compute='_compute_stats', store=True)
-    size = fields.Integer('Size', compute='_compute_stats', store=True)
-    content = fields.Binary('Content')
-    media_item_ids = fields.One2many('builder.website.media.item', 'file_id', 'Media Files', copy=True)
-
-    @api.one
-    @api.depends('media_item_ids.file_id')
-    def _compute_is_in_media(self):
-        self.in_media = len(self.media_item_ids) > 0
-
-    @api.multi
-    def action_add_as_media_item(self):
-        self.env['builder.website.media.item'].create({
-            'module_id': self.module_id.id,
-            'file_id': self.id,
-        })
-
-    @api.one
-    @api.depends('content', 'path')
-    def _compute_stats(self):
-        if self.content:
-            self.size = len(decodestring(self.content))
-            self.filename = os.path.basename(self.path)
-            self.extension = os.path.splitext(self.path)[1]
-            self.content_type = mimetypes.guess_type(self.filename)[0] if mimetypes.guess_type(self.filename) else False
-            self.is_image = self.content_type in ['image/png', 'image/jpeg', 'image/gif', 'image/bmp']
-
-            self.image_small = tools.image_resize_image_small(self.content, size=(100, 100)) if self.is_image else False
-        else:
-            self.size = False
-            self.filename = False
-            self.extension = False
-            self.content_type = False
-            self.image_small = False
-            self.is_image = False

@@ -81,21 +81,21 @@ class Generator(models.Model):
             return random.random() <= (1.0 / (self.model_id.demo_records + 1))
         return False
 
-    @api.one
     @api.depends('subclass_model')
     def _compute_type(self):
-        data = dict(self.get_generators())
-        self.type = data.get(self.subclass_model, _('Unknown'))
+     for record_id in self:
+        data = dict(record_id.get_generators())
+        record_id.type = data.get(record_id.subclass_model, _('Unknown'))
 
-    @api.one
     @api.depends('field_ids.name')
     def _compute_field_names(self):
-        self.field_names = ', '.join([field.name for field in self.field_ids])
+      for record_id in self:
+        record_id.field_names = ', '.join([field.name for field in record_id.field_ids])
 
-    @api.one
     @api.depends('subclass_model')
     def _compute_target_fields_type(self):
-        self.target_fields_type = self.env[self.subclass_model]._target_type
+      for record_id in self:
+        record_id.target_fields_type = self.env[record_id.subclass_model]._target_type
 
     @api.model
     def get_generators(self):
@@ -109,9 +109,9 @@ class Generator(models.Model):
             for model in ms
         ]
 
-    @api.one
     def get_generator(self, field):
-        return self.get_instance().get_generator(field)
+      for record_id in self:
+        return record_id.get_instance().get_generator(field)
 
     @api.multi
     def action_open_view(self):
@@ -134,16 +134,16 @@ class IrModel(models.Model):
     )
     demo_xml_id_sample = fields.Text(compute='_compute_demo_xml_id_sample', store=True)
 
-    @api.one
     @api.depends('demo_records', 'model')
     def _compute_demo_xml_id_sample(self):
-        if self.demo_records:
-            tmpl = '{model}_'.format(model=self.model.lower().replace('.', '_')) + '{id}' if self.model else 'model_'
-            value = pickle.dumps([tmpl.format(id=i) for i in range(self.demo_records)])
-            _logger.debug(self.demo_records)
+      for record_id in self:
+        if record_id.demo_records:
+            tmpl = '{model}_'.format(model=record_id.model.lower().replace('.', '_')) + '{id}' if record_id.model else 'model_'
+            value = pickle.dumps([tmpl.format(id=i) for i in range(record_id.demo_records)])
+            _logger.debug(record_id.demo_records)
             _logger.debug(tmpl)
             _logger.debug(value)
-            self.demo_xml_id_sample = value
+            record_id.demo_xml_id_sample = value
         
 
     @api.multi

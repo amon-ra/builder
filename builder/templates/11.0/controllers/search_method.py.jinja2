@@ -1,0 +1,14 @@
+        """get search result for auto suggestions"""
+        strings = '%' + kw.get('name') + '%'
+        try:
+            domain = [('website_published', '=', True)]
+            blog = request.env['blog.post'].with_user(SUPERUSER_ID).search(domain)
+            sql = """select id as res_id, name as name, name as value from blog_post where name ILIKE '{}'"""
+            extra_query = ''
+            limit = " limit 15"
+            qry = sql + extra_query + limit
+            request.cr.execute(qry.format(strings, tuple(blog and blog.ids)))
+            name = request.cr.dictfetchall()
+        except:
+            name = {'name': 'None', 'value': 'None'}
+        return json.dumps(name)

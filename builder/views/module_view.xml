@@ -390,6 +390,7 @@
                                         <field nolabel="1" name="website_media_item_ids"
                                                context="{'default_module_id': active_id}" mode="kanban">
                                                     <kanban quick_create="false" create="true" delete="true">
+                                                        <field name="id" invisible="1" />
                                                         <field name="attr_name"/>
                                                         <field name="is_image"/>
                                                         <field name="size"/>
@@ -409,7 +410,7 @@
 
                                                                             </span>
                                                                             <span  class="visibility">
-                                                                                <a t-if="widget.view.is_action_enabled('delete')" type="delete" title="Delete">
+                                                                                <a  type="delete" title="Delete">
                                                                                     <span class='oe_e' style="line-height: 19%;">[</span>
                                                                                 </a>
                                                                             </span>
@@ -659,12 +660,12 @@
                                             </a>
 
                                         </span>
-                                        <span class="visibility">
+                                        <!-- <span class="visibility">
                                             <a t-if="!read_only_mode and widget.view.is_action_enabled('delete')"
                                                type="delete" title="Delete">
                                                 <span class='oe_e' style="line-height: 19%;">[</span>
                                             </a>
-                                        </span>
+                                        </span> -->
 
                                     </div>
                                     <div>

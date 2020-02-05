@@ -12,10 +12,10 @@ class DemoDataCreator(models.TransientModel):
     type = fields.Selection(selection='_get_type_selection', string='Type', required=True)
     target_fields_type = fields.Char('Target Fields Type', compute='_compute_target_fields_type')
 
-    @api.one
     @api.depends('type')
     def _compute_target_fields_type(self):
-        self.target_fields_type = self.env[self.type]._target_type if self.type else False
+      for record_id in self:
+        record_id.target_fields_type = self.env[record_id.type]._target_type if record_id.type else False
 
     @api.model
     def _get_type_selection(self):

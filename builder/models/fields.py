@@ -242,13 +242,13 @@ class IrFields(models.Model):
     def onchange_name(self):
         self.is_rec_name = self.name == 'name'
 
-    @api.one
     def _compute_arc_name(self):
-        if self.ttype in relational_field_types:
-            small_map = {'many2one': 'm2o', 'one2many': 'o2m', 'many2many': 'm2m'}
-            self.diagram_arc_name = "{name} ({type})".format(name=self.name, type=small_map[self.ttype])
-        else:
-            self.diagram_arc_name = self.name
+        for record_id in self:
+            if record_id.ttype in relational_field_types:
+                small_map = {'many2one': 'm2o', 'one2many': 'o2m', 'many2many': 'm2m'}
+                record_id.diagram_arc_name = "{name} ({type})".format(name=record_id.name, type=small_map[record_id.ttype])
+            else:
+                record_id.diagram_arc_name = record_id.name
 
     @api.onchange('allow_compute', 'allow_inverse', 'allow_search', 'allow_default')
     def _compute_method_names(self):
@@ -281,17 +281,19 @@ class IrFields(models.Model):
         else:
             self.relation = False
 
-    @api.one
+
     @api.depends('ttype')
     def _compute_relation_ttype(self):
-        if self.ttype in relational_field_types:
-            self.relation_ttype = self.ttype
-        else:
-            return False
+        for record_id in self:
+            if record_id.ttype in relational_field_types:
+                record_id.relation_ttype = record_id.ttype
+            else:
+                return False
 
-    @api.one
+
     def _relation_type_set_inverse(self):
-        return self.write({'ttype': self.relation_ttype})
+        for record_id in self:
+            return record_id.write({'ttype': record_id.relation_ttype})
 
     # def __str__(self):
         # return self.name
@@ -334,15 +336,16 @@ class IrFields(models.Model):
                              _("The Selection Options expression is must be in the [('key','Label'), ...] format!"))
         return True
 
-    @api.one
+
     def ensure_one_rec_name(self):
         # set previous field with is_rec_name to False
         # this way write is not triggered
-        [setattr(rec, 'is_rec_name', False) for rec in self.search([
-            ('id', '!=', self.id),
-            ('model_id.id', '=', self.model_id.id),
-            ('is_rec_name', '=', True)
-        ])]
+        for record_id in self:
+            [setattr(rec, 'is_rec_name', False) for rec in self.search([
+                ('id', '!=', record_id.id),
+                ('model_id.id', '=', record_id.model_id.id),
+                ('is_rec_name', '=', True)
+            ])]
 
     @api.model
     @api.returns('self', lambda value: value.id)

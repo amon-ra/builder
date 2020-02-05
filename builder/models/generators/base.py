@@ -68,3 +68,12 @@ class GeneratorBase(models.TransientModel):
     @api.model
     def generate_module(self, zip_file, module):
         raise NotImplementedError
+
+    @api.model
+    def generate_code(self,template,d):
+        jinja_env = self.create_jinja_env()
+
+        jinja_env.globals.update(self.get_jinja_globals())
+        jinja_env.filters.update(self.get_jinja_filters())
+
+        return jinja_env.get_template(template).render(d).encode('UTF-8')

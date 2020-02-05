@@ -352,7 +352,7 @@
                             <page string="Custom Code">
                                 <group colspan="4" string="Imports">
                                     <field name="import_ids" nolabel="1" context="{'default_module_id': module_id, 'default_model_id': id}">
-                                        <tree string="Imports" create="1" edit="1" delete="1">
+                                        <tree string="Imports" create="1" edit="1" delete="1" editable="bottom">
                                             <field name="parent"/>
                                             <field name="name"/>
                                         </tree>

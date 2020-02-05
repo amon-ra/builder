@@ -911,12 +911,8 @@ access_{{ access.model_id.module_id.name }}_{{ access.model_id.model|dot2dashed 
 
 {# generate builder.website.page #}
 {% macro builder_website_page(page) %}
-    <template {% if page.attr_page %}id="website.{{ page.attr_id }}" {% else %}id="{{ page.attr_id }}" {% endif %} name="{{ page.attr_name }}"{% if page.attr_page %} page="{{page.attr_page }}"{% endif %} {% if page.priority %}priority="{{ page.priority }}" {% endif %}>
-        <t t-call="website.layout">
-            <div id="wrap" class="oe_structure oe_empty">
+    <template id="{{ page.module_id.name }}.{{ page.attr_id }}" {% if page.attr_inherit_id %} inherit_id="{{ page.attr_inherit_id }}"{% endif %} name="{{ page.attr_name }}" {% if page.attr_page %} page="{{page.attr_page }}"{% endif %} {% if page.priority %}priority="{{ page.priority }}" {% endif %}>
                 {{ page.content }}
-            </div>
-        </t>
     </template>
 {% endmacro %}
 

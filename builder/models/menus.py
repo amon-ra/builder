@@ -158,9 +158,10 @@ class IrUiMenu(models.Model):
 
         return super(IrUiMenu, self).write(vals)
 
-    @api.one
+
     def _compute_complete_name(self):
-        self.complete_name = self._get_full_name_one()
+        for record_id in self:
+            record_id.complete_name = record_id._get_full_name_one()
 
     @api.multi
     def _get_full_name_one(self, level=6):
@@ -177,9 +178,9 @@ class IrUiMenu(models.Model):
 
         return (parent_path + self.name) if self.name else False
 
-    @api.one
     def name_get(self):
-        return self.id, self._get_full_name_one()
+        for record_id in self:
+            return record_id.id, record_id._get_full_name_one()
 
     def _rec_message(self, ids):
         return _('Error ! You can not create recursive Menu.')
