@@ -28,7 +28,7 @@
         <record model="ir.actions.act_window" id="act_builder_website_page_import_wizard">
             <field name="name">Page Import</field>
             <field name="res_model">builder.website.page.import.wizard</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>

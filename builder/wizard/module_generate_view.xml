@@ -25,17 +25,16 @@
         <record model="ir.actions.act_window" id="act_builder_ir_module_module_generate_wizard">
             <field name="name">Generator</field>
             <field name="res_model">builder.ir.module.module.generate.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
 
-        <act_window id="act_builder_ir_module_generate_wizard"
+        <!-- <act_window id="act_builder_ir_module_generate_wizard"
             name="Download Modules"
             src_model="builder.ir.module.module"
             res_model="builder.ir.module.module.generate.wizard"
             view_type="form" view_mode="form"
-            key2="client_action_multi" target="new" />
+            key2="client_action_multi" target="new" /> -->
 
         <!-- Builder Module Generate Wizard -->
     </data>

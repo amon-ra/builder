@@ -40,7 +40,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_model_demo_generator_custom_list">
             <field name="name">Custom List Generator</field>
             <field name="res_model">builder.ir.model.demo.generator.custom_list</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 

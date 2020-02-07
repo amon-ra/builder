@@ -51,7 +51,7 @@ class WebsiteDesigner(http.Controller):
         # cr, uid, context = request.cr, request.uid, request.context
         record = request.env[model].browse([res_id])
         _logger.debug(record)
-        return_url = '/web#return_label=Website&model={model}&id={id}&view_type=form'.format(model=model, id=record.id)
+        return_url = '/web#return_label=Website&model={model}&id={id}'.format(model=model, id=record.id)
         if model == 'builder.ir.module.module':
             field_template = 'builder.page_designer_builder_ir_module_module_description_html'
         elif model == 'builder.website.page':

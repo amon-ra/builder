@@ -201,7 +201,7 @@
         <record model="ir.actions.act_window" id="act_builder_res_config_settings">
             <field name="name">Config View</field>
             <field name="res_model">builder.res.config.settings</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
         <!-- Config View -->
@@ -374,7 +374,7 @@
         <record model="ir.actions.act_window" id="act_builder_res_config_settings_field">
             <field name="name">Fields</field>
             <field name="res_model">builder.res.config.settings.field</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 

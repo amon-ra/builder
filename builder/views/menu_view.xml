@@ -61,7 +61,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_ui_menu">
             <field name="name">Menu</field>
             <field name="res_model">builder.ir.ui.menu</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 

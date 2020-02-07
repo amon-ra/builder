@@ -67,7 +67,7 @@
         <record id="action_builder_workflow_form" model="ir.actions.act_window">
             <field name="name">Workflows</field>
             <field name="res_model">builder.workflow</field>
-            <field name="view_type">form</field>
+            
             <field name="view_id" ref="builder_view_workflow_tree"/>
             <field name="view_mode">tree,form,diagram</field>
         </record>

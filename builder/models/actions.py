@@ -124,7 +124,7 @@ class ir_actions_act_window(models.Model):
     view_type = fields.Selection(
         (('tree', 'Tree'), ('form', 'Form')),
         string='View Type',
-        required=True,
+        required=False,
         help=
         "View type: Tree type to use for the tree view, set to 'tree' for a hierarchical tree view, or 'form' for a regular list view"
     )

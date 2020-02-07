@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-
-    <odoo>
+<odoo>
+    <data>
         <record model="ir.ui.view" id="builder_website_asset_data_wizard_form_view">
             <field name="name">builder.website.asset.data.wizard.form</field>
             <field name="model">builder.website.asset.data.wizard</field>
@@ -22,9 +22,9 @@
         <record model="ir.actions.act_window" id="act_builder_website_asset_data_wizard">
             <field name="name">Data Select</field>
             <field name="res_model">builder.website.asset.data.wizard</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
-    
+    </data>
 </odoo>

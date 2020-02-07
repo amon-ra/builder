@@ -40,7 +40,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_model_demo_generator_autoincrement">
             <field name="name">Autoincrement Generator</field>
             <field name="res_model">builder.ir.model.demo.generator.autoincrement</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 

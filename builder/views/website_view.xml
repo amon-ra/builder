@@ -52,7 +52,7 @@
         <record model="ir.actions.act_window" id="act_builder_website_snippet">
             <field name="name">Website Snippet</field>
             <field name="res_model">builder.website.snippet</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 

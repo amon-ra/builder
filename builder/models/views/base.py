@@ -142,7 +142,6 @@ class ViewSelector(models.TransientModel):
         return {
             'name': view_type_names[self.type],
             'type': 'ir.actions.act_window',
-            'view_type': 'form',
             'view_mode': 'tree',
             'res_model': 'builder.views.' + self.type,
             'views': [(False, 'form')],
@@ -293,7 +292,7 @@ class InheritViewChange(models.Model):
         ondelete='cascade',
     )
     inherit_view_type = fields.Selection([('field', 'Field'), ('xpath', 'XPath')], 'Selection Type', default='field',
-                                         required=True)
+                                         required=False)
     inherit_view_target = fields.Char('Inherit Target', required=True)
     inherit_view_position = fields.Selection([('after', 'After'), ('before', 'Before'), ('inside', 'Inside'), ('replace', 'Replace'), ('attribute', 'Attribute')], 'Inherit Position', default='after',
                                              required=True)

@@ -45,7 +45,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_model_import_method_form_view">
             <field name="name">Import Methods</field>
             <field name="res_model">builder.ir.model.method.inherit</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -411,7 +411,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_model">
             <field name="name">Models</field>
             <field name="res_model">builder.ir.model</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 
@@ -525,7 +525,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_model_method">
             <field name="name">Model Method</field>
             <field name="res_model">builder.ir.model.method</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 
