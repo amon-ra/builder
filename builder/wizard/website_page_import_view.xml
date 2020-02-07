@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-
-    <odoo>
+<odoo>
+    <data>
         <record model="ir.ui.view" id="builder_website_page_import_wizard_form_view">
             <field name="name">builder.website.page.import.wizard.form</field>
             <field name="model">builder.website.page.import.wizard</field>
@@ -32,5 +32,5 @@
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
-    
+    </data>
 </odoo>
