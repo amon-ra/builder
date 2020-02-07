@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <odoo>
-<data>
 <template id="page_designer_snippets">
 
     <div class="scroll" t-ignore="1">
@@ -493,5 +493,5 @@
 
 </template>
 
-</data>
+
 </odoo>

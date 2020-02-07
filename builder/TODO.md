@@ -1,3 +1,4 @@
+- install jingtrang
 - select model from ir_model_data group by model (data from custom model)
 - ir.actions: (server,report,client,actions,todo)
 - https://www.cybrosys.com/blog/widgets-in-odoo

@@ -37,7 +37,7 @@ This module aims to help in the development of new modules
         # 'security/base_security.xml',
         # 'security/ir.model.access.csv',
 
-        'data/oe.css.classes.yml',
+        'data/oe.css.classes.xml',
         'wizard/module_generate_view.xml',
         'wizard/model_lookup_wizard_view.xml',
         'wizard/menu_lookup_wizard_view.xml',
@@ -77,7 +77,7 @@ This module aims to help in the development of new modules
         'wizard/model_import_view.xml',
         'wizard/group_import_view.xml',
 
-        'views/menu_view.xml',
+        # 'views/menu_view.xml',
         'views/module_view.xml',
         'views/field_view.xml',
         'views/model_view.xml',

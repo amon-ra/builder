@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<odoo>
-    <data>
+
+    <odoo>
         <template id="assets_backend" name="Assets Backend" inherit_id="web.assets_backend">
             <xpath expr="." position="inside">
                 <link rel="stylesheet" href="/builder/static/src/css/assets_backend.css"/>
@@ -12,5 +12,5 @@
                 <script type="text/javascript" src="/builder/static/src/js/website_page_designer.js"></script>
             </xpath>
         </template>
-    </data>
+    
 </odoo>

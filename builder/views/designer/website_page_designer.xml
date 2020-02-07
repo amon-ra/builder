@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <data>
+
+    <odoo>
         <!-- Template Choice page -->
         <template id="builder.page_designer" name="Page Designer">
             <t t-call="website.layout">
@@ -69,7 +69,7 @@
             </t>
             <t t-set="website.footer"></t>
         </template>
-    </data>
+    
 </odoo>
 
 

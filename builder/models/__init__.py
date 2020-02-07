@@ -13,7 +13,6 @@ from . import (
     actions,
     website,
     security,
-    cron,
     # workflow,
     res_config_model,
     generators,

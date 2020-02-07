@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+    <odoo>
+        <record model="builder.web.util.css.class" id="builder_web_util_css_class_oe_link">
+            <field name="name">oe_link</field>
+        </record>        
+    
+</odoo>

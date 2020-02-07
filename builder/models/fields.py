@@ -347,8 +347,7 @@ class IrFields(models.Model):
                 ('is_rec_name', '=', True)
             ])]
 
-    @api.model
-    @api.returns('self', lambda value: value.id)
+    @api.model  
     def create(self, vals):
         if not vals.get('module_id',False) :
             model = vals.get('model_id',self.model_id.id)

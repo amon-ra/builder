@@ -342,3 +342,6 @@ class ViewLine(models.Model):
     name = fields.Char('Name')
     parent_id = fields.Many2one('builder.views.line','Parent', ondelete='cascade')
     child_ids = fields.One2many('builder.views.line', 'parent_id', 'Contains', copy=True)
+    # parent_left = fields.Integer('Parent Left')
+    # parent_right = fields.Integer('Parent Left')
+    parent_path = fields.Char(index=True)
