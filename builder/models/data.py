@@ -165,7 +165,7 @@ class ModelData(models.Model):
     @api.depends('input_file')
     def _compute_input_text(self):
         for record_id in self:
-        record_id.input_text = base64.decodestring(record_id.input_file) if record_id.input_file else ''
+            record_id.input_text = base64.decodestring(record_id.input_file) if record_id.input_file else ''
 
     @api.depends('input_text', 'importer', 'model', 'attribute_ids.xml_id', 'key_id')
     def _compute_result(self):
@@ -262,7 +262,7 @@ class DataFile(models.Model):
         for record_id in self:
             record_id.in_media = len(record_id.media_item_ids) > 0
 
-    @api.multi
+    
     def action_add_as_media_item(self):
         self.env['builder.website.media.item'].create({
             'module_id': self.module_id.id,

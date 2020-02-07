@@ -30,12 +30,12 @@ class SelectionRandomGenerator(models.Model):
         res['subclass_model']= self._name
         return res  
 
-    @api.multi
+    
     def get_generator(self, field):
         while True:
             yield self.get_random_value_from_field(field)
 
-    @api.multi
+    
     def get_random_value_from_field(self, field):
         options = []
         if field.ttype == 'selection':

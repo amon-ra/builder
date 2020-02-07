@@ -46,7 +46,7 @@ class ModuleImport(models.TransientModel):
 
         return builders.installed_version if builders else False
 
-    @api.multi
+    
     def action_import(self):
         """
         :type self: ModuleImport

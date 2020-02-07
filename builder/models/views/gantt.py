@@ -19,8 +19,7 @@ class GanttView(models.Model):
     attr_create = fields.Boolean('Allow Create', default=True)
     attr_edit = fields.Boolean('Allow Edit', default=True)
     attr_delete = fields.Boolean('Allow Delete', default=True)
-    attr_date_start_field_id = fields.Many2one('builder.ir.model.fields', 'Date Start Field', ondelete='set null',
-                                               required=True)
+    attr_date_start_field_id = fields.Many2one('builder.ir.model.fields', 'Date Start Field', ondelete='set null')
     attr_date_stop_field_id = fields.Many2one('builder.ir.model.fields', 'Date Stop Field', ondelete='set null')
     attr_date_delay_field_id = fields.Many2one('builder.ir.model.fields', 'Date Delay Field', ondelete='set null')
     attr_progress_field_id = fields.Many2one('builder.ir.model.fields', 'Progress Field', ondelete='set null')
@@ -59,7 +58,7 @@ class GanttView(models.Model):
             'view_id': id,
         })
 
-    @api.multi
+    
     def action_save(self):
         return {'type': 'ir.actions.act_window_close'}
 

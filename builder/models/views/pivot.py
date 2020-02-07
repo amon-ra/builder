@@ -35,7 +35,7 @@ class PivotView(models.Model):
             'view_id': id,
         })
 
-    @api.multi
+    
     def action_save(self):
         return {'type': 'ir.actions.act_window_close'}
 

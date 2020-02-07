@@ -18,7 +18,7 @@ class ModuleGenerate(models.TransientModel):
 
 
 
-    @api.multi
+    
     def action_generate(self):
         ids = self.env.context.get('active_ids') or ([self.env.context.get('active_id')] if self.env.context.get('active_id') else [])
 

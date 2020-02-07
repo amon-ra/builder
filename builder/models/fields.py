@@ -389,7 +389,7 @@ class IrFields(models.Model):
 
         return model
 
-    @api.multi
+    
     def write(self, vals):
         model = None
         for record in self:

@@ -29,7 +29,7 @@ class EmailGenerator(models.Model):
         res['subclass_model']= self._name
         return res  
 
-    @api.multi
+    
     def get_generator(self, field):
         while True:
             name = "".join(random.sample(string.lowercase, random.randint(3, 10)))

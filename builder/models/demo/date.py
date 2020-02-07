@@ -35,7 +35,7 @@ class DateGenerator(models.Model):
         res['subclass_model']= self._name
         return res  
 
-    @api.multi
+    
     def get_generator(self, field):
         while True:
             yield 'date'

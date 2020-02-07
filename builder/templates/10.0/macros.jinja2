@@ -155,7 +155,7 @@
             return super({{ class_name }}, self).create(vals)
         {% endif -%}
         {% if model.rewrite_write_method -%}
-            @api.multi
+            
             def write(self, vals):
             return super({{ class_name }}, self).write(vals)
         {% endif -%}
@@ -175,14 +175,14 @@
 
 {# generate builder.ir.model.method #}
 {% macro builder_ir_model_status_bar_button(button) -%}
-    @api.multi
+    
     def {{ button.method_name }}(self):
     raise NotImplementedError
 {% endmacro -%}
 
 {# generate builder.ir.model.method #}
 {% macro builder_ir_model_button(button) -%}
-    @api.multi
+    
     def {{ button.method_name }}(self):
     raise NotImplementedError
 {% endmacro -%}

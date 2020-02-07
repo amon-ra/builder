@@ -21,7 +21,7 @@ class DemoDataCreator(models.TransientModel):
     def _get_type_selection(self):
         return self.env['builder.ir.model.demo.generator'].get_generators()
 
-    @api.multi
+    
     def action_create(self):
         model = self.env[self.type]
         return {

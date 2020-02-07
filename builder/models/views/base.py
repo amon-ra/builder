@@ -118,7 +118,7 @@ class ViewSelector(models.TransientModel):
                 if not view.model == record_id.model_id.model:
                     raise ValidationError("View Ref is not a valid view reference")
 
-    @api.multi
+    
     def action_show_view(self):
         res_id = False
         wizard = False
@@ -205,14 +205,14 @@ class View(models.Model):
     def _onchange_type(self):
         self.subclass_model = 'builder.views.' + self.type
 
-    @api.multi
+    
     def action_open_view(self):
         model = self
         action = model.get_formview_action(self.ids)
         action.update({'target': 'new'})
         return action
 
-    @api.multi
+    
     def action_save(self):
         return {'type': 'ir.actions.act_window_close'}
 
@@ -256,7 +256,7 @@ class InheritView(models.AbstractModel):
     #             return record_id
     #     return super().create(vals)
 
-    # @api.multi
+    # 
     # def write(self, vals):
     #     if not vals.get('module_id',False):
     #         model = vals.get('model_id',self.model_id.id)
@@ -332,3 +332,13 @@ class AbstractViewField(models.AbstractModel):
     def _compute_field_ttype(self):
       for record_id in self:
         record_id.field_ttype = record_id.field_id.ttype
+
+
+class ViewLine(models.Model):
+
+    _name = 'builder.views.line'
+    _order = 'sequence,name'
+
+    name = fields.Char('Name')
+    parent_id = fields.Many2one('builder.views.line','Parent', ondelete='cascade')
+    child_ids = fields.One2many('builder.views.line', 'parent_id', 'Contains', copy=True)

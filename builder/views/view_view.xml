@@ -2,6 +2,18 @@
 <odoo>
     <data>
 
+        <record id="view_views_line" model="ir.ui.view">
+            <field name="name">builder.views.line.tree</field>
+            <field name="model">builder.views.line</field>
+            <field name="field_parent">child_ids</field>
+            <field name="arch" type="xml">
+                <tree string="Arch" toolbar="1" colors="blue:internal_type=='view'">
+                    <field name="name"/>
+                    <field name="parent_id" invisible="1"/>
+                    <field name="child_ids" invisible="1"/>
+                </tree>
+            </field>
+        </record>
         <record model="ir.ui.view" id="builder_ir_ui_view_tree">
             <field name="name">builder.ir.ui.view.tree</field>
             <field name="model">builder.ir.ui.view</field>

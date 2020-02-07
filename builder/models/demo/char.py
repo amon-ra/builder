@@ -44,7 +44,7 @@ class RandomStringGenerator(models.Model):
         res['subclass_model']= self._name
         return res  
 
-    @api.multi
+    
     def get_generator(self, field):
         while True:
             words = []

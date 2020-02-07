@@ -31,7 +31,7 @@ class IrUiMenu(models.Model):
 
     _rec_name = 'complete_name'
 
-    @api.multi
+    
     def get_user_roots(self):
         """ Return all root menu ids visible for the user.
 
@@ -41,7 +41,7 @@ class IrUiMenu(models.Model):
         menu_domain = [('parent_id', '=', False), ('parent_ref', '=', False)]
         return self.search(menu_domain)
 
-    @api.multi
+    
     def load_menus_root(self):
         menu_roots = self.get_user_roots()
         return {
@@ -61,10 +61,9 @@ class IrUiMenu(models.Model):
     def _get_one_full_name(self, elmt, level=6):
         if level<=0:
             return '...'
+        parent_path = ''
         if elmt.parent_id:
             parent_path = self._get_one_full_name(elmt.parent_id, level-1) + MENU_ITEM_SEPARATOR
-        else:
-            parent_path = ''
         return parent_path + elmt.name
 
     @api.onchange('parent_ref')
@@ -74,7 +73,7 @@ class IrUiMenu(models.Model):
             self.parent_menu_id = self.env['ir.model.data'].xmlid_to_res_id(self.parent_ref)
 
     @api.onchange('parent_menu_id')
-    def onchange_parent_menu_id(self):
+    def onchange_parent_id(self):
         if self.parent_menu_id:
             data = self.env['ir.model.data'].search([('model', '=', 'ir.ui.menu'), ('res_id', '=', self.parent_menu_id.id)])
             self.parent_ref = "{module}.{id}".format(module=data.module, id=data.name) if data.id else False
@@ -96,12 +95,13 @@ class IrUiMenu(models.Model):
     complete_name = fields.Char('Complete Name', compute='_compute_complete_name')
     morder = fields.Integer('Order')
     sequence = fields.Integer('Sequence',default=10)
-    child_ids = fields.One2many('builder.ir.ui.menu', 'parent_id', 'Child Ids', copy=True)
+
     # group_ids = fields.Many2many('builder.res.groups', 'builder_ir_ui_menu_group_rel', 'menu_id', 'gid', 'Groups', help="If you have groups, the visibility of this menu will be based on these groups. "\
     #             "If this field is empty, Odoo will compute visibility based on the related object's read access.")
     parent_menu_id = fields.Many2one('ir.ui.menu', 'System Menu', ondelete='set null')
     parent_ref = fields.Char('System Menu Ref', index=True)
     parent_id = fields.Many2one('builder.ir.ui.menu', 'Parent Menu', index=True, ondelete='cascade')
+    child_ids = fields.One2many('builder.ir.ui.menu', 'parent_id', 'Child Ids', copy=True)
     parent_type = fields.Selection([('module', 'Module'), ('system', 'System')], 'Parent Type')
     parent_left = fields.Integer('Parent Left', index=True)
     parent_right = fields.Integer('Parent Left', index=True)
@@ -149,7 +149,7 @@ class IrUiMenu(models.Model):
 
         return super(IrUiMenu, self).create(vals)
 
-    @api.multi
+    
     def write(self, vals):
         if not vals.get('parent_type', self.parent_type):
             vals['parent_id'] = False
@@ -163,7 +163,7 @@ class IrUiMenu(models.Model):
         for record_id in self:
             record_id.complete_name = record_id._get_full_name_one()
 
-    @api.multi
+    
     def _get_full_name_one(self, level=6):
         if level <= 0:
             return '...'
@@ -194,8 +194,9 @@ class IrUiMenu(models.Model):
 
     @api.constrains('parent_id')
     def _check_hierarchy(self):
-        if not self._check_recursion():
-            raise ValidationError(self._rec_message())
+        for record_id in self:
+            if not record_id._check_recursion():
+                raise ValidationError(record_id._rec_message())
         return True
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

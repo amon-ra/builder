@@ -38,7 +38,7 @@ class AutoincrementGenerator(models.Model):
         else:
             return value
 
-    @api.multi
+    
     def get_generator(self, field):
         n = self.start_number
         yield self.format_value(field, n)

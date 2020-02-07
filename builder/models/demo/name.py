@@ -46,7 +46,7 @@ class NameGenerator(models.Model):
     def onchange_name_type(self):
         self.name_type_schema = self.name_type
 
-    @api.multi
+    
     def get_generator(self, field):
         while True:
             placeholder = self.name_type_schema

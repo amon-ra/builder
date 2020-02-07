@@ -75,7 +75,7 @@ class Groups(models.Model):
          'The name of the group must be unique within an application!')
     ]
 
-    @api.multi
+    
     def create(self,vals):
         vals2= {}
         try:

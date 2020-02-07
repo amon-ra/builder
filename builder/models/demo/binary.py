@@ -30,7 +30,7 @@ class BinaryGenerator(models.Model):
         res['subclass_model']= self._name
         return res  
 
-    @api.multi
+    
     def get_generator(self, field):
         while True:
             if self.base_id.generate_null_values(field):

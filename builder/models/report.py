@@ -240,12 +240,12 @@ class IrModel(models.Model):
         if not self.name:
             self.name = self.model
 
-    @api.multi
+    
     def find_field_by_name(self, name):
         field_obj = self.env['builder.ir.model.fields']
         return field_obj.search([('model_id', '=', self.id), ('name', '=', name)])
 
-    @api.multi
+    
     def find_field_by_type(self, types):
         field_obj = self.env['builder.ir.model.fields']
         return field_obj.search([('model_id', '=', self.id), ('ttype', 'in', types)])
@@ -272,7 +272,7 @@ class IrModel(models.Model):
         record_id.groups_inherited_field_ids = self.env['builder.ir.model.fields'].search(
             [('model_id', '=', record_id.id), ('is_inherited', '=', True)])
 
-    @api.multi
+    
     def compute_methods(self):
         """ Return a list of str with method names, if is installed localy """
         ret = []
@@ -287,7 +287,7 @@ class IrModel(models.Model):
 
         return ret
 
-    @api.multi
+    
     def create(self,vals):
         create = vals.get('wizard')
         if create:
@@ -295,7 +295,7 @@ class IrModel(models.Model):
         return super().create(vals)
 
 
-    @api.multi
+    
     def action_fields(self):
         ref = self.env.ref('builder.builder_ir_model_fields_form_view', False)
         return {
@@ -313,7 +313,7 @@ class IrModel(models.Model):
             },
         }
 
-    @api.multi
+    
     def action_methods(self):
         return {
             'name': _('Methods'),
@@ -330,7 +330,7 @@ class IrModel(models.Model):
             },
         }
 
-    @api.multi
+    
     def action_parent_methods(self):
         Method = self.env['builder.ir.model.method.inherit']
         model_list = []
@@ -411,7 +411,7 @@ class ModelImports(models.Model):
             vals['module_id'] = model_id.module_id.id
         return super().create(vals)
 
-    @api.multi
+    
     def write(self, vals):
         if not vals.get('module_id',False):
             model = vals.get('model_id',self.model_id.id)
@@ -468,7 +468,7 @@ class ModelMethod(models.Model):
     #         vals['module_id'] = model_id.module_id.id
     #     return super().create(vals)
 
-    # @api.multi
+    # 
     # def write(self, vals):
     #     if not vals.get('model_id',False):
     #         model = vals.get('model_id',self.model_id.id)
@@ -515,7 +515,7 @@ class InheritModelTemplate(models.AbstractModel):
             vals['module_id'] = model_id.module_id.id
         return super().create(vals)
 
-    @api.multi
+    
     def write(self, vals):
         if not vals.get('module_id',False):
             model = vals.get('model_id',self.model_id.id)
@@ -539,7 +539,7 @@ class InheritModelTemplate(models.AbstractModel):
         if self.system_model_id:
             return self.system_model_id.model
 
-    @api.multi
+    
     def compute_system_methods(self):
         ret = []
         for record in self:
@@ -553,7 +553,7 @@ class InheritModelTemplate(models.AbstractModel):
                     _logger.debug(ret)
         return ret
 
-    @api.multi
+    
     def compute_methods(self):
         """ Return a list of str with method names """
         ret = []
@@ -691,7 +691,7 @@ class InheritMethod(models.TransientModel):
         self.name = method
 
 
-    @api.multi
+    
     def do_ok(self):
         model_id = self._default_model_id()
         if not self.state:

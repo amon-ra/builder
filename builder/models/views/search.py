@@ -30,7 +30,7 @@ class SearchView(models.Model):
             'view_id': id,
         })
 
-    @api.multi
+    
     def action_save(self):
         return {'type': 'ir.actions.act_window_close'}
 
@@ -42,7 +42,7 @@ class SearchView(models.Model):
         self.model_inherit_type = model_id.inherit_type  # shouldn`t be doing that
         self.model_name = model_id.model  # shouldn`t be doing that
 
-    @api.multi
+    
     def find_field_by_name(self, name):
         field_obj = self.env['builder.ir.model.fields']
         return field_obj.search([('model_id', '=', self.id), ('name', '=', name)])

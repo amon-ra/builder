@@ -17,7 +17,7 @@ class SettingModel(models.Model):
 
     field_ids = fields.One2many('builder.res.config.settings.field', 'model_id', 'Fields', required=True, copy=True)
 
-    @api.multi
+    
     def action_fields(self):
         return {
             'name': _('Fields'),
@@ -40,6 +40,9 @@ class SettingModelField(models.Model):
     _inherit = ['builder.ir.model.fields']
 
     model_id = fields.Many2one('builder.res.config.settings', 'Model', ondelete='cascade')
+    group_ids = fields.Many2many('builder.res.groups', 
+        'builder_res_config_settings_field_group_rel', 'field_id', 'group_id', 
+        string='Groups')    
     special_states_field_id = fields.Many2one('builder.ir.model.fields', related=False,
                                               string='States Field')
     ttype = fields.Selection(required=False)

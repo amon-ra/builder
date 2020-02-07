@@ -91,7 +91,7 @@ class Superclass(models.AbstractModel):
     def create_instance(self, id):
         raise NotImplementedError
 
-    @api.multi
+    
     def action_edit(self):
         cr, uid, cxt = self.env.args
         data = self.get_formview_action(self.id)

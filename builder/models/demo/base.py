@@ -12,11 +12,11 @@ class GeneratorInterface(models.AbstractModel):
     _name = 'builder.ir.model.demo.generator.base'
     _description = 'Generator Interface'
 
-    @api.multi
+    
     def get_generator(self, field):
         raise NotImplementedError
 
-    @api.multi
+    
     def action_save(self):
         return {'type': 'ir.actions.act_window_close'}
 
@@ -75,7 +75,7 @@ class Generator(models.Model):
             vals['module_id'] = model_id.module_id.id
         return super().create(vals)
         
-    @api.multi
+    
     def generate_null_values(self, field):
         if self.allow_nulls and not field.required:
             return random.random() <= (1.0 / (self.model_id.demo_records + 1))
@@ -113,7 +113,7 @@ class Generator(models.Model):
       for record_id in self:
         return record_id.get_instance().get_generator(field)
 
-    @api.multi
+    
     def action_open_view(self):
         model = self
         action = model.get_formview_action( self.ids)
@@ -146,7 +146,7 @@ class IrModel(models.Model):
             record_id.demo_xml_id_sample = value
         
 
-    @api.multi
+    
     def demo_xml_id(self, index):
         return pickle.loads(self.demo_xml_id_sample)[index]
 
