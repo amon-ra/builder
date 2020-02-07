@@ -240,8 +240,8 @@
                                     </div>
                                     <div>
                                         <a type="open">
-                                            <img t-if="record.is_image.value" t-att-src="kanban_image('builder.website.media.item', 'image_small', record.id.value)" class="oe_avatar oe_kanban_avatar_smallbox"/>
-                                            <img t-if="!record.is_image.value" src="/builder/static/src/img/file.svg"/>
+                                            <img alt="builder" t-if="record.is_image.value" t-att-src="kanban_image('builder.website.media.item', 'image_small', record.id.value)" class="oe_avatar oe_kanban_avatar_smallbox"/>
+                                            <img alt="builder" t-if="!record.is_image.value" src="/builder/static/src/img/file.svg"/>
                                         </a>
                                     </div>
                                     <div class="oe_name">

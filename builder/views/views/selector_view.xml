@@ -31,7 +31,7 @@
         <record model="ir.actions.act_window" id="act_builder_views_selector">
             <field name="name">View Wizard Selector</field>
             <field name="res_model">builder.views.selector</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>

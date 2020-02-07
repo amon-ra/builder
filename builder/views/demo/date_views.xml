@@ -42,7 +42,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_model_demo_generator_date">
             <field name="name">Date Generator</field>
             <field name="res_model">builder.ir.model.demo.generator.date</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">tree,form</field>
         </record>
 

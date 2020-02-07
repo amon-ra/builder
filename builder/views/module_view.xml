@@ -418,8 +418,8 @@
                                                                         </div>
                                                                         <div>
                                                                             <a type="open">
-                                                                                <img t-if="record.is_image.value" t-att-src="kanban_image('builder.website.media.item', 'image_small', record.id.value)" class="oe_avatar oe_kanban_avatar_smallbox"/>
-                                                                                <img t-if="!record.is_image.value" src="/builder/static/src/img/file.svg"/>
+                                                                                <img alt="builder" t-if="record.is_image.value" t-att-src="kanban_image('builder.website.media.item', 'image_small', record.id.value)" class="oe_avatar oe_kanban_avatar_smallbox"/>
+                                                                                <img alt="builder" t-if="!record.is_image.value" src="/builder/static/src/img/file.svg"/>
                                                                             </a>
                                                                         </div>
                                                                         <div class="oe_name">
@@ -502,7 +502,7 @@
                         <t t-name="kanban-box">
                             <div class="oe_module_vignette">
                                 <a type="open">
-                                    <img t-att-src="kanban_image('builder.ir.module.module', 'icon_image', record.id.value, {'preview_image': 'icon_image'})"
+                                    <img alt="builder" t-att-src="kanban_image('builder.ir.module.module', 'icon_image', record.id.value, {'preview_image': 'icon_image'})"
                                          class="oe_module_icon"/>
                                 </a>
                                 <div class="oe_module_desc">
@@ -670,10 +670,10 @@
                                     </div>
                                     <div>
                                         <a type="open">
-                                            <img t-if="record.is_image.value"
+                                            <img alt="builder" t-if="record.is_image.value"
                                                  t-att-src="kanban_image('builder.data.file', 'image_small', record.id.value)"
                                                  class="oe_avatar oe_kanban_avatar_smallbox"/>
-                                            <img t-if="!record.is_image.value" src="/builder/static/src/img/file.svg"/>
+                                            <img alt="builder" t-if="!record.is_image.value" src="/builder/static/src/img/file.svg"/>
                                         </a>
                                     </div>
                                     <div class="oe_name" t-att-title="record.path.value">

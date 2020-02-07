@@ -29,7 +29,7 @@
         <record model="ir.actions.act_window" id="act_builder_ir_model_lookup_wizard">
             <field name="name">Model Lookup</field>
             <field name="res_model">builder.ir.model.lookup.wizard</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>

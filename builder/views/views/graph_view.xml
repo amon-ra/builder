@@ -135,7 +135,7 @@
         <record model="ir.actions.act_window" id="act_builder_wizard_views_graph">
             <field name="name">Graph View Wizard</field>
             <field name="res_model">builder.views.graph</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>

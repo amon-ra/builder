@@ -259,7 +259,7 @@
         <record model="ir.actions.act_window" id="act_builder_wizard_views_form">
             <field name="name">Form Wizard</field>
             <field name="res_model">builder.views.form</field>
-            <field name="view_type">form</field>
+            
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
