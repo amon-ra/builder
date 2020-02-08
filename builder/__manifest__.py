@@ -35,7 +35,7 @@ This module aims to help in the development of new modules
     'depends': ['web', 'web_diagram', 'website'], #software
     'data': [
         # 'security/base_security.xml',
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
 
         'data/oe.css.classes.xml',
         'wizard/module_generate_view.xml',

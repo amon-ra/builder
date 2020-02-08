@@ -6,7 +6,6 @@
             <field name="model">builder.ir.module.module</field>
             <field name="arch" type="xml">
                 <form string="Module">
-
                     <sheet>
                         <div class="oe_right oe_button_box builder_button_box" name="buttons" id="builder_button_box">
 
@@ -543,31 +542,31 @@
                     <separator/>
                     <field name="category_id"/>
                     <group expand="0" string="Group By">
-                        <filter string="Author" domain="[]" context="{'group_by':'author'}"/>
-                        <filter string="Category" domain="[]" context="{'group_by':'category_id'}"/>
+                        <filter name="author" string="Author" domain="[]" context="{'group_by':'author'}"/>
+                        <filter name="category" string="Category" domain="[]" context="{'group_by':'category_id'}"/>
                     </group>
                 </search>
             </field>
         </record>
 
-        <record id="view_builder_model_diagram" model="ir.ui.view">
+        <!-- <record id="view_builder_model_diagram" model="ir.ui.view">
             <field name="name">builder.ir.module.module.diagram</field>
             <field name="model">builder.ir.module.module</field>
             <field name="arch" type="xml">
                 <diagram string="UML Editor">
-                    <!-- <node object="builder.ir.model" position_x="diagram_position_x" position_y="diagram_position_y" shape="rectangle:True" bgcolor="gray:_transient==True;lightcyan:inherit_type=='prototype';lightgreen:inherit_type=='class';lightyellow:inherit_type=='mixed';lightsalmon:inherit_type=='delegation'"> -->
+                    <node object="builder.ir.model" position_x="diagram_position_x" position_y="diagram_position_y" shape="rectangle:True" bgcolor="gray:_transient==True;lightcyan:inherit_type=='prototype';lightgreen:inherit_type=='class';lightyellow:inherit_type=='mixed';lightsalmon:inherit_type=='delegation'">
                     <node object="builder.ir.model" shape="rectangle:True" />
-                        <!-- <field name="model"/> -->
-                        <!-- <field name="name"/> -->
-                        <!-- <field name="_transient" invisible="1"/> -->
-                        <!-- <field name="inherit_type" invisible="1"/> -->
-                    <!-- </node> -->
-                    <!-- <arrow object="builder.ir.model.fields" source="model_id" destination="relation_model_id" label="['diagram_arc_name']" form_view_ref="builder.builder_ir_model_fields_form_diagram_view"  context="{'form_view_id': True}"> -->
+                        <field name="model"/>
+                        <field name="name"/>
+                        <field name="_transient" invisible="1"/>
+                        <field name="inherit_type" invisible="1"/>
+                    </node>
+                    <arrow object="builder.ir.model.fields" source="model_id" destination="relation_model_id" label="['diagram_arc_name']" form_view_ref="builder.builder_ir_model_fields_form_diagram_view"  context="{'form_view_id': True}">
                     <arrow object="builder.ir.model.fields" source="model_id" destination="relation_model_id" />
-                    <!-- </arrow> -->
+                    </arrow>
                 </diagram>
             </field>
-        </record>
+        </record> -->
 
 
 
@@ -576,6 +575,7 @@
             <field name="res_model">builder.ir.module.module</field>
             
             <field name="view_mode">kanban,tree,form</field>
+            <field name="target">current</field>
             <field name="domain">[('id','!=',1)]</field>
             <field name="search_view_id" ref="view_module_filter"/>
             <field name="help" type="html">
@@ -600,11 +600,11 @@
                     <field name="extension" filter_domain="[('extension', '=', '.' + self)]" string="Ext"/>
                     <field name="path" filter_domain="[('path', 'ilike', self)]" string="Path"/>
                     <separator/>
-                    <filter string="Image" domain="[('is_image', '=', True)]"/>
-                    <filter string="Not Image" domain="[('is_image', '=', False)]"/>
+                    <filter name="image" string="Image" domain="[('is_image', '=', True)]"/>
+                    <filter name="noimage" string="Not Image" domain="[('is_image', '=', False)]"/>
                     <separator/>
                     <group expand="0" string="Group By">
-                        <filter string="Content Type" domain="[]" context="{'group_by':'content_type'}"/>
+                        <filter name="conttentype" string="Content Type" domain="[]" context="{'group_by':'content_type'}"/>
                     </group>
                 </search>
             </field>

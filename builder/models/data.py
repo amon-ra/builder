@@ -278,8 +278,16 @@ class DataFile(models.Model):
                 record_id.extension = os.path.splitext(record_id.path)[1]
                 record_id.content_type = mimetypes.guess_type(record_id.filename)[0] if mimetypes.guess_type(record_id.filename) else False
                 record_id.is_image = record_id.content_type in ['image/png', 'image/jpeg', 'image/gif', 'image/bmp']
-
-                record_id.image_small = tools.image_resize_image_small(record_id.content, size=(100, 100)) if record_id.is_image else False
+                
+                if record_id.is_image:
+                    # resized_images = { 'image': record_id.content}
+                    # tools.image_resize_images(resized_images, return_small=True, 
+                    #     avoid_resize_small=False,sizes={'image_small': (100, 100)})
+                    # record_id.image_small = resized_images['image_small']
+                    record_id.image_small = tools.image_process(record_id.content,size=(100, 100))
+                else: 
+                    record_id.image_small = False 
+                #tools.image_resize_image_small(record_id.content, size=(100, 100))  else False
             else:
                 record_id.size = False
                 record_id.filename = False

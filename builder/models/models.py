@@ -398,18 +398,15 @@ class IrModel(models.Model):
         for record in self:
             if not record.import_ids:
                 self.import_ids.create({
-                    'module_id': record.module_id.id,
                     'model_id': record.id,
                     'parent': 'odoo',
                     'name': 'api,models,fields,tools,_'
                 })
                 self.import_ids.create({
-                    'module_id': record.module_id.id,
                     'model_id': record.id,
                     'name': 'logging'
                 })    
                 self.custom_code_line_ids.create({
-                    'module_id': record.module_id.id,
                     'model_id': record.id,
                     'class_code': False,
                     'custom_code': '_logger = logging.getLogger(__name__)',

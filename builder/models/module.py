@@ -38,7 +38,7 @@ def get_module_importers(model):
 class Module(models.Model):
     _name = 'builder.ir.module.module'
 
-
+ 
     @staticmethod
     def buildertag_start(extension='.xml',name=False,oid=False):
         if name and oid:

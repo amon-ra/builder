@@ -53,7 +53,7 @@
                                         <field name="auto_refresh"/>
                                         <field name="auto_search"/>
                                         <field name="filter"/>
-                                        <field name="multi"/>
+                                        <!-- <field name="multi"/> -->
                                     </group>
                                 </group>
                             </page>
