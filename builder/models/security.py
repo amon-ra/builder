@@ -1,12 +1,16 @@
-from odoo import fields
-
+import logging
+_logger = logging.getLogger(__name__)
 __author__ = 'one'
 
 # from odoo import models, api, fields, _
-from odoo import models
+from odoo import models, fields
 from odoo import SUPERUSER_ID
 from odoo import _, api
 from odoo.exceptions import ValidationError
+
+
+
+
 
 class Groups(models.Model):
     _name = "builder.res.groups"
@@ -14,40 +18,12 @@ class Groups(models.Model):
     _rec_name = 'full_name'
     _order = 'sequence, name'
 
-    def _get_full_name(self):
-        res = {}
-        for g in self:
-            if (g.category_type == 'system') and g.category_id:
-                res[g.id] = '%s / %s' % (g.category_id.name, g.name)
-            elif (g.category_type == 'system') and g.category_ref:
-                res[g.id] = '%s / %s' % (g.category_ref, g.name)
-            elif g.category_type == 'module':
-                res[g.id] = "{module} / {group}".format(module=g.module_id.shortdesc, group=g.name)
-            else:
-                res[g.id] = g.name
-        return res
 
-    def _get_trans_implied(self):
-        "computes the transitive closure of relation implied_ids"
-        memo = {}  # use a memo for performance and cycle avoidance
 
-        def computed_set(g):
-            if g not in memo:
-                raise
-                # memo[g] = cset(g.implied_ids)
-                for h in g.implied_ids:
-                    computed_set(h).subsetof(memo[g])
-            return memo[g]
-
-        res = {}
-        for g in self:
-            res[g.id] = list(map(int, computed_set(g)))
-        return res
-
-    define = fields.Boolean('Defined',default=True)
+    define = fields.Boolean('Defined',default=False)
     module_id = fields.Many2one('builder.ir.module.module', 'Module', ondelete='cascade')
     xml_id = fields.Char('XML ID', required=True)
-    name = fields.Char('Name', required=True, translate=True)
+    name = fields.Char('Name', required=True, translate=True,default='Default')
     # 'users=fields.Many2many('res.users', 'res_groups_users_rel', 'gid', 'uid', 'Users'),
     inherited = fields.Boolean('Inherited', default=False)
     is_portal = fields.Boolean('Portal',default=False)
@@ -64,10 +40,10 @@ class Groups(models.Model):
                                      'Application Type')
     category_id = fields.Many2one('ir.module.category', 'System Application', index=True, ondelete='set null')
     category_ref = fields.Char('System Application Ref')
-    full_name = fields.Char(compute=_get_full_name, type='char', string='Group Name')
+    full_name = fields.Char(compute='_get_full_name', string='Group Name',store=True)
     implied_ids = fields.Many2many('builder.res.groups', 'builder_res_groups_implied_rel', 'gid', 'hid',
                                    string='Inherits', help='Users of this group automatically inherit those groups')
-    trans_implied_ids = fields.Many2many('builder.res.groups',compute=_get_trans_implied, type='many2many', relation='builder.res.groups',
+    trans_implied_ids = fields.Many2many('builder.res.groups',compute='_get_trans_implied', type='many2many', relation='builder.res.groups',
                                          string='Transitively inherits')
 
     _sql_constraints = [
@@ -75,7 +51,39 @@ class Groups(models.Model):
          'The name of the group must be unique within an application!')
     ]
 
+    @api.depends('category_id','category_type','category_ref','name')
+    def _get_full_name(self):
+        res = {}
+        for g in self:
+            if (g.category_type == 'system') and g.category_id:
+                res[g.id] = '%s / %s' % (g.category_id.name, g.name)
+            elif (g.category_type == 'system') and g.category_ref:
+                res[g.id] = '%s / %s' % (g.category_ref, g.name)
+            elif g.category_type == 'module':
+                res[g.id] = "{module} / {group}".format(module=g.module_id.shortdesc, group=g.name)
+            else:
+                res[g.id] = g.name
+            g.full_name = res[g.id]
+        # return res
     
+    @api.depends('implied_ids')
+    def _get_trans_implied(self):
+        "computes the transitive closure of relation implied_ids"
+        memo = {}  # use a memo for performance and cycle avoidance
+
+        def computed_set(g):
+            if g not in memo:
+                # raise
+                memo[g] = set(g.implied_ids)
+                for h in g.implied_ids:
+                    computed_set(h).subsetof(memo[g])
+            return memo[g]
+
+        res = {}
+        for g in self:
+            g.trans_implied_ids = (6, 0, list(map(int, computed_set(g))))
+        # return res
+
     def create(self,vals):
         vals2= {}
         try:
@@ -98,7 +106,8 @@ class Groups(models.Model):
                 }                
         except:
             pass
-        vals2.update(vals)
+        vals2.update(vals) 
+        _logger.debug(vals2)
         return super().create(vals2)
 
     def copy(self, default=None):
