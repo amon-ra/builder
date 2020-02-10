@@ -123,6 +123,7 @@ class GeneratorV11(models.TransientModel):
                         'models/models.py.jinja2',
                         {'module': module,  'models': [model]}
                     )
+                
 
         _logger.debug(py_packages)
         for model in module.model_ids:
@@ -252,7 +253,7 @@ class GeneratorV11(models.TransientModel):
                     #     else:
                     #         parameters+=', '+p.name+'='+p.default                        
             zip_file.write_template(
-                'controllers/main.py',
+                os.path.join('controllers',controller.name.replace(' ','_')),
                 'controllers/main.py.jinja2',
                 {'module': module, 'controller': controller,
                 'controller_routes': routes, 'route_parameters': parameters,

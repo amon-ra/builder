@@ -32,9 +32,10 @@ class FormView(models.Model):
     @api.onchange('inherit_view_id')
     def onchange_inherit_view_id(self):
         self.inherit_view_ref = False
-        _logger.debug(self.inherit_view_id.id)
+        # _logger.debug(self.inherit_view_id.id)
         if self.inherit_view_id:
             data = self.env['ir.model.data'].search([('model', '=', 'ir.ui.view'), ('res_id', '=', self.inherit_view_id.id)])
+            _logger.debug(data)
             self.inherit_view_ref = "{module}.{id}".format(module=data.module, id=data.name) if data else False
 
     @api.onchange('type')
@@ -235,12 +236,3 @@ class FormButton(models.Model):
     def onchange_name(self):
         if self.name:
             self.method_name = 'do_{name}'.format(name=self.name.lower().replace(' ', '_'))
-
-
-
-
-
-
-
-
-

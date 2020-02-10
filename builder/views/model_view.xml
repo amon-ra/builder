@@ -73,7 +73,9 @@
 
                     <sheet>
                         <field name="is_inherited" invisible="1"/>
+                        <field name="id" invisible="1"/>
                         <field name="module_id" invisible="1"/>
+                        <field name="special_states_field_id" invisible="1"/>
                         <field name="define" invisible="1"/>
 
                         <div class="oe_right oe_button_box" name="buttons"
@@ -90,9 +92,7 @@
 
                         <group>
                             <group>
-                                <field name="id" invisible="1"/>
-                                <field name="module_id" invisible="1"/>
-                                <field name="special_states_field_id" invisible="1"/>
+
                                 <field name="model"/>
                                 <field name="name"/>
                                 <field name="transient"/>
@@ -254,7 +254,7 @@
                                                 </group>
                                             </page>
                                             <page string="Groups">
-                                                <field name="group_ids" domain="[('module_id', '=', module_id)]"/>
+                                                <field name="group_ids" domain="[('module_id', '=', module_id)]" context="{ 'default_name' : 'Default'}"/>
                                             </page>
                                         </notebook>
                                     </form>

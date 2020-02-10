@@ -7,21 +7,31 @@ _logger = logging.getLogger(__name__)
 
 # Oondeo
 FIELD_WIDGETS_ALL = [
+    ('abstract', 'AbstractField'),
+    ('input', 'InputField'),
     ('barchart', "FieldBarChart"),
     ('binary', "FieldBinaryFile"),
     ('boolean', "FieldBoolean"),
     ('char', "FieldChar"),
     ('char_domain', "FieldCharDomain"),
+    ('CopyClipboardText','TextCopyClipboard'),
+    ('CopyClipboardChar','CharCopyClipboard'),
     ('date', "FieldDate"),
     ('datetime', "FieldDatetime"),
+    ('daterange','FieldDateRange'),
+    ('domain','FieldDomain'),
     ('email', "FieldEmail"),
     ('float', "FieldFloat"),
     ('float_time', "FieldFloat"),
+    ('handle','HandleWidget'),
     ('html', "FieldTextHtml"),
     ('image', "FieldBinaryImage"),
     ('integer', "FieldFloat"),
     ('id', "FieldID"),
     ('kanban_state_selection', "KanbanSelection"),
+    ('kanban.image','KanbanFieldBinaryImage'),
+    ('link_button','LinkButton'),
+    ('list.text','ListFieldText'),
     ('many2many', "FieldMany2Many"),
     ('many2many_binary', "FieldMany2ManyBinaryMultiFiles"),
     ('many2many_checkboxes', "FieldMany2ManyCheckBoxes"),
@@ -32,7 +42,10 @@ FIELD_WIDGETS_ALL = [
     ('monetary', "FieldMonetary"),
     ('one2many', "FieldOne2Many"),
     ('one2many_list', "FieldOne2Many"),
+    ('pdf_viewer','FieldPdfViewer'),
+    ('percentage','FieldPercentage'),
     ('percentpie', "FieldPercentPie"),
+    ('phone','FieldPhone'),
     ('priority', "Priority"),
     ('progressbar', "FieldProgressBar"),
     ('radio', "FieldRadio"),
@@ -125,38 +138,42 @@ class ViewSelector(models.TransientModel):
         if self.type == 'wizard':
             self.type = 'form'
             wizard = True
-            # res_id = self.env['builder.views.form'].create({
-            #     'wizard': True,
-            #     'type': 'form',
-            #     'model_id': self.model_id.id,
-            #     'special_states_field_id': self.special_states_field_id.id,
-            #     'module_id': self.model_id.module_id.id,
-            #     'add_inherited_fields': self.add_inherited_fields,
-            #     'inherit_view': self.inherit_view,
-            #     'inherit_view_id': self.inherit_view_id.id,
-            #     'inherit_view_ref': self.inherit_view_ref,
-            # })
+            res_id = self.env['builder.views.form'].create({
+                'wizard': True,
+                'type': 'form',
+                'model_id': self.model_id.id,
+                'special_states_field_id': self.special_states_field_id.id if self.special_states_field_id else False,
+                'module_id': self.model_id.module_id.id,
+                'add_inherited_fields': self.add_inherited_fields,
+                'inherit_view': self.inherit_view,
+                'inherit_view_id': self.inherit_view_id.id,
+                'inherit_view_ref': self.inherit_view_ref,
+            })
 
         view_type_names = { x[0]:x[1] for x in SEL_VIEW_TYPES}
-
-        return {
-            'name': view_type_names[self.type],
-            'type': 'ir.actions.act_window',
-            'view_mode': 'tree',
-            'res_model': 'builder.views.' + self.type,
-            'views': [(False, 'form')],
-            'res_id': res_id,
-            'target': 'new',
-            'context': {
+        c = {
+                'default_name': self.model_id.name,
                 'default_wizard': wizard,
-                'default_model_id': self.model_id.id,
-                'default_special_states_field_id': self.special_states_field_id.id,
+                # 'default_model_id': self.model_id.id,
+                'default_special_states_field_id': self.special_states_field_id.id if self.special_states_field_id else False,
                 'default_module_id': self.model_id.module_id.id,
                 'add_inherited_fields': self.add_inherited_fields,
                 'default_inherit_view': self.inherit_view,
-                'default_inherit_view_id': self.inherit_view_id.id,
+                'default_inherit_view_id': self.inherit_view_id.id if self.inherit_view_id else False,
                 'default_inherit_view_ref': self.inherit_view_ref,
-            },
+            }
+        _logger.debug(view_type_names)
+        _logger.debug(self.type)
+        _logger.debug(c)
+        return { 
+            'name': view_type_names[self.type],
+            'type': 'ir.actions.act_window',
+            'res_model': 'builder.views.' + self.type,
+            'views': [(False, 'form')],
+            'view_mode': 'form',
+            # 'res_id': res_id,
+            'target': 'new',
+            'context': c,
         }
 
 
@@ -199,6 +216,7 @@ class View(models.Model):
     )
     arch = fields.Text('XML Data')
     custom_arch = fields.Boolean('Custom XML')
+    arch_line_ids = fields.One2many('builder.views.line','view_id','XML Data')
 
     @api.onchange('type')
     def _onchange_type(self):
@@ -211,7 +229,35 @@ class View(models.Model):
         action.update({'target': 'new'})
         return action
 
-    
+    def action_edit_view(self):
+        model = self
+        action = model.get_formview_action(self.ids)
+        action.update({'target': 'new'})
+        return { 
+            'name': 'View Edit',
+            'type': 'ir.actions.act_window',
+            'res_model': 'builder.ir.ui.view',
+            'views': [(False, 'form'),(False, 'tree')],
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'current',
+            # 'context': c,
+        }
+
+    def action_edit_lines(self):
+        _logger.debug("edit lines")
+        return { 
+            'name': 'XML',
+            'type': 'ir.actions.act_window',
+            'res_model': 'builder.views.line',
+            'views': [(False, 'tree'),(False, 'form')],
+            'view_mode': 'tree',
+            # 'res_id': self.id,
+            'target': 'current',
+            # 'domain': '[("view_id","=", {})]'.format(self.id),
+            # 'context': c,
+        }
+
     def action_save(self):
         return {'type': 'ir.actions.act_window_close'}
 
@@ -332,15 +378,103 @@ class AbstractViewField(models.AbstractModel):
       for record_id in self:
         record_id.field_ttype = record_id.field_id.ttype
 
+class ViewLineType(models.Model):
+    _name = 'builder.views.line.type'
+
+    name = fields.Char('Field')
 
 class ViewLine(models.Model):
 
     _name = 'builder.views.line'
     _order = 'sequence,name'
 
-    name = fields.Char('Name')
+    view_id = fields.Many2one('builder.ir.ui.view')
+    name = fields.Many2one('builder.views.line.type',string='Field')
+    attribute_id = fields.Many2one('builder.views.line.attr.type',
+        'Attribute',domain='[("line_id","=",name)]',
+        context="{'default_line_id' : name}")
+    attribute_value_id = fields.Many2one('builder.views.line.value.type',
+        'Value',domain='[("attribute_id","=",attribute_id)]',
+        context="{'default_attribute_id' : attribute_id}")
+    sequence = fields.Integer('Sequence')    
     parent_id = fields.Many2one('builder.views.line','Parent', ondelete='cascade')
     child_ids = fields.One2many('builder.views.line', 'parent_id', 'Contains', copy=True)
     # parent_left = fields.Integer('Parent Left')
     # parent_right = fields.Integer('Parent Left')
     parent_path = fields.Char(index=True)
+    attribute_ids = fields.One2many('builder.views.line.attr','line_id',
+        string='Attributes',
+        domain='[("line_id","=",id),("type_id","=",name)]',
+        # context="{'default_line_id' : id, 'default_type_id': name.name}"        
+        )
+    attribute_name = fields.Char('Name',compute='_compute_attr_name')
+    # res_model_id = fields.Many2one(
+    #     'ir.model', 'Document Model',
+    #     index=True, ondelete='cascade', required=True)
+    # res_model = fields.Char(
+    #     'Related Document Model',
+    #     index=True, related='res_model_id.model', compute_sudo=True, store=True, readonly=True)
+    # res_id = fields.Many2oneReference(string='Related Document ID', index=True, required=True, model_field='res_model')
+    # res_name = fields.Char(
+    #     'Document Name', compute='_compute_res_name', compute_sudo=True, store=True,
+    #     help="Display name of the related document.", readonly=True)
+
+    @api.depends('attribute_ids')
+    def _compute_attr_name(self):
+        for record_id in self:
+            record_id.attribute_name = ''
+            for attr in record_id.attribute_ids:
+                if attr and attr.name.startswith('name='):
+                    record_id.attribute_name = attr.name[6:-1]
+
+    @api.onchange('attribute_value_id')
+    def _onchange_attribute_value_id(self):
+        for record_id in self:
+            if record_id.attribute_id and record_id.attribute_id.name and (
+                record_id.attribute_value_id and record_id.attribute_value_id.name
+            ):
+                value = record_id.attribute_id.name+'="'+record_id.attribute_value_id.name+'"'
+                for n in record_id.attribute_ids:
+                    if n.name.startswith(record_id.attribute_id.name+'='):
+                        value = False
+                if value:
+                    record_id.attribute_ids.create({
+                        'line_id': record_id.id,
+                        'type_id': record_id.name.id,
+                        'name': value,
+                    })
+    
+    def action_append_child(self):
+        Line = self.env['builder.views.line']
+        for record_id in self:
+            Line.create({
+                'parent_id': record_id.id,
+                'sequence': 1,
+            })
+
+
+class ViewLineAttrType(models.Model):
+
+    _name = 'builder.views.line.attr.type'
+
+    name = fields.Char('Attribute')
+    line_id = fields.Many2one('builder.views.line.type',string='Field')
+
+class ViewLineValueType(models.Model):
+
+    _name = 'builder.views.line.value.type'
+
+    name = fields.Char('Value')
+    attribute_id = fields.Many2one('builder.views.line.attr.type','Attribute')
+
+class ViewLineAttr(models.Model):
+
+    _name = 'builder.views.line.attr'
+
+    line_id = fields.Many2one('builder.views.line')
+    type_id = fields.Many2one('builder.views.line.type',string='Field')
+
+    # name = fields.Many2one('builder.views.line.attr.type','Attribute')
+    name = fields.Char('Attribute')
+
+    

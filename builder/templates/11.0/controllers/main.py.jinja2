@@ -1,5 +1,5 @@
 {%- include 'python_file_header.py.jinja2' ignore missing %}
-{% for import in page.import_ids %}
+{% for import in controller.import_ids %}
 {{ 'from '+import.parent+' ' if import.parent }}import {{ import.name }}
 {% endfor -%}
 
@@ -9,11 +9,11 @@ from odoo.http import request
 from odoo.addons.http_routing.models.ir_http import slug, unslug
 from odoo.addons.website.controllers.main import QueryURL
 
-{% for code in page.custom_code_line_ids %}
+{% for code in controller.custom_code_line_ids %}
 {{ code.custom_code if not code.class_code }}
 {% endfor -%}
 
-class {{ page.xml_id }}(http.Controller):
+class {{ controller.name }}(http.Controller):
 
     @http.route([{{ controller_routes }}], type='http', 
                 auth="{{ page.visibility }}", methods=['GET'], website={{ page.attr_page }}, csrf={{ page.csrf }} )

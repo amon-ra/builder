@@ -8,6 +8,7 @@
                 <form string="View Generator">
                     <group>
                         <group>
+                            <field name="module_id" invisible="1"/>
                             <field name="model_id" invisible="1"/>
                             <field name="model_name" invisible="1"/>
                             <field name="model_inherit_type" invisible="1"/>
@@ -40,9 +41,10 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="XML" attrs="{'invisible': [('inherit_view', '=', True)]}">
-                            <field name="arch" nolabel="1" widget="ace" theme="tomorrow" mode="xml" style="min-height:200px"/>
-                        </page>                            
+                        <!-- <page string="XML" attrs="{'invisible': [('inherit_view', '=', True)]}">
+                            <field name="name" nolabel="1" widget="ace" theme="tomorrow" mode="xml" style="min-height:200px"/>
+                            <field name="arch_line_ids" nolabel="1" />
+                        </page>                             -->
                         <page string="Fields" attrs="{'invisible': [('inherit_view', '=', True)]}">
                             <field name="field_ids" nolabel="1" domain="[('model_id', '=', model_id)]" context="{'default_special_states_field_id': special_states_field_id, 'default_model_id': model_id}">
                                 <tree string="Fields"
@@ -129,7 +131,6 @@
                                                 </button>
                                             </div>
 
-                                            <!--<field name="action_ref" attrs="{'readonly': [('type', 'not in', ['action'])], 'invisible': [('type', 'not in', ['action'])], 'required': [('type', 'in', ['action'])]}"/>-->
                                         </group>
                                         <group>
                                             <field name="icon"/>

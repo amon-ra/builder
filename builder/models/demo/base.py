@@ -144,6 +144,8 @@ class IrModel(models.Model):
             _logger.debug(tmpl)
             _logger.debug(value)
             record_id.demo_xml_id_sample = value
+        else:
+            record_id.demo_xml_id_sample = False
         
 
     

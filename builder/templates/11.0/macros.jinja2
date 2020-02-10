@@ -794,7 +794,7 @@ class {{ class_name }}({% if model.transient %}models.TransientModel{% else %}mo
 {# generate builder.res.groups #}
 {% macro builder_res_groups(group) %}
     {% if not group.inherited -%}
-    {% set xml_id = action.real_xml_id | replace(".", "_") %}
+    {% set xml_id = group.real_xml_id | replace(".", "_") %}
     <record id="{{ xml_id }}" model="res.groups">
         <field name="name">{{ group.name }}</field>
         <field name="category_id" ref="module_category_{{ group.module_id.name }}"/>
@@ -911,9 +911,22 @@ access_{{ access.model_id.module_id.name }}_{{ access.model_id.model|dot2dashed 
 
 {# generate builder.website.page #}
 {% macro builder_website_page(page) %}
+    {% if page.attr_inherit_id %}
     <template id="{{ page.module_id.name }}.{{ page.attr_id }}" {% if page.attr_inherit_id %} inherit_id="{{ page.attr_inherit_id }}"{% endif %} name="{{ page.attr_name }}" {% if page.attr_page %} page="{{page.attr_page }}"{% endif %} {% if page.priority %}priority="{{ page.priority }}" {% endif %}>
                 {{ page.content }}
-    </template>
+    </template> 
+    {% else %}
+    <record id="{{ page.attr_id }}" model="website.page">
+        <field name="name">{{ page.attr_name }}</field>
+        <field name="website_published">{{ page.website_published }}</field>
+        <field name="url">{{ page.website_url }}</field>
+        <field name="type">qweb</field>
+        <field name="key">{{ page.module_id.name }}.{{ page.attr_id }}</field>
+        <field name="arch" type="xml">
+            {{ page.content }}
+        </field>
+    </record>
+    {% endif %}
 {% endmacro %}
 
 

@@ -15,18 +15,18 @@
                                         <span class="oe_topbar_name"><div class="stat_button_icon fa fa-asterisk fa-fw"></div>Base</span>
                                         <b class="caret"></b>
                                     </a>
-                                    <ul class="dropdown-menu">
+                                    <!-- <ul class="dropdown-menu">
                                         <li>
                                             <button class="oe_inline oe_stat_button" string="Files" name="action_base_files" type="object"  icon="fa-file" context="{'default_module_id': active_id}"/>
                                         </li>
-                                    </ul>
+                                    </ul> -->
                                 </li>
                                 <li class="dropdown">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                          <span class="oe_topbar_name"><div class="stat_button_icon fa fa-cogs fa-fw"></div>Backend</span>
                                         <b class="caret"></b>
                                     </a>
-                                    <ul class="dropdown-menu">
+                                    <ul class="dropdown-menu" role="menu">
                                         <li><button class="oe_inline oe_stat_button" string="UML Diagram" name="action_diagram" type="object" icon="fa-magic" context="{}"/></li>
                                         <li><button class="oe_inline oe_stat_button" string="Import Models" name="%(act_builder_ir_model_import_wizard)d" type="action" icon="fa-reply" context="{}"/></li>
                                     
@@ -92,7 +92,7 @@
                                         </span>
                                         <b class="caret"></b>
                                     </a>
-                                    <ul class="dropdown-menu">
+                                    <ul class="dropdown-menu" role="menu">
                                         <li>
                                             <button class="oe_inline oe_stat_button" string="Pages"
                                                     name="action_website_pages" type="object" icon="fa-file"
@@ -238,11 +238,12 @@
                                                     context="{'default_module_id': active_id}"/>
                                         </div>
                                         <field name="view_ids" nolabel="1" context="{'default_module_id': active_id}">
-                                            <tree string="Views" create="true" edit="1" delete="1">
+                                            <tree string="Views" create="0" edit="0" delete="1">
                                                 <field name="model_id"/>
                                                 <field name="type"/>
                                                 <field name="xml_id"/>
                                                 <field name="inherit_id"/>
+                                                <button name="action_edit_view" type="object" string="Edit" class="oe_button oe_form_button oe_link"/>
                                                 <button name="action_open_view" type="object" string="Configure"
                                                         class="oe_button oe_form_button oe_link"/>
                                             </tree>

@@ -1,7 +1,55 @@
 <?xml version="1.0"?>
 <odoo>
     <data>
+        <!-- <record id="view_views_line_search" model="ir.ui.view">
+            <field name="name">builder.views.line.search</field>
+            <field name="model">builder.views.line</field>
+            <field name="arch" type="xml">
+                <search string="Search XML">
+                <field name="name" />
+                <group expand="0" string="Group By">
+                    <filter name="group_by_parent_id" string="Parent order" domain="[]" context="{'group_by': 'parent_id'}"/>
+                </group>
+                </search>
+            </field>
+        </record>     -->
+        <record id="view_views_line_tree" model="ir.ui.view">
+            <field name="name">builder.views.line.tree</field>
+            <field name="model">builder.views.line</field>
+            <field name="arch" type="xml">
+                <tree string="Fields" editable="top" create="0" >
+                    <field name="parent_id"/>
+                    <field name="name"/>
+                    <field name="attribute_name"/>
+                    <field name="attribute_id" />
+                    <field name="attribute_value_id" />
+                    <field name="attribute_ids" widget="many2many_tags" />
+                    <button name="action_append_child" type="object" string="Add" icon="fa-plus" />
+                </tree>
+            </field>
+            <!-- <field name="field_parent">child_ids</field> -->
+        </record>
+        <record id="view_views_line_form" model="ir.ui.view">
+            <field name="name">builder.views.line.form</field>
+            <field name="model">builder.views.line</field>
+            <field name="arch" type="xml">
+                <form string="Field">
+                    <sheet>
+                        <field name="parent_id"/>
+                        <field name="name"/>
+                        <field name="attribute_name"/>
+                        <field name="attribute_ids">
+                            <tree string="Attributes">
+                                <field name="type_id" invisible="1"/>
+                                <field name="line_id" invisible="1"/>
+                                <field name="name"/>
+                            </tree>
+                        </field>
+                    </sheet>
+                </form>
 
+            </field>
+        </record>     
         <record model="ir.ui.view" id="builder_ir_ui_view_tree">
             <field name="name">builder.ir.ui.view.tree</field>
             <field name="model">builder.ir.ui.view</field>
@@ -23,6 +71,14 @@
             <field name="arch" type="xml">
                 <form string="View Generator">
                     <sheet>
+                        <div class="oe_button_box" name="buttons">
+                            <button class="oe_inline oe_stat_button" string="Edit XML" name="action_edit_lines" type="object" icon="fa-plus" context="{'default_module_id': active_id}"/>
+                        </div> 
+                        <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                            </h1>
+                        </div>                    
                         <group>
                             <group>
                                 <field name="model_id" domain="[('module_id', '=', context.get('default_module_id'))]"/>
@@ -30,7 +86,7 @@
                                 <field name="model_name" invisible="1"/>
                                 <field name="type" invisible="1"/>
                                 <field name="special_states_field_id"  invisible="1"/>
-                                <field name="name"/>
+
                                 <field name="xml_id"/>
                             </group>
                             <group>
@@ -86,7 +142,7 @@
                                         </field>
                                     </group>
                                 </group>
-                            </page>
+                            </page>            
                             <page string="Groups">
                                 <field name="group_ids"
                                        domain="[('module_id', '=', context.get('default_module_id'))]"/>
