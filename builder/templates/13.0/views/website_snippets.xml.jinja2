@@ -1,0 +1,27 @@
+{%- extends 'xml/base.xml.jinja2' %}
+
+{% block content %}
+   <template id="{{module.name}}.snippets" inherit_id="website.snippets" name="Snippets">
+   {% for custom, snippets in snippet_type.items() %}
+            {% for snippet in snippets %}
+                <template id="{{ snippet.name }}" name="{{ snippet.name }}">
+                <section class="{{ snippet.name }}">
+                    {{ snippet.content }}
+                </section>
+                </template>
+                {% if snippet.category == 'custom' %}
+                <xpath expr="//div[@id='snippet_content']/div[@class='o_panel_body']" position="inside">
+                    <t t-snippet="{{ module.name }}.{{ snippet.name }}"
+                    t-thumbnail="/{{ module.name }}/static/src/img/ui/{{ snippet.name }}.jpg"/>
+                </xpath>
+                {% else  %}
+                <xpath expr="//div[@id='snippet_{{ snippet.category }}']/div[@class='o_panel_body']" position="inside">
+                    <t t-snippet="{{ module.name }}.{{ snippet.name }}"
+                    t-thumbnail="/{{ module.name }}/static/src/img/ui/{{ snippet.name }}.jpg"/>
+                </xpath>
+                {% endif  %}
+            {% endfor %}
+        </xpath>
+   {% endfor %}
+   </template>
+{% endblock %}
