@@ -58,8 +58,8 @@ class GeneratorV11(models.TransientModel):
                     {
                         'module': model.module_id,
                         'views': model.view_ids,
-                        'actions': model.action_ids,
-                        'menus': model.menu_ids
+                        # 'actions': model.action_ids,
+                        # 'menus': model.menu_ids
                     }
                 )
 
@@ -80,26 +80,26 @@ class GeneratorV11(models.TransientModel):
                     'menus': menus
                 }
             )            
-        #     zip_file.write_template(
-        #         'views/actions.xml',
-        #         'views/actions.xml.jinja2',
-        #         {'module': module}
-        #     )
-        # if module.action_window_ids:
-        #     module_data.append('views/actions.xml')
-        #     zip_file.write_template(
-        #         'views/actions.xml',
-        #         'views/actions.xml.jinja2',
-        #         {'module': module}
-        #     )
+            zip_file.write_template(
+                'views/actions.xml',
+                'views/actions.xml.jinja2',
+                {'module': module}
+            )
+        if module.action_window_ids:
+            module_data.append('views/actions.xml')
+            zip_file.write_template(
+                'views/actions.xml',
+                'views/actions.xml.jinja2',
+                {'module': module}
+            )
 
-        # if module.menu_ids:
-        #     module_data.append('views/menu.xml')
-        #     zip_file.write_template(
-        #         'views/menu.xml',
-        #         'views/menus.xml.jinja2',
-        #         {'module': module, 'menus': module.menu_ids}
-        #     )
+        if module.menu_ids:
+            module_data.append('views/menu.xml')
+            zip_file.write_template(
+                'views/menu.xml',
+                'views/menus.xml.jinja2',
+                {'module': module, 'menus': module.menu_ids}
+            )
 
         if has_models:
             # py_packages.append('models')

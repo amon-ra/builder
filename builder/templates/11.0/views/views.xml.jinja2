@@ -5,7 +5,7 @@
     {% for view in views %}
             {{ macros.builder_ir_ui_view(view) }}
     {% endfor %}
-    {%- for action in module.action_window_ids %}
+    {# {%- for action in module.action_window_ids %}
         {{ macros.builder_ir_actions_act_window(action) }}
     {% endfor -%}
     {% if module.post_install_action -%}
@@ -16,6 +16,6 @@
     {% endif -%}  
     {%- for menu in module.menu_ids %}
         {{ macros.builder_ir_ui_menu(menu) }}
-    {% endfor -%}    
+    {% endfor -%}     #}
    
 {% endblock %}

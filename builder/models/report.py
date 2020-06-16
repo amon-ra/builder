@@ -287,7 +287,7 @@ class IrModel(models.Model):
 
         return ret
 
-    
+    @api.model
     def create(self,vals):
         create = vals.get('wizard')
         if create:
@@ -404,6 +404,7 @@ class ModelImports(models.Model):
 
     name = fields.Char(string='Name', required=True)
 
+    @api.model
     def create(self, vals):
         if not vals.get('module_id',False):
             model = vals.get('model_id',self.model_id.id)
@@ -509,6 +510,7 @@ class InheritModelTemplate(models.AbstractModel):
     system_model_name = fields.Char('Model Name')
     model_display = fields.Char('Model', compute='_compute_model_display')
 
+    @api.model
     def create(self, vals):
         if vals.get('module_id',True) == False:
             model_id = self.env['builder.ir.model'].browse([vals['model_id']])

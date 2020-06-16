@@ -102,9 +102,12 @@ class ModelImport(models.TransientModel):
             # 'inherit_model': self.set_inherited and model.model or False
         }
         _logger.debug(vals)
+        _logger.debug(set_inherited)
         new_model = model_obj.create(vals)
         if set_inherited:
-            new_model['inherit_model_ids'] = [{'model_source': 'system', 'system_model_id': model.id, 'system_model_name': model.model}]
+            new_model.inherit_model_ids.create({
+                'model_id': new_model.id,'model_source': 'system', 'system_model_id': model.id, 'system_model_name': model.model})
+        _logger.debug(new_model.inherit_model_ids)
         return new_model
 
     def action_import(self):
@@ -133,18 +136,19 @@ class ModelImport(models.TransientModel):
             for record in record_id.model_ids:
                 model_map = model_map[record.model].model_fields_import(
                     record, model_map, relations_only=record_id.relations_only)
-        model_src_map = {}
-        for model_model,record in model_map.items():
-            model_id = self.env['ir.model'].search([
-                ('model','=', model_model)
-            ])[0]
-            if model_model not in model_src_map:
-                model_src_map[model_model] = record.model_src_id = self.env['builder.ir.model'].create({
-                    'module_id': 1,
-                    'name': record.name,
-                    'model': model_model,
-                    'transient': model_id._transient == True,                    
-                })
-                model_src_map = model_src_map[model_model].model_fields_import(
-                    model_id,model_src_map)                
+        # model_src_map = {}
+        # for model_model,record in model_map.items():
+        #     model_id = self.env['ir.model'].search([
+        #         ('model','=', model_model)
+        #     ])
+        #     if model_id and model_model not in model_src_map:
+        #         model_id = model_id[0]
+        #         model_src_map[model_model] = record.model_src_id = self.env['builder.ir.model'].create({
+        #             'module_id': 1,
+        #             'name': record.name,
+        #             'model': model_model,
+        #             'transient': model_id._transient == True,                    
+        #         })
+        #         model_src_map = model_src_map[model_model].model_fields_import(
+        #             model_id,model_src_map)                
         return {'type': 'ir.actions.act_window_close'}

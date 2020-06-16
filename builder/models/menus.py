@@ -59,12 +59,12 @@ class IrUiMenu(models.Model):
     action_type = fields.Selection([('module', 'Module'), ('system', 'System')], 'Action Type')
     action_system_ref = fields.Char('Action System Ref')
     action_system = fields.Reference(selection=[
-                                    # ('ir.actions.report', 'ir.actions.report'),
-                                    # ('ir.actions.act_window', 'ir.actions.act_window'),
-                                    # ('ir.actions.wizard', 'ir.actions.wizard'),
-                                    # ('ir.actions.act_url', 'ir.actions.act_url'),
-                                    # ('ir.actions.server', 'ir.actions.server'),
-                                    # ('ir.actions.client', 'ir.actions.client'),
+                                    ('ir.actions.report', 'ir.actions.report'),
+                                    ('ir.actions.act_window', 'ir.actions.act_window'),
+                                    ('ir.actions.wizard', 'ir.actions.wizard'),
+                                    ('ir.actions.act_url', 'ir.actions.act_url'),
+                                    ('ir.actions.server', 'ir.actions.server'),
+                                    ('ir.actions.client', 'ir.actions.client'),
     ], string='System Action')
 
     action_module = fields.Reference(selection=[
@@ -128,71 +128,70 @@ class IrUiMenu(models.Model):
         self.parent_id = False
 
 
-    # @api.onchange('action_system')
-    # def onchange_action_system(self):
-    #     if self.action_system:
-    #         model, res_id = self.action_system._name, self.action_system.id
-    #         data = self.env['ir.model.data'].search([('model', '=', model), ('res_id', '=', res_id)])
-    #         self.action_system_ref = "{module}.{id}".format(module=data.module, id=data.name) if data.id else False
+    @api.onchange('action_system')
+    def onchange_action_system(self):
+        if self.action_system:
+            model, res_id = self.action_system._name, self.action_system.id
+            data = self.env['ir.model.data'].search([('model', '=', model), ('res_id', '=', res_id)])
+            self.action_system_ref = "{module}.{id}".format(module=data.module, id=data.name) if data.id else False
 
-    #         self.name = self.action_system.name
-    #         self.xml_id = "menu_{action}".format(action=self.action_system_ref.replace('.', '_'))
+            self.name = self.action_system.name
+            self.xml_id = "menu_{action}".format(action=self.action_system_ref.replace('.', '_'))
 
-    # @api.onchange('action_module')
-    # def onchange_action_module(self):
-    #     if self.action_module:
-    #         self.name = self.action_module.name
-    #         self.xml_id = "menu_{action}".format(action=self.action_module.xml_id)
+    @api.onchange('action_module')
+    def onchange_action_module(self):
+        if self.action_module:
+            self.name = self.action_module.name
+            self.xml_id = "menu_{action}".format(action=self.action_module.xml_id)
 
-    # @api.model
-    # 
-    # def create(self, vals):
-    #     if not vals.get('parent_type', False):
-    #         vals['parent_id'] = False
-    #         vals['parent_menu_id'] = False
-    #         vals['parent_ref'] = False
+    @api.model
+    def create(self, vals):
+        if not vals.get('parent_type', False):
+            vals['parent_id'] = False
+            vals['parent_menu_id'] = False
+            vals['parent_ref'] = False
 
-    #     return super(IrUiMenu, self).create(vals)
-
-    
-    # def write(self, vals):
-    #     if not vals.get('parent_type', self.parent_type):
-    #         vals['parent_id'] = False
-    #         vals['parent_menu_id'] = False
-    #         vals['parent_ref'] = False
-
-    #     return super(IrUiMenu, self).write(vals)
-
-
-    # def _compute_complete_name(self):
-    #     for record_id in self:
-    #         record_id.complete_name = record_id._get_full_name_one()
+        return super(IrUiMenu, self).create(vals)
 
     
-    # def _get_full_name_one(self, level=6):
-    #     if level <= 0:
-    #         return '...'
-    #     parent_path = ''
-    #     if self.parent_id:
-    #         parent_path = self.parent_id._get_full_name_one(level-1) + MENU_ITEM_SEPARATOR
-    #     elif self.parent_ref:
-    #         if self.parent_menu_id:
-    #             parent_path = '[{name}]'.format(name=self.parent_menu_id.complete_name) + MENU_ITEM_SEPARATOR
-    #         else:
-    #             parent_path = '[{ref}]'.format(ref=self.parent_ref) + MENU_ITEM_SEPARATOR
+    def write(self, vals):
+        if not vals.get('parent_type', self.parent_type):
+            vals['parent_id'] = False
+            vals['parent_menu_id'] = False
+            vals['parent_ref'] = False
 
-    #     return (parent_path + self.name) if self.name else False
+        return super(IrUiMenu, self).write(vals)
+
+
+    def _compute_complete_name(self):
+        for record_id in self:
+            record_id.complete_name = record_id._get_full_name_one()
+
+    
+    def _get_full_name_one(self, level=6):
+        if level <= 0:
+            return '...'
+        parent_path = ''
+        if self.parent_id:
+            parent_path = self.parent_id._get_full_name_one(level-1) + MENU_ITEM_SEPARATOR
+        elif self.parent_ref:
+            if self.parent_menu_id:
+                parent_path = '[{name}]'.format(name=self.parent_menu_id.complete_name) + MENU_ITEM_SEPARATOR
+            else:
+                parent_path = '[{ref}]'.format(ref=self.parent_ref) + MENU_ITEM_SEPARATOR
+
+        return (parent_path + self.name) if self.name else False
 
     # def name_get(self):
     #     for record_id in self:
     #         return record_id.id, record_id._get_full_name_one()
 
-    # def _rec_message(self, ids):
-    #     return _('Error ! You can not create recursive Menu.')
+    def _rec_message(self, ids):
+        return _('Error ! You can not create recursive Menu.')
 
-    # @property
-    # def real_xml_id(self):
-    #     return self.xml_id if '.' in self.xml_id else '{module}.{xml_id}'.format(module=self.module_id.name, xml_id=self.xml_id)
+    @property
+    def real_xml_id(self):
+        return self.xml_id if '.' in self.xml_id else '{module}.{xml_id}'.format(module=self.module_id.name, xml_id=self.xml_id)
 
     # @api.constrains('parent_id')
     # def _check_hierarchy(self):

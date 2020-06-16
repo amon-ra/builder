@@ -33,6 +33,11 @@ class actions(models.Model):
         return self.xml_id if '.' in self.xml_id else '{module}.{xml_id}'.format(module=self.module_id.name,
                                                                                  xml_id=self.xml_id)
 
+    @api.onchange('model_id')
+    def _onchange_model_id(self):
+        for record_id in self:
+            if record_id.model_id:
+                record_id.name = record_id.model_id.name
 
 class ir_actions_act_url(models.Model):
     _name = 'builder.ir.actions.act_url'

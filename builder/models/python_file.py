@@ -88,7 +88,9 @@ class PythonFileLine(models.Model):
 
 class PythonImports(models.Model):
     _name = 'builder.python.file.import'
-
+    _order = 'sequence,id'
+    
+    sequence = fields.Integer('Sequence')
     parent = fields.Char(string='Parent')
     name = fields.Char(string='Name', required=True)
     python_file_id = fields.Many2one('builder.python.file', 

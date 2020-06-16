@@ -45,24 +45,35 @@ class TreeView(models.Model):
 
     @api.onchange('model_id')
     def _onchange_model_id(self):
-        model_id = self.model_id
-        self.name = model_id.name
-        self.xml_id = "view_{snake}_tree".format(snake=snake_case(model_id.model))
-        self.model_inherit_type = model_id.inherit_type  # shouldn`t be doing that
-        self.model_name = model_id.model  # shouldn`t be doing that
+        # FIX: api.onchange only one element
+        for record_id in self:
+            model_id = record_id.model_id
+            record_id.name = model_id.name
+            record_id.xml_id = "view_{snake}_tree".format(snake=snake_case(model_id.model))
+            record_id.model_inherit_type = model_id.inherit_type  # shouldn`t be doing that
+            record_id.model_name = model_id.model  # shouldn`t be doing that
 
-        if not len(self.field_ids):
-            field_list = []
-            for field in model_id.field_ids:
-                if field.ttype in ['binary', 'one2many', 'many2many']:
-                    continue
-                if field.is_inherited and not self.env.context.get('add_inherited_fields', True):
-                    continue
-                field_list.append({'field_id': field.id, 'field_ttype': field.ttype, 'model_id': model_id.id,
-                                   'special_states_field_id': model_id.special_states_field_id.id})
+            if not len(record_id.field_ids):
+                field_list = []
+                record_id._add_field_ids(record_id,record_id.model_id,
+                    self.env.context.get('add_inherited_fields', True))
 
-            self.field_ids = field_list
 
+    def _add_field_ids(self,record_id,model_id,add_inherited_fields=True):
+        for field in model_id.field_ids:
+            if field.ttype in ['binary', 'one2many', 'many2many']:
+                continue
+            if field.is_inherited and not add_inherited_fields:
+                continue
+            f = record_id.field_ids.create({
+                'view_id': record_id.id,
+                'field_id': field.id, 
+                'field_ttype': field.ttype, 
+                'model_id': model_id.id, 
+            })
+        for i in model_id.inherit_model_ids:
+            if i.module_model_id:
+                self._add_field_ids(record_id,i.module_model_id,add_inherited_fields)
 
 class TreeField(models.Model):
     _name = 'builder.views.tree.field'

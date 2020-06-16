@@ -69,6 +69,7 @@ class Generator(models.Model):
         res['subclass_model']=self._name
         return res  
 
+    @api.model
     def create(self, vals):
         if vals.get('module_id',True) == False:
             model_id = self.env['builder.ir.model'].browse([vals['model_id']])

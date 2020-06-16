@@ -399,11 +399,6 @@ class IrModel(models.Model):
             if not record.import_ids:
                 self.import_ids.create({
                     'model_id': record.id,
-                    'parent': 'odoo',
-                    'name': 'api,models,fields,tools,_'
-                })
-                self.import_ids.create({
-                    'model_id': record.id,
                     'name': 'logging'
                 })    
                 self.custom_code_line_ids.create({
@@ -411,7 +406,17 @@ class IrModel(models.Model):
                     'class_code': False,
                     'custom_code': '_logger = logging.getLogger(__name__)',
                     'name': '_logger',                
-                })            
+                })                  
+                self.import_ids.create({
+                    'model_id': record.id,
+                    'parent': 'odoo',
+                    'name': 'api,models,fields,tools,_'
+                })
+                self.import_ids.create({
+                    'model_id': record.id,
+                    'parent': 'odoo.osv',
+                    'name': 'expression'
+                })          
 
     # def model_access_group_import(self,group_id,group_map={},rule_map={}):
     #     Groups = self.env['builder.res.groups']
@@ -770,7 +775,9 @@ class InheritModelTemplate(models.AbstractModel):
     system_model_name = fields.Char('Model Name')
     model_display = fields.Char('Model', compute='_compute_model_display')
 
+    @api.model
     def create(self, vals):
+        _logger.debug(vals)
         module = vals.get('module_id')
         model = vals.get('model')
         field = 'system_model_name'

@@ -176,14 +176,14 @@ class IrFields(models.Model):
                                                      'related fields)')
 
     help = fields.Text('Help')
-    delegate = fields.Boolean('Delegate', default=True, help=''' set it to ``True`` to make fields of the target model
+    delegate = fields.Boolean('Delegate', default=False, help=''' set it to ``True`` to make fields of the target model
         accessible from the current model (corresponds to ``_inherits``)''')
     auto_join = fields.Boolean('Auto Join', help='Whether JOINs are generated upon search through that field (boolean, by default ``False``')
     decimal_digits = fields.Char('Decimal Digits', )
     decimal_precision = fields.Char('Decimal Precision')
 
     on_delete = fields.Selection([('cascade', 'Cascade'), ('set null', 'Set NULL'), ('restrict', 'Restrict')],
-                                 'On Delete', default='set null', help='On delete property for many2one fields')
+                                 'On Delete', default='restrict', help='On delete property for many2one fields')
     domain = fields.Char('Domain', default='[]',
                          help="The optional domain to restrict possible values for relationship fields, "
                               "specified as a Python expression defining a list of triplets. "

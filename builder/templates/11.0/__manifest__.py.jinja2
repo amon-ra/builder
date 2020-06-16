@@ -2,11 +2,11 @@
 # noinspection PyStatementEffect
 {
     "name" : "{{ module.shortdesc }}",
-    {% if module.installed_version %}"version" : "{{ module.installed_version }}",{% endif %}
+    {% if module.version %}"version" : "{{ module.version }}",{% endif %}
     {% if module.author %}"author" : "{{ module.author }}",{% endif %}
     {% if module.website %}"website" : "{{ module.website }}",{% endif %}
     {% if module.category_id %}"category" : "{{ module.category_id }}",{% endif %}
-    "licence" : "{{ module.license }}",
+    "license" : "{{ module.license }}",
     "description": """
 {{ module.shortdesc }}
 ====================================

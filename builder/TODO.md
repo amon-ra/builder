@@ -1,3 +1,5 @@
+- QWEB permisions in <div groups="grupo">
+- mixins
 - port data/oe.css.classes.xml
 - install jingtrang
 - select model from ir_model_data group by model (data from custom model)

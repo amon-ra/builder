@@ -77,7 +77,7 @@ This module aims to help in the development of new modules
         'wizard/model_import_view.xml',
         'wizard/group_import_view.xml',
 
-        # 'views/menu_view.xml',
+        'views/menu_view.xml',
         'views/module_view.xml',
         'views/field_view.xml',
         'views/model_view.xml',
@@ -94,7 +94,6 @@ This module aims to help in the development of new modules
         'views/designer/website_page_designer.xml',
         'views/designer/designer_snippets.xml',
 
-        # 'security/ir.model.access.csv',
     ],
     # 'test': [
     #     'test/test_demo.yml',

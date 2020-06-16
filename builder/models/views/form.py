@@ -69,22 +69,36 @@ class FormView(models.Model):
 
     @api.onchange('model_id')
     def _onchange_model_id(self):
-        self.name = self.model_id.name
-        self.xml_id = "view_{snake}_form".format(snake=snake_case(self.model_id.model))
-        self.show_status_bar = True if self.model_id.special_states_field_id.id else False
-        self.model_inherit_type = self.model_id.inherit_type #shouldn`t be doing that
-        self.model_name = self.model_id.model #shouldn`t be doing that
+        for record_id in self:
+            record_id.name = record_id.model_id.name
+            record_id.xml_id = "view_{snake}_form".format(snake=snake_case(record_id.model_id.model))
+            record_id.show_status_bar = True if record_id.model_id.special_states_field_id.id else False
+            # record_id.model_inherit_type = record_id.model_id.inherit_type #shouldn`t be doing that
+            # record_id.model_name = record_id.model_id.model #shouldn`t be doing that
+            _logger.debug("-------NEW FORM--------")
+            if not len(record_id.field_ids):
+                field_list = []
+                self._add_field_ids(record_id,record_id.model_id,
+                    self.env.context.get('add_inherited_fields', True))
+            #     record_id.field_ids = field_list
 
-        if not len(self.field_ids):
-            field_list = []
-            for field in self.model_id.field_ids:
-                if field.name in ['state']:
-                    continue
-                if field.is_inherited and not self.env.context.get('add_inherited_fields', True):
-                    continue
-                field_list.append({'field_id': field.id, 'widget': DEFAULT_WIDGETS_BY_TYPE.get(field.ttype), 'field_ttype': field.ttype, 'model_id': self.model_id.id, 'special_states_field_id': self.model_id.special_states_field_id.id})
-
-            self.field_ids = field_list
+    def _add_field_ids(self,record_id,model_id,add_inherited_fields=True):
+        for field in model_id.field_ids:
+            if field.name in ['state']:
+                continue
+            if field.is_inherited and not add_inherited_fields:
+                continue
+            f = record_id.field_ids.create({
+                'view_id': record_id.id,
+                'field_id': field.id, 
+                'widget': DEFAULT_WIDGETS_BY_TYPE.get(field.ttype), 
+                'field_ttype': field.ttype, 
+                'model_id': model_id.id, 
+                'special_states_field_id': model_id.special_states_field_id.id
+            })
+        for i in model_id.inherit_model_ids:
+            if i.module_model_id:
+                self._add_field_ids(record_id,i.module_model_id,add_inherited_fields)
 
     @api.model
     def create_instance(self, id):

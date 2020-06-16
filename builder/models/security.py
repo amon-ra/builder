@@ -84,6 +84,7 @@ class Groups(models.Model):
             g.trans_implied_ids = (6, 0, list(map(int, computed_set(g))))
         # return res
 
+    @api.model
     def create(self,vals):
         vals2= {}
         try:
@@ -106,6 +107,8 @@ class Groups(models.Model):
                 }                
         except:
             pass
+        _logger.debug(vals2)
+        _logger.debug(vals)
         vals2.update(vals) 
         _logger.debug(vals2)
         return super().create(vals2)

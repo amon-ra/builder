@@ -17,13 +17,15 @@
             <field name="name">builder.views.line.tree</field>
             <field name="model">builder.views.line</field>
             <field name="arch" type="xml">
-                <tree string="Fields" editable="top" create="0" >
+                <tree string="Fields" editable="top" create="1" delete="1" >
+                    <field name="id" invisible="1" />
+                    <field name="sequence" widget="handle"/>
                     <field name="parent_id"/>
                     <field name="name"/>
                     <field name="attribute_name"/>
                     <field name="attribute_id" />
                     <field name="attribute_value_id" />
-                    <field name="attribute_ids" widget="many2many_tags" />
+                    <field name="attribute_ids" widget="many2many_tags" context="{'default_type_id': name, 'default_line_id': id}"  />
                     <button name="action_append_child" type="object" string="Add" icon="fa-plus" />
                 </tree>
             </field>

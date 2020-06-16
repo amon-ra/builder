@@ -154,12 +154,12 @@ class ViewSelector(models.TransientModel):
         c = {
                 'default_name': self.model_id.name,
                 'default_wizard': wizard,
-                # 'default_model_id': self.model_id.id,
+                'default_model_id': self.model_id.id,
                 'default_special_states_field_id': self.special_states_field_id.id if self.special_states_field_id else False,
                 'default_module_id': self.model_id.module_id.id,
                 'add_inherited_fields': self.add_inherited_fields,
                 'default_inherit_view': self.inherit_view,
-                'default_inherit_view_id': self.inherit_view_id.id if self.inherit_view_id else False,
+                'default_inherit_view_id': self.inherit_view_id if self.inherit_view_id else False,
                 'default_inherit_view_ref': self.inherit_view_ref,
             }
         _logger.debug(view_type_names)
@@ -222,7 +222,12 @@ class View(models.Model):
     def _onchange_type(self):
         self.subclass_model = 'builder.views.' + self.type
 
-    
+    @api.onchange('model_id')
+    def _onchange_model_id(self):
+        for record_id in self:
+            if record_id.model_id:
+                record_id.name = record_id.model_id.name
+                    
     def action_open_view(self):
         model = self
         action = model.get_formview_action(self.ids)
@@ -365,6 +370,7 @@ class AbstractViewField(models.AbstractModel):
     module_id = fields.Many2one('builder.ir.model', related='view_id.model_id.module_id', string='Module')
     string = fields.Char('String')
 
+    @api.model
     def create(self, vals):
         if vals.get('module_id',True) is False or vals.get('model_id',True) == False:
             view_id = self.env['builder.ir.ui.view'].browse([vals['view_id']])
@@ -392,10 +398,12 @@ class ViewLine(models.Model):
     name = fields.Many2one('builder.views.line.type',string='Field')
     attribute_id = fields.Many2one('builder.views.line.attr.type',
         'Attribute',domain='[("line_id","=",name)]',
-        context="{'default_line_id' : name}")
+        context="{'default_line_id' : name}"
+        )
     attribute_value_id = fields.Many2one('builder.views.line.value.type',
         'Value',domain='[("attribute_id","=",attribute_id)]',
-        context="{'default_attribute_id' : attribute_id}")
+        context="{'default_attribute_id' : attribute_id }"
+        )
     sequence = fields.Integer('Sequence')    
     parent_id = fields.Many2one('builder.views.line','Parent', ondelete='cascade')
     child_ids = fields.One2many('builder.views.line', 'parent_id', 'Contains', copy=True)
@@ -404,8 +412,7 @@ class ViewLine(models.Model):
     parent_path = fields.Char(index=True)
     attribute_ids = fields.One2many('builder.views.line.attr','line_id',
         string='Attributes',
-        domain='[("line_id","=",id),("type_id","=",name)]',
-        # context="{'default_line_id' : id, 'default_type_id': name.name}"        
+        domain='[("line_id","=",id),("type_id","=",name)]'      
         )
     attribute_name = fields.Char('Name',compute='_compute_attr_name')
     # res_model_id = fields.Many2one(
@@ -471,7 +478,7 @@ class ViewLineAttr(models.Model):
 
     _name = 'builder.views.line.attr'
 
-    line_id = fields.Many2one('builder.views.line')
+    line_id = fields.Many2one('builder.views.line',string='Attribute')
     type_id = fields.Many2one('builder.views.line.type',string='Field')
 
     # name = fields.Many2one('builder.views.line.attr.type','Attribute')
