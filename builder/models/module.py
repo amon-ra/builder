@@ -38,7 +38,7 @@ def get_module_importers(model):
 class Module(models.Model):
     _name = 'builder.ir.module.module'
 
- 
+
     @staticmethod
     def buildertag_start(extension='.xml',name=False,oid=False):
         if name and oid:
@@ -77,7 +77,7 @@ class Module(models.Model):
     contributors = fields.Text('Contributors')
     website = fields.Char("Website")
 
-    version = fields.Char('Version', default='11.0.1.0.0')
+    version = fields.Char('Version', default='13.0.1.0.0')
     mirror = fields.Text('CodeMirror')
 
     url = fields.Char('URL')
@@ -180,7 +180,7 @@ javascript:(function(){
         """
         record_id.snippet_bookmarklet_url = Template(link).substitute(base_url=base_url, module=record_id.name)
 
-    
+
     def dependencies_as_list(self):
         return [str(dep.name) for dep in self.dependency_ids]
 
@@ -206,7 +206,7 @@ javascript:(function(){
       for record_id in self:
         record_id.models_count = len(record_id.model_ids)
 
-    
+
     def compute_methods(self, name):
         """ Return a list of str with method names, if is installed localy """
         ret = []
@@ -219,7 +219,7 @@ javascript:(function(){
 
         return ret
 
-    
+
     def action_base_files(self):
         search = self.env.ref('builder.view_builder_data_file_filter', False)
         return {
@@ -237,7 +237,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_models(self):
 
         tree_view = self.env.ref('builder.builder_ir_model_tree_view', False)
@@ -259,7 +259,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_views(self):
 
         tree_view = self.env.ref('builder.builder_ir_ui_view_tree', False)
@@ -279,7 +279,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_actions(self):
 
         return {
@@ -296,7 +296,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_menus(self):
 
         return {
@@ -313,7 +313,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_groups(self):
 
         return {
@@ -330,7 +330,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_model_access(self):
 
         return {
@@ -347,7 +347,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_rules(self):
 
         return {
@@ -364,7 +364,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_workflows(self):
         return {
             'name': _('Workflows'),
@@ -380,7 +380,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_config_models(self):
 
         return {
@@ -397,7 +397,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_cron_jobs(self):
 
         return {
@@ -414,7 +414,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_backend_assets(self):
 
         return {
@@ -431,7 +431,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_website_pages(self):
 
         return {
@@ -448,7 +448,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_website_assets(self):
 
         return {
@@ -465,7 +465,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_website_themes(self):
 
         return {
@@ -482,7 +482,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_website_media_item(self):
 
         return {
@@ -499,7 +499,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_website_menus(self):
 
         return {
@@ -517,7 +517,7 @@ javascript:(function(){
         }
 
 
-    
+
     def action_website_snippets(self):
 
         return {
@@ -534,7 +534,7 @@ javascript:(function(){
             },
         }
 
-    
+
     def action_diagram(self):
 
         diagram_view = self.env.ref('builder.view_builder_model_diagram', False)
@@ -571,11 +571,11 @@ javascript:(function(){
     def import_models(self, model):
         pass
 
-    
+
     def _export_zip(self):
         return self.get_zipped_module()
 
-    
+
     def _export_odoo(self):
         return json.JsonExport(self.env).export(self)
 

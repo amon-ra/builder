@@ -15,13 +15,14 @@ from odoo.addons.website.controllers.main import QueryURL
 
 class {{ controller.name }}(http.Controller):
 
-    @http.route([{{ controller_routes }}], type='http', 
+    {% if page %}
+    @http.route([{{ controller_routes }}], type='http',
                 auth="{{ page.visibility }}", methods=['GET'], website={{ page.attr_page }}, csrf={{ page.csrf }} )
     def page{{ loop.index }}({{ route_parameters }},**kwargs):
         """
         date_begin, date_end, state = kwargs.get('date_begin'), kwargs.get('date_end'), kwargs.get('state')
         published_count, unpublished_count = 0, 0
-        domain = request.website.website_domain()  
+        domain = request.website.website_domain()
         domain = request.website.website_domain()
         blog_post = request.env['blog.post']
         blogs = request.env['blog.blog'].search(domain, order="create_date asc", limit=2)
@@ -57,7 +58,7 @@ class {{ controller.name }}(http.Controller):
             page=page,
             step=self._blog_post_per_page,
             url_args=opt,
-        ) 
+        )
         pager_begin = (page - 1) * self._blog_post_per_page
         pager_end = page * self._blog_post_per_page
         blog_posts = blog_posts[pager_begin:pager_end]
@@ -89,4 +90,4 @@ class {{ controller.name }}(http.Controller):
         """
         values = {}
         return request.render('{{ page.module_id.name }}.{{ page.attr_id }}', values)
-
+    {% endif %}

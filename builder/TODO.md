@@ -1,3 +1,4 @@
+- website_page_designer.js fails.
 - QWEB permisions in <div groups="grupo">
 - mixins
 - port data/oe.css.classes.xml
@@ -10,7 +11,7 @@
 #https://www.odoo.com/apps/modules/11.0/odoo_dynamic_workflow/
 #https://bloopark.de/en_US/blog/the-bloopark-times-english-2/post/odoo-10-workflows-partial-removal-265#blog_content
 
-- Fix security/ir.model.access.csv 
+- Fix security/ir.model.access.csv
 
 - Fix tests
 
@@ -74,7 +75,7 @@
         'Document Name', compute='_compute_res_name', compute_sudo=True, store=True,
         help="Display name of the related document.", readonly=True)
 
-- FIELD_WIDGETS_ALL: (https://www.cybrosys.com/blog/widgets-in-odoo) 
+- FIELD_WIDGETS_ALL: (https://www.cybrosys.com/blog/widgets-in-odoo)
     .add('abstract', AbstractField)
     .add('input', basic_fields.InputField)
     .add('integer', basic_fields.FieldInteger)

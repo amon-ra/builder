@@ -1,7 +1,8 @@
 from collections import defaultdict
 import base64,os
 
-from odoo import models, api, UserError
+from odoo import models, api
+from odoo.exceptions import UserError
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class GeneratorV11(models.TransientModel):
 
     @api.model
     def get_template_paths(self):
-        return [os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'templates', '11.0'))]
+        return [os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'templates', '13.0'))]
 
     @api.model
     def generate_module(self, zip_file, module):
@@ -46,8 +47,8 @@ class GeneratorV11(models.TransientModel):
                     'module': module,
                     'model_access': module.model_access_ids,
                 })
-        elif has_models:
-            raise UserError("Security Rules must be defined")
+        # elif has_models:
+        #     raise UserError("Security Rules must be defined")
 
         if module.view_ids:
             for model in module.model_ids:
@@ -70,7 +71,7 @@ class GeneratorV11(models.TransientModel):
         filename = 'views/{model}_views.xml'.format(
                         model=module.name.lower().replace('.', '_'))
 
-        if actions or menus:       
+        if actions or menus:
             module_data.append(filename)
             zip_file.write_template(
                 filename,
@@ -81,7 +82,7 @@ class GeneratorV11(models.TransientModel):
                     'actions': actions,
                     'menus': menus
                 }
-            )            
+            )
             zip_file.write_template(
                 'views/actions.xml',
                 'views/actions.xml.jinja2',
@@ -125,7 +126,7 @@ class GeneratorV11(models.TransientModel):
                         'models/models.py.jinja2',
                         {'module': module,  'models': [model]}
                     )
-                
+
 
         _logger.debug(py_packages)
         for model in module.model_ids:
@@ -245,7 +246,7 @@ class GeneratorV11(models.TransientModel):
                     parameters[method.name]+=','+'csrf=False'
                 for route in method.controller_route:
                     routes[method.name]=route.get(
-                        method.name,'')+route.name+route.parameters+','                        
+                        method.name,'')+route.name+route.parameters+','
                     # parameters[method.name]=parameters.get(
                     #     method.name,'self')
                     # for p in route.parameter_ids:
@@ -253,14 +254,14 @@ class GeneratorV11(models.TransientModel):
                     #         # parameters='self'
                     #         break
                     #     else:
-                    #         parameters+=', '+p.name+'='+p.default                        
+                    #         parameters+=', '+p.name+'='+p.default
             zip_file.write_template(
-                os.path.join('controllers',controller.name.replace(' ','_')),
+                os.path.join('controllers',controller.name.replace(' ','_')+'.py'),
                 'controllers/main.py.jinja2',
                 {'module': module, 'controller': controller,
                 'controller_routes': routes, 'route_parameters': parameters,
                 },
-            )            
+            )
 
         for f in module.python_file_ids:
             py_packages[f.parent]=py_packages.get(f.parent,
@@ -270,7 +271,7 @@ class GeneratorV11(models.TransientModel):
                 filename,
                 'python_file.py.jinja2',
                 {'module': module, 'code': f},
-            )              
+            )
 
         _logger.debug(py_packages)
         for key, value in py_packages.items():
@@ -281,7 +282,7 @@ class GeneratorV11(models.TransientModel):
                     key+'/__init__.py',
                     '__init__.py.jinja2',
                     {'packages': value,'module': module}
-                )                
+                )
 
 
 

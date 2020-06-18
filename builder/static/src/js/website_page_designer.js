@@ -1,27 +1,28 @@
-(function () {
+odoo.define('builder.page_designer', function (require) {
     'use strict';
-    var website = odoo.website;
 
-    website.if_dom_contains('#page_designer', function () {
-        website.snippet.BuildingBlock.include({
-            _get_snippet_url: function () {
-                //return '/builder/page/snippets';
-                return '/website/snippets';
-            }
-        });
+    // var website = odoo.website;
 
-        $('.js_template_set').click(function(ev) {
-            // Copy the template to the body of the email
-            //$('#email_designer').show();
-            //$('#email_template').hide();
-            //$(".js_content", $(this).parent()).children().clone().appendTo('#email_body');
-            //$(".js_content", $(this).parent()).children().clone().appendTo('#email_body_html');
-            //$('#email_body').addClass('oe_dirty');
-            //$('#email_body_html').addClass('oe_dirty');
+    // website.if_dom_contains('#page_designer', function () {
+    //     website.snippet.BuildingBlock.include({
+    //         _get_snippet_url: function () {
+    //             //return '/builder/page/snippets';
+    //             return '/website/snippets';
+    //         }
+    //     });
 
-            odoo.website.editor_bar.edit();
-            event.preventDefault();
-        });
-    });
+    //     $('.js_template_set').click(function(ev) {
+    //         // Copy the template to the body of the email
+    //         //$('#email_designer').show();
+    //         //$('#email_template').hide();
+    //         //$(".js_content", $(this).parent()).children().clone().appendTo('#email_body');
+    //         //$(".js_content", $(this).parent()).children().clone().appendTo('#email_body_html');
+    //         //$('#email_body').addClass('oe_dirty');
+    //         //$('#email_body_html').addClass('oe_dirty');
 
-})();
+    //         odoo.website.editor_bar.edit();
+    //         event.preventDefault();
+    //     });
+    // });
+
+});

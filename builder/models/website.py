@@ -5,7 +5,7 @@ __author__ = 'one'
 
 from odoo import models, fields, api, _
 
-CONTROLLER_MODEL_SEARCH_METHOD=""" 
+CONTROLLER_MODEL_SEARCH_METHOD="""
         \"""get search result for auto suggestions\"""
         strings = '%' + kw.get('name') + '%'
         try:
@@ -21,7 +21,7 @@ CONTROLLER_MODEL_SEARCH_METHOD="""
             name = {'name': 'None', 'value': 'None'}
         return json.dumps(name)
 """
-CONTROLLER_MODEL_METHOD=""" 
+CONTROLLER_MODEL_METHOD="""
         \"""function related to blog display\"""
         date_begin, date_end, state = opt.get('date_begin'), opt.get('date_end'), opt.get('state')
         published_count, unpublished_count = 0, 0
@@ -243,7 +243,7 @@ class WebsiteControllerMethod(models.Model):
     _inherit = 'builder.python.file.method'
 
     controller_id = fields.Many2one('builder.website.controller', 'Controller', ondelete='cascade')
-    csrf = fields.Boolean('CSRF',default=True)    
+    csrf = fields.Boolean('CSRF',default=True)
     visibility = fields.Selection([
         ('public','Public'),('user','Private')
         ],string="Visibility", default='public')
@@ -267,13 +267,13 @@ class ControllerRoute(models.Model):
     _name = 'builder.website.route'
 
     method_id = fields.Many2one('builder.website.method',required=True)
-    name = fields.Char('Route',required=True,help="""Examples: 
+    name = fields.Char('Route',required=True,help="""Examples:
     /blog/<model("blog.blog", "[('website_id', 'in', (False, current_website_id))]"):blog_argument>,
     /blog/<model("blog.blog"):blog_argument>/page/<int:blog_page>,
     /blog/<model("blog.blog"):blog_argument>/tag/<string:blog_tag>,
     /blog/<model("blog.blog"):blog_argument>/tag/<string:tag>/page/<int:blog_page>,
     /blog/search_content,
-Where blog_argument,blog_page,blog_tag must be created as arguments above    
+Where blog_argument,blog_page,blog_tag must be created as arguments above
         """)
     parameters = fields.Char('Add to Route',default='')
     # parameter_ids = fields.One2many('builder.website.route.parameter',
@@ -301,7 +301,7 @@ class Controllers(models.Model):
     module_id = fields.Many2one('builder.ir.module.module', 'Module',
                                 ondelete='cascade', required=True)
     name = fields.Char('Name',required=True)
-    parent = fields.Char('Parent')                                  
+    parent = fields.Char('Parent')
     controller_method_ids = fields.One2many('builder.website.method','controller_id','Custom Methods', copy=True)
     import_ids = fields.One2many('builder.python.file.import', 'controller_id', 'Imports', copy=True)
     custom_code_line_ids = fields.One2many('builder.python.file.line','controller_id', 'Custom Code', copy=True)
@@ -338,7 +338,7 @@ class Controllers(models.Model):
             method_id.controller_route.create({
                 'name': route_name,
                 # 'parameters': '/'
-            })            
+            })
             method_id.controller_route.create({
                 'name': route_name,
                 'parameters': '/search_content'
@@ -349,13 +349,13 @@ class Controllers(models.Model):
                     'model': record_id.model_id.model,
                     'page_id': record_id.index_page_id.attr_id,
                     'route': route_name,
-                })                
+                })
             })
-            method_id = record_id.controller_method_ids.create(d)   
+            method_id = record_id.controller_method_ids.create(d)
             method_id.controller_route.create({
                 'name': route_name,
                 'parameters': '/<model("{}"):post>'.format(record_id.model_id.model)
-            })                
+            })
             d.update({
                 'name':method_name+'_search_autocomplete',
                 'route_type':'json',
@@ -364,9 +364,9 @@ class Controllers(models.Model):
                     'model': record_id.model_id.model,
                     'page_id': record_id.index_page_id.attr_id,
                     'route': route_name,
-                }) 
+                })
             })
-            method_id = record_id.controller_method_ids.create(d) 
+            method_id = record_id.controller_method_ids.create(d)
             method_id.route_method_ids.create({'name':'POST'})
             method_id.controller_route.create({
                 'name': '/'+method_name,
@@ -423,7 +423,7 @@ class Pages(models.Model):
     website_published = fields.Boolean('Published')
     website_indexed = fields.Boolean('Indexed')
     website_url = fields.Char('URL')
-    asset_ids = fields.Many2many('builder.website.asset','Assets', copy=False)
+    asset_ids = fields.Many2many('builder.website.asset',string='Assets', copy=False)
 
     # gen_controller = fields.Boolean('Generate Controller', default=False)
     # controller_route = fields.Char('Route')
@@ -582,7 +582,7 @@ class WebsiteSnippet(models.Model):
             'url': url,
             'target': 'self',
         }
-  
+
 
 class Module(models.Model):
     _inherit = 'builder.ir.module.module'
@@ -633,7 +633,7 @@ class WebsiteFileImports(models.Model):
         name = vals.get('name')
         # module = vals.get('module_id')
         import_ref = 'controller_id'
-        model = vals.get(import_ref)              
+        model = vals.get(import_ref)
         if model and name:
             record_id = self.search([
                 (import_ref,'=', model),
